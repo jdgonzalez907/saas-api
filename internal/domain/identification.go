@@ -14,27 +14,31 @@ const (
 	IdType_IC       IdentificationType = "IC"
 )
 
-func (idType IdentificationType) String() string {
-	return string(idType)
-}
-
 type Identification struct {
-	Type   IdentificationType `json:"type"`
-	Number string             `json:"number"`
+	idType IdentificationType
+	number string
 }
 
 func NewIdentification(idType IdentificationType, number string) (Identification, error) {
 	switch idType {
 	case IdType_CC, IdType_CE, IdType_PASSPORT, IdType_NIT, IdType_IC:
 		return Identification{
-			Type:   idType,
-			Number: number,
+			idType: idType,
+			number: number,
 		}, nil
 	default:
 		return Identification{}, ErrInvalidIdentificationType
 	}
 }
 
-func (id Identification) String() string {
-	return id.Type.String() + id.Number
+type IdentificationDTO struct {
+	Type   IdentificationType `json:"type"`
+	Number string             `json:"number"`
+}
+
+func (id Identification) ToDTO() IdentificationDTO {
+	return IdentificationDTO{
+		Type:   id.idType,
+		Number: id.number,
+	}
 }

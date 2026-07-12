@@ -8,7 +8,7 @@ import (
 var ErrInvalidEmail = errors.New("invalid email")
 
 type Email struct {
-	Value string `json:"value"`
+	value string
 }
 
 func NewEmail(email string) (Email, error) {
@@ -21,9 +21,15 @@ func NewEmail(email string) (Email, error) {
 		return Email{}, ErrInvalidEmail
 	}
 
-	return Email{Value: email}, nil
+	return Email{value: email}, nil
 }
 
-func (e Email) String() string {
-	return e.Value
+type EmailDTO struct {
+	Value string `json:"value"`
+}
+
+func (e Email) ToDTO() EmailDTO {
+	return EmailDTO{
+		Value: e.value,
+	}
 }

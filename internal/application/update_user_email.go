@@ -28,10 +28,8 @@ func (u *updateUserEmailUseCase) Execute(id int, email *domain.Email) error {
 		return domain.ErrUserNotFound
 	}
 
-	userFoundDTO := userFound.ToDTO()
-
 	if email != nil {
-		emailChanged := userFoundDTO.Email == nil || *userFoundDTO.Email != *email
+		emailChanged := userFound.Email() == nil || *userFound.Email() != *email
 		if emailChanged {
 			foundEmail, err := u.userRepository.FindByEmail(*email)
 			if err != nil {
