@@ -20,6 +20,32 @@ var (
 )
 
 type User struct {
+	id             int
+	identification Identification
+	firstName      string
+	lastName       string
+	phone          Phone
+	email          *Email
+	address        *Address
+	birthDate      *BirthDate
+	createdAt      time.Time
+	updatedAt      time.Time
+}
+
+type UserParams struct {
+	ID             int
+	Identification Identification
+	FirstName      string
+	LastName       string
+	Phone          Phone
+	Email          *Email
+	Address        *Address
+	BirthDate      *BirthDate
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+}
+
+type UserDTO struct {
 	ID             int            `json:"id"`
 	Identification Identification `json:"identification"`
 	FirstName      string         `json:"first_name"`
@@ -41,45 +67,8 @@ func NewUserWithoutId(
 	birthDate *BirthDate,
 ) (*User, error) {
 	now := time.Now()
-	return NewUser(
-		0,
-		identification,
-		firstName,
-		lastName,
-		phone,
-		email,
-		address,
-		birthDate,
-		now,
-		now,
-	)
-}
-
-func NewUser(
-	id int,
-	identification Identification,
-	firstName, lastName string,
-	phone Phone,
-	email *Email,
-	address *Address,
-	birthDate *BirthDate,
-	createdAt time.Time,
-	updatedAt time.Time,
-) (*User, error) {
-	if id < 0 {
-		return nil, ErrInvalidUserID
-	}
-
-	if firstName == "" {
-		return nil, ErrInvalidFirstName
-	}
-
-	if lastName == "" {
-		return nil, ErrInvalidLastName
-	}
-
-	return &User{
-		ID:             id,
+	return NewUser(UserParams{
+		ID:             0,
 		Identification: identification,
 		FirstName:      firstName,
 		LastName:       lastName,
@@ -87,7 +76,85 @@ func NewUser(
 		Email:          email,
 		Address:        address,
 		BirthDate:      birthDate,
-		CreatedAt:      createdAt,
-		UpdatedAt:      updatedAt,
+		CreatedAt:      now,
+		UpdatedAt:      now,
+	})
+}
+
+func NewUser(params UserParams) (*User, error) {
+	if params.ID < 0 {
+		return nil, ErrInvalidUserID
+	}
+
+	if params.FirstName == "" {
+		return nil, ErrInvalidFirstName
+	}
+
+	if params.LastName == "" {
+		return nil, ErrInvalidLastName
+	}
+
+	return &User{
+		id:             params.ID,
+		identification: params.Identification,
+		firstName:      params.FirstName,
+		lastName:       params.LastName,
+		phone:          params.Phone,
+		email:          params.Email,
+		address:        params.Address,
+		birthDate:      params.BirthDate,
+		createdAt:      params.CreatedAt,
+		updatedAt:      params.UpdatedAt,
 	}, nil
+}
+
+func (u *User) ToDTO() *UserDTO {
+	if u == nil {
+		return nil
+	}
+	return &UserDTO{
+		ID:             u.id,
+		Identification: u.identification,
+		FirstName:      u.firstName,
+		LastName:       u.lastName,
+		Phone:          u.phone,
+		Email:          u.email,
+		Address:        u.address,
+		BirthDate:      u.birthDate,
+		CreatedAt:      u.createdAt,
+		UpdatedAt:      u.updatedAt,
+	}
+}
+
+func UserFromDTO(dto *UserDTO) (*User, error) {
+	if dto == nil {
+		return nil, nil
+	}
+	return NewUser(UserParams{
+		ID:             dto.ID,
+		Identification: dto.Identification,
+		FirstName:      dto.FirstName,
+		LastName:       dto.LastName,
+		Phone:          dto.Phone,
+		Email:          dto.Email,
+		Address:        dto.Address,
+		BirthDate:      dto.BirthDate,
+		CreatedAt:      dto.CreatedAt,
+		UpdatedAt:      dto.UpdatedAt,
+	})
+}
+
+func (u *User) With(params UserParams) (*User, error) {
+	return NewUser(UserParams{
+		ID:             u.id,
+		Identification: params.Identification,
+		FirstName:      params.FirstName,
+		LastName:       params.LastName,
+		Phone:          params.Phone,
+		Email:          params.Email,
+		Address:        params.Address,
+		BirthDate:      params.BirthDate,
+		CreatedAt:      u.createdAt,
+		UpdatedAt:      time.Now(),
+	})
 }
