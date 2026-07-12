@@ -34,8 +34,9 @@ Este documento sirve como la fuente de verdad (Skill / Rules) para que cualquier
 Cada caso de uso en la capa de aplicación debe seguir una estructura estricta y limpia:
 - **Interfaz**: Definida en el mismo archivo para desacoplamiento y facilidad de mocking (ej. `type UpdateUserPhoneUseCase interface`).
 - **Struct de Implementación**: Estructura privada que implementa la interfaz (ej. `type updateUserPhoneUseCase struct`).
-- **Único Método Público**: Solo debe exponer el método ejecutor principal: `Execute(...) error`.
+- **Único Método Público**: Solo debe exponer el método ejecutor principal: `Execute(...) error` (o retornar DTO y error para consultas).
 - **Métodos Auxiliares Privados**: Cualquier lógica de validación, mapeo o cálculo adicional debe encapsularse en métodos privados del struct de implementación.
+- **Manejo de Errores (Error Wrapping)**: Cuando se capture un error proveniente de la capa de infraestructura (ej. del repositorio), este debe envolverse con el error de dominio correspondiente utilizando `fmt.Errorf("%v: %w", domain.ErrXxx, err)`. Esto permite que el error original sea inspeccionable mediante `errors.Unwrap` manteniendo a la vez la semántica de negocio en las pruebas unitarias y capas externas.
 
 ---
 
