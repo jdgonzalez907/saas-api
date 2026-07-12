@@ -5,7 +5,7 @@ import "errors"
 var ErrInvalidPhone = errors.New("invalid phone")
 
 type Phone struct {
-	Value string `json:"value"`
+	value string
 }
 
 func NewPhone(phone string) (Phone, error) {
@@ -13,9 +13,15 @@ func NewPhone(phone string) (Phone, error) {
 		return Phone{}, ErrInvalidPhone
 	}
 
-	return Phone{Value: phone}, nil
+	return Phone{value: phone}, nil
 }
 
-func (p Phone) String() string {
-	return p.Value
+type PhoneDTO struct {
+	Value string `json:"value"`
+}
+
+func (p Phone) ToDTO() PhoneDTO {
+	return PhoneDTO{
+		Value: p.value,
+	}
 }

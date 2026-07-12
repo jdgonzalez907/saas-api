@@ -8,57 +8,38 @@ import (
 
 func TestNewIdentification(t *testing.T) {
 	testCases := []struct {
-		testName       string
-		input          domain.Identification
-		expectedError  error
-		expectedOutput domain.Identification
+		testName      string
+		idType        domain.IdentificationType
+		number        string
+		expectedError error
 	}{
 		{
-			testName: "success - create identification",
-			input: domain.Identification{
-				Type:   domain.IdType_CC,
-				Number: "123456789",
-			},
+			testName:      "success - create identification",
+			idType:        domain.IdType_CC,
+			number:        "123456789",
 			expectedError: nil,
-			expectedOutput: domain.Identification{
-				Type:   domain.IdType_CC,
-				Number: "123456789",
-			},
 		},
 		{
-			testName: "fail - invalid type",
-			input: domain.Identification{
-				Type:   domain.IdentificationType("invalid"),
-				Number: "123456789",
-			},
-			expectedError:  domain.ErrInvalidIdentificationType,
-			expectedOutput: domain.Identification{},
+			testName:      "fail - invalid type",
+			idType:        domain.IdentificationType("invalid"),
+			number:        "123456789",
+			expectedError: domain.ErrInvalidIdentificationType,
 		},
 	}
 
-	for _, testCase := range testCases {
-		identification, err := domain.NewIdentification(testCase.input.Type, testCase.input.Number)
-		if err != testCase.expectedError {
-			t.Errorf("expected error: %v, got %v", testCase.expectedError, err)
-		}
-		if identification != testCase.expectedOutput {
-			t.Errorf("expected identification: %v, got %v", testCase.expectedOutput, identification)
-		}
-	}
-}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			id, err := domain.NewIdentification(tc.idType, tc.number)
+			if err != tc.expectedError {
+				t.Fatalf("expected error: %v, got %v", tc.expectedError, err)
+			}
 
-func TestIdentificationStrings(t *testing.T) {
-	idType := domain.IdType_CC
-	if idType.String() != "CC" {
-		t.Errorf("expected %q, got %q", "CC", idType.String())
-	}
-
-	id := domain.Identification{
-		Type:   domain.IdType_CC,
-		Number: "12345",
-	}
-	expected := "CC12345"
-	if id.String() != expected {
-		t.Errorf("expected %q, got %q", expected, id.String())
+			if tc.expectedError == nil {
+				dto := id.ToDTO()
+				if dto.Type != tc.idType || dto.Number != tc.number {
+					t.Errorf("expected DTO: %+v", dto)
+				}
+			}
+		})
 	}
 }

@@ -50,16 +50,16 @@ type UserParams struct {
 }
 
 type UserDTO struct {
-	ID             int            `json:"id"`
-	Identification Identification `json:"identification"`
-	FirstName      string         `json:"first_name"`
-	LastName       string         `json:"last_name"`
-	Phone          Phone          `json:"phone"`
-	Email          *Email         `json:"email"`
-	Address        *Address       `json:"address"`
-	BirthDate      *BirthDate     `json:"birth_date"`
-	CreatedAt      time.Time      `json:"created_at"`
-	UpdatedAt      time.Time      `json:"updated_at"`
+	ID             int               `json:"id"`
+	Identification IdentificationDTO `json:"identification"`
+	FirstName      string            `json:"first_name"`
+	LastName       string            `json:"last_name"`
+	Phone          PhoneDTO          `json:"phone"`
+	Email          *EmailDTO         `json:"email"`
+	Address        *AddressDTO       `json:"address"`
+	BirthDate      *BirthDateDTO     `json:"birth_date"`
+	CreatedAt      time.Time         `json:"created_at"`
+	UpdatedAt      time.Time         `json:"updated_at"`
 }
 
 func NewUserWithoutId(
@@ -112,19 +112,78 @@ func NewUser(params UserParams) (*User, error) {
 	}, nil
 }
 
+func (u *User) ID() int {
+	return u.id
+}
+
+func (u *User) Identification() Identification {
+	return u.identification
+}
+
+func (u *User) FirstName() string {
+	return u.firstName
+}
+
+func (u *User) LastName() string {
+	return u.lastName
+}
+
+func (u *User) Phone() Phone {
+	return u.phone
+}
+
+func (u *User) Email() *Email {
+	return u.email
+}
+
+func (u *User) Address() *Address {
+	return u.address
+}
+
+func (u *User) BirthDate() *BirthDate {
+	return u.birthDate
+}
+
+func (u *User) CreatedAt() time.Time {
+	return u.createdAt
+}
+
+func (u *User) UpdatedAt() time.Time {
+	return u.updatedAt
+}
+
 func (u *User) ToDTO() *UserDTO {
 	if u == nil {
 		return nil
 	}
+
+	var emailDTO *EmailDTO
+	if u.email != nil {
+		dto := u.email.ToDTO()
+		emailDTO = &dto
+	}
+
+	var addressDTO *AddressDTO
+	if u.address != nil {
+		dto := u.address.ToDTO()
+		addressDTO = &dto
+	}
+
+	var birthDateDTO *BirthDateDTO
+	if u.birthDate != nil {
+		dto := u.birthDate.ToDTO()
+		birthDateDTO = &dto
+	}
+
 	return &UserDTO{
 		ID:             u.id,
-		Identification: u.identification,
+		Identification: u.identification.ToDTO(),
 		FirstName:      u.firstName,
 		LastName:       u.lastName,
-		Phone:          u.phone,
-		Email:          u.email,
-		Address:        u.address,
-		BirthDate:      u.birthDate,
+		Phone:          u.phone.ToDTO(),
+		Email:          emailDTO,
+		Address:        addressDTO,
+		BirthDate:      birthDateDTO,
 		CreatedAt:      u.createdAt,
 		UpdatedAt:      u.updatedAt,
 	}
@@ -134,15 +193,60 @@ func UserFromDTO(dto *UserDTO) (*User, error) {
 	if dto == nil {
 		return nil, nil
 	}
+
+	identification, err := NewIdentification(dto.Identification.Type, dto.Identification.Number)
+	if err != nil {
+		return nil, err
+	}
+
+	phone, err := NewPhone(dto.Phone.Value)
+	if err != nil {
+		return nil, err
+	}
+
+	var email *Email
+	if dto.Email != nil {
+		e, err := NewEmail(dto.Email.Value)
+		if err != nil {
+			return nil, err
+		}
+		email = &e
+	}
+
+	var address *Address
+	if dto.Address != nil {
+		a, err := NewAddress(
+			dto.Address.Street,
+			dto.Address.City,
+			dto.Address.State,
+			dto.Address.Country,
+			dto.Address.PostalCode,
+			dto.Address.Description,
+		)
+		if err != nil {
+			return nil, err
+		}
+		address = &a
+	}
+
+	var birthDate *BirthDate
+	if dto.BirthDate != nil {
+		b, err := NewBirthDate(dto.BirthDate.Value)
+		if err != nil {
+			return nil, err
+		}
+		birthDate = &b
+	}
+
 	return NewUser(UserParams{
 		ID:             dto.ID,
-		Identification: dto.Identification,
+		Identification: identification,
 		FirstName:      dto.FirstName,
 		LastName:       dto.LastName,
-		Phone:          dto.Phone,
-		Email:          dto.Email,
-		Address:        dto.Address,
-		BirthDate:      dto.BirthDate,
+		Phone:          phone,
+		Email:          email,
+		Address:        address,
+		BirthDate:      birthDate,
 		CreatedAt:      dto.CreatedAt,
 		UpdatedAt:      dto.UpdatedAt,
 	})

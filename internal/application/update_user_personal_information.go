@@ -19,9 +19,7 @@ func NewUpdateUserPersonalInformationUseCase(userRepository domain.UserRepositor
 }
 
 func (u *updateUserPersonalInformationUseCase) Execute(user *domain.User) error {
-	userDTO := user.ToDTO()
-
-	userFound, err := u.userRepository.FindById(userDTO.ID)
+	userFound, err := u.userRepository.FindById(user.ID())
 	if err != nil {
 		return fmt.Errorf("%v: %w", domain.ErrUpdatingUserPersonalInformation, err)
 	}
@@ -31,11 +29,11 @@ func (u *updateUserPersonalInformationUseCase) Execute(user *domain.User) error 
 	}
 
 	updatedUser, err := userFound.WithPersonalInformation(
-		userDTO.Identification,
-		userDTO.FirstName,
-		userDTO.LastName,
-		userDTO.Address,
-		userDTO.BirthDate,
+		user.Identification(),
+		user.FirstName(),
+		user.LastName(),
+		user.Address(),
+		user.BirthDate(),
 	)
 	if err != nil {
 		return fmt.Errorf("%v: %w", domain.ErrUpdatingUserPersonalInformation, err)
