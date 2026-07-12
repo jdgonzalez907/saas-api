@@ -8,48 +8,40 @@ import (
 )
 
 func TestNewBirthDate(t *testing.T) {
-
 	today := time.Now()
 	date18yearsAgo := today.AddDate(-18, 0, -1)
 	date17yearsAgo := today.AddDate(-18, 0, 0)
 
 	testCases := []struct {
-		testName       string
-		input          time.Time
-		expectedError  error
-		expectedOutput domain.BirthDate
+		testName      string
+		input         time.Time
+		expectedError error
 	}{
 		{
-			testName:       "success - create birth date",
-			input:          date18yearsAgo,
-			expectedError:  nil,
-			expectedOutput: domain.BirthDate{Value: date18yearsAgo},
+			testName:      "success - create birth date",
+			input:         date18yearsAgo,
+			expectedError: nil,
 		},
 		{
-			testName:       "fail - age less than 18",
-			input:          date17yearsAgo,
-			expectedError:  domain.ErrInvalidBirthDate,
-			expectedOutput: domain.BirthDate{},
+			testName:      "fail - age less than 18",
+			input:         date17yearsAgo,
+			expectedError: domain.ErrInvalidBirthDate,
 		},
 	}
 
-	for _, testCase := range testCases {
-		birthDate, err := domain.NewBirthDate(testCase.input)
-		if err != testCase.expectedError {
-			t.Errorf("expected error: %v, got %v", testCase.expectedError, err)
-		}
-		if birthDate != testCase.expectedOutput {
-			t.Errorf("expected birth date: %v, got %v", testCase.expectedOutput, birthDate)
-		}
-	}
-}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			birthDate, err := domain.NewBirthDate(tc.input)
+			if err != tc.expectedError {
+				t.Fatalf("expected error: %v, got %v", tc.expectedError, err)
+			}
 
-func TestBirthDateString(t *testing.T) {
-	timeVal := time.Date(1990, 10, 15, 0, 0, 0, 0, time.UTC)
-	birthDate := domain.BirthDate{Value: timeVal}
-	expected := "1990-10-15"
-	result := birthDate.String()
-	if result != expected {
-		t.Errorf("expected %q, got %q", expected, result)
+			if tc.expectedError == nil {
+				dto := birthDate.ToDTO()
+				if !dto.Value.Equal(tc.input) {
+					t.Errorf("expected DTO value: %v, got %v", tc.input, dto.Value)
+				}
+			}
+		})
 	}
 }

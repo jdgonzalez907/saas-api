@@ -7,19 +7,16 @@ import (
 	"jdgonzalez907/users-api/internal/domain"
 )
 
+var (
+	testTime          = time.Date(1995, 5, 5, 0, 0, 0, 0, time.UTC)
+	identification, _ = domain.NewIdentification(domain.IdType_CC, "123456789")
+	email, _          = domain.NewEmail("name@domain.com")
+	phone, _          = domain.NewPhone("123456789")
+	address, _        = domain.NewAddress("123 Main St", "New York", "NY", "USA", nil, nil)
+	birthDate, _      = domain.NewBirthDate(testTime)
+)
+
 func TestNewUser(t *testing.T) {
-	identification := domain.Identification{Type: domain.IdType_CC, Number: "123456789"}
-	email := domain.Email{Value: "name@domain.com"}
-	phone := domain.Phone{Value: "123456789"}
-	address := domain.Address{
-		Street:      "123 Main St",
-		PostalCode:  nil,
-		City:        "New York",
-		State:       "NY",
-		Country:     "USA",
-		Description: nil,
-	}
-	birthDate := domain.BirthDate{Value: time.Now()}
 	now := time.Now()
 
 	testCases := []struct {
@@ -95,31 +92,18 @@ func isEqual(user *domain.User, params *domain.UserParams) bool {
 	}
 	dto := user.ToDTO()
 	return dto.ID == params.ID &&
-		dto.Identification == params.Identification &&
+		dto.Identification == params.Identification.ToDTO() &&
 		dto.FirstName == params.FirstName &&
 		dto.LastName == params.LastName &&
-		dto.Phone == params.Phone &&
-		(dto.Email == nil && params.Email == nil || dto.Email != nil && params.Email != nil && *dto.Email == *params.Email) &&
-		(dto.Address == nil && params.Address == nil || dto.Address != nil && params.Address != nil && *dto.Address == *params.Address) &&
-		(dto.BirthDate == nil && params.BirthDate == nil || dto.BirthDate != nil && params.BirthDate != nil && dto.BirthDate.Value.Equal(params.BirthDate.Value)) &&
+		dto.Phone == params.Phone.ToDTO() &&
+		(dto.Email == nil && params.Email == nil || dto.Email != nil && params.Email != nil && *dto.Email == params.Email.ToDTO()) &&
+		(dto.Address == nil && params.Address == nil || dto.Address != nil && params.Address != nil && *dto.Address == params.Address.ToDTO()) &&
+		(dto.BirthDate == nil && params.BirthDate == nil || dto.BirthDate != nil && params.BirthDate != nil && dto.BirthDate.Value.Equal(params.BirthDate.ToDTO().Value)) &&
 		dto.CreatedAt.Equal(params.CreatedAt) &&
 		dto.UpdatedAt.Equal(params.UpdatedAt)
 }
 
 func TestNewUserWithoutId(t *testing.T) {
-	identification := domain.Identification{Type: domain.IdType_CC, Number: "123456789"}
-	email := domain.Email{Value: "name@domain.com"}
-	phone := domain.Phone{Value: "123456789"}
-	address := domain.Address{
-		Street:      "123 Main St",
-		PostalCode:  nil,
-		City:        "New York",
-		State:       "NY",
-		Country:     "USA",
-		Description: nil,
-	}
-	birthDate := domain.BirthDate{Value: time.Now()}
-
 	testCases := []struct {
 		testName      string
 		firstName     string
@@ -176,18 +160,6 @@ func TestNewUserWithoutId(t *testing.T) {
 }
 
 func TestUserDTOAndFromDTO(t *testing.T) {
-	identification := domain.Identification{Type: domain.IdType_CC, Number: "123456789"}
-	email := domain.Email{Value: "name@domain.com"}
-	phone := domain.Phone{Value: "123456789"}
-	address := domain.Address{
-		Street:      "123 Main St",
-		PostalCode:  nil,
-		City:        "New York",
-		State:       "NY",
-		Country:     "USA",
-		Description: nil,
-	}
-	birthDate := domain.BirthDate{Value: time.Now()}
 	now := time.Now()
 
 	params := domain.UserParams{
@@ -233,21 +205,57 @@ func TestUserDTOAndFromDTO(t *testing.T) {
 	if err != nil || nilUser2 != nil {
 		t.Errorf("expected nil user for nil DTO without error")
 	}
+
+	// Invalid cases in UserFromDTO
+	invalidCases := []struct {
+		name   string
+		modify func(d *domain.UserDTO)
+	}{
+		{
+			name: "invalid identification type",
+			modify: func(d *domain.UserDTO) {
+				d.Identification.Type = "INVALID"
+			},
+		},
+		{
+			name: "invalid phone",
+			modify: func(d *domain.UserDTO) {
+				d.Phone.Value = ""
+			},
+		},
+		{
+			name: "invalid email",
+			modify: func(d *domain.UserDTO) {
+				d.Email = &domain.EmailDTO{Value: "invalid-email"}
+			},
+		},
+		{
+			name: "invalid address",
+			modify: func(d *domain.UserDTO) {
+				d.Address = &domain.AddressDTO{Street: ""}
+			},
+		},
+		{
+			name: "invalid birthdate",
+			modify: func(d *domain.UserDTO) {
+				d.BirthDate = &domain.BirthDateDTO{Value: time.Now()}
+			},
+		},
+	}
+
+	for _, tc := range invalidCases {
+		t.Run(tc.name, func(t *testing.T) {
+			validDTO := user.ToDTO()
+			tc.modify(validDTO)
+			_, err := domain.UserFromDTO(validDTO)
+			if err == nil {
+				t.Errorf("expected error for case %s, got nil", tc.name)
+			}
+		})
+	}
 }
 
 func TestUserWithPersonalInformation(t *testing.T) {
-	identification := domain.Identification{Type: domain.IdType_CC, Number: "123456789"}
-	email := domain.Email{Value: "name@domain.com"}
-	phone := domain.Phone{Value: "123456789"}
-	address := domain.Address{
-		Street:      "123 Main St",
-		PostalCode:  nil,
-		City:        "New York",
-		State:       "NY",
-		Country:     "USA",
-		Description: nil,
-	}
-	birthDate := domain.BirthDate{Value: time.Now()}
 	now := time.Now()
 
 	params := domain.UserParams{
@@ -268,18 +276,11 @@ func TestUserWithPersonalInformation(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	newIdentification := domain.Identification{Type: domain.IdType_CC, Number: "987654321"}
+	newIdentification, _ := domain.NewIdentification(domain.IdType_CC, "987654321")
 	newFirstName := "Jane"
 	newLastName := "Smith"
-	newAddress := domain.Address{
-		Street:      "456 Main St",
-		PostalCode:  nil,
-		City:        "Boston",
-		State:       "MA",
-		Country:     "USA",
-		Description: nil,
-	}
-	newBirthDate := domain.BirthDate{Value: time.Now().AddDate(-1, 0, 0)}
+	newAddress, _ := domain.NewAddress("456 Main St", "Boston", "MA", "USA", nil, nil)
+	newBirthDate, _ := domain.NewBirthDate(time.Now().AddDate(-19, 0, 0))
 
 	testCases := []struct {
 		testName       string
@@ -344,19 +345,19 @@ func TestUserWithPersonalInformation(t *testing.T) {
 				if dto.LastName != tc.lastName {
 					t.Errorf("expected LastName to be updated to %s, got %s", tc.lastName, dto.LastName)
 				}
-				if dto.Identification != tc.identification {
+				if dto.Identification != tc.identification.ToDTO() {
 					t.Errorf("expected Identification to be updated")
 				}
-				if dto.Phone != phone {
-					t.Errorf("expected Phone to be kept as %v, got %v", phone, dto.Phone)
+				if dto.Phone != phone.ToDTO() {
+					t.Errorf("expected Phone to be kept as %v, got %v", phone.ToDTO(), dto.Phone)
 				}
-				if dto.Email == nil || *dto.Email != email {
+				if dto.Email == nil || *dto.Email != email.ToDTO() {
 					t.Errorf("expected Email to be kept")
 				}
-				if dto.Address == nil || *dto.Address != *tc.address {
+				if dto.Address == nil || *dto.Address != tc.address.ToDTO() {
 					t.Errorf("expected Address to be updated")
 				}
-				if dto.BirthDate == nil || !dto.BirthDate.Value.Equal(tc.birthDate.Value) {
+				if dto.BirthDate == nil || !dto.BirthDate.Value.Equal(tc.birthDate.ToDTO().Value) {
 					t.Errorf("expected BirthDate to be updated")
 				}
 				if dto.CreatedAt != now {
@@ -371,11 +372,6 @@ func TestUserWithPersonalInformation(t *testing.T) {
 }
 
 func TestUserWithPhone(t *testing.T) {
-	identification := domain.Identification{Type: domain.IdType_CC, Number: "123456789"}
-	email := domain.Email{Value: "name@domain.com"}
-	phone := domain.Phone{Value: "123456789"}
-	address := domain.Address{Street: "123 Main St"}
-	birthDate := domain.BirthDate{Value: time.Now()}
 	now := time.Now()
 
 	params := domain.UserParams{
@@ -396,11 +392,11 @@ func TestUserWithPhone(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	newPhone := domain.Phone{Value: "987654321"}
+	newPhone, _ := domain.NewPhone("987654321")
 	updatedUser := user.WithPhone(newPhone)
 
 	dto := updatedUser.ToDTO()
-	if dto.Phone != newPhone {
+	if dto.Phone != newPhone.ToDTO() {
 		t.Errorf("expected Phone to be updated, got %v", dto.Phone)
 	}
 	if dto.FirstName != "John" {
@@ -412,11 +408,6 @@ func TestUserWithPhone(t *testing.T) {
 }
 
 func TestUserWithEmail(t *testing.T) {
-	identification := domain.Identification{Type: domain.IdType_CC, Number: "123456789"}
-	email := domain.Email{Value: "name@domain.com"}
-	phone := domain.Phone{Value: "123456789"}
-	address := domain.Address{Street: "123 Main St"}
-	birthDate := domain.BirthDate{Value: time.Now()}
 	now := time.Now()
 
 	params := domain.UserParams{
@@ -437,11 +428,11 @@ func TestUserWithEmail(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	newEmail := domain.Email{Value: "new@domain.com"}
+	newEmail, _ := domain.NewEmail("new@domain.com")
 	updatedUser := user.WithEmail(&newEmail)
 
 	dto := updatedUser.ToDTO()
-	if dto.Email == nil || *dto.Email != newEmail {
+	if dto.Email == nil || *dto.Email != newEmail.ToDTO() {
 		t.Errorf("expected Email to be updated")
 	}
 	if dto.FirstName != "John" {
@@ -449,5 +440,57 @@ func TestUserWithEmail(t *testing.T) {
 	}
 	if dto.UpdatedAt.Before(now) {
 		t.Errorf("expected UpdatedAt to be updated")
+	}
+}
+
+func TestUserGetters(t *testing.T) {
+	now := time.Now()
+	params := domain.UserParams{
+		ID:             1,
+		Identification: identification,
+		FirstName:      "John",
+		LastName:       "Doe",
+		Phone:          phone,
+		Email:          &email,
+		Address:        &address,
+		BirthDate:      &birthDate,
+		CreatedAt:      now,
+		UpdatedAt:      now,
+	}
+
+	user, err := domain.NewUser(params)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if user.ID() != params.ID {
+		t.Errorf("expected ID: %d, got: %d", params.ID, user.ID())
+	}
+	if user.Identification() != params.Identification {
+		t.Errorf("expected Identification: %v, got: %v", params.Identification, user.Identification())
+	}
+	if user.FirstName() != params.FirstName {
+		t.Errorf("expected FirstName: %s, got: %s", params.FirstName, user.FirstName())
+	}
+	if user.LastName() != params.LastName {
+		t.Errorf("expected LastName: %s, got: %s", params.LastName, user.LastName())
+	}
+	if user.Phone() != params.Phone {
+		t.Errorf("expected Phone: %v, got: %v", params.Phone, user.Phone())
+	}
+	if user.Email() != params.Email {
+		t.Errorf("expected Email: %v, got: %v", params.Email, user.Email())
+	}
+	if user.Address() != params.Address {
+		t.Errorf("expected Address: %v, got: %v", params.Address, user.Address())
+	}
+	if user.BirthDate() != params.BirthDate {
+		t.Errorf("expected BirthDate: %v, got: %v", params.BirthDate, user.BirthDate())
+	}
+	if !user.CreatedAt().Equal(params.CreatedAt) {
+		t.Errorf("expected CreatedAt: %v, got: %v", params.CreatedAt, user.CreatedAt())
+	}
+	if !user.UpdatedAt().Equal(params.UpdatedAt) {
+		t.Errorf("expected UpdatedAt: %v, got: %v", params.UpdatedAt, user.UpdatedAt())
 	}
 }
