@@ -75,3 +75,16 @@ Cada cambio y nueva funcionalidad debe apegarse estrictamente al siguiente flujo
 4. **Merge a Develop**: Una vez validados los tests y cobertura localmente, realizar merge a `develop`.
 5. **Merge a Master**: Integrar cambios a `master` para releases estables.
 6. **Aprobación**: Todos los merges deben ser revisados y aprobados por el desarrollador líder.
+
+---
+
+## 5. Capa de Controllers HTTP (`internal/infrastructure/controllers`)
+
+Cada controller HTTP debe seguir una estructura estricta y limpia:
+- **Router**: Configurado en `router.go` usando `go-chi/chi/v5`. Middlewares globales registrados en orden: `RequestID` → `Logger` → `Recoverer` → `JSONContentTypeMiddleware`. No usar `RealIP` (deprecated).
+- **Struct de Controller**: Estructura pública que recibe sus dependencias (casos de uso) por constructor (ej. `NewUserController(...)`).
+- **Responsabilidad del Handler**: El método handler parsea la request y construye las entidades/VOs de dominio necesarias, llama al caso de uso (que recibe y devuelve solo entidades/VOs), y convierte el resultado a DTO vía `.ToDTO()` para responder. Nunca pasar DTOs directamente a los casos de uso.
+- **Parseo de Parámetros de Ruta**: Usar siempre el helper centralizado `ParseRouteIntParam(r, "paramName")` para parámetros enteros. Agregar nuevos helpers en `request.go` para otros tipos de parseo. Cualquier fallo de parseo responde con `400 Bad Request`.
+- **Respuestas de Éxito**: Usar `RespondWithJSON(w, statusCode, entity.ToDTO())` sin envoltura. Código `200` para consultas y actualizaciones, `201` para creaciones, `204` para eliminaciones (pasar `nil` como data).
+- **Respuestas de Error de Dominio**: Usar siempre `RespondWithDomainError(w, err)`. Esta función inspecciona el error mediante `errors.Is` contra el mapa privado `domainErrorStatus` que centraliza el mapeo de cada error de dominio a su código HTTP. Al crear un nuevo error de dominio, añadir su entrada al mapa (una línea). Errores 5xx responden con el mensaje genérico `"internal server error"` para no filtrar detalles internos; errores 4xx responden con el mensaje del centinela de dominio.
+- **Pruebas Unitarias**: Usar `httptest.NewRecorder()` y `httptest.NewRequest(...)`. Levantar el router real con `controllers.NewRouter(controller)` para que los middlewares se apliquen en pruebas. Cobertura mínima del 100%. Para `RespondWithDomainError` basta con 3 casos (uno por rama): error conocido no-500, error conocido 500, y error desconocido no presente en el mapa.
