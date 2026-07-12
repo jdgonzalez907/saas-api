@@ -5,10 +5,13 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 )
 
-func NewRouter(
-	findUserByID *FindUserByIDController,
-	createUser *CreateUserController,
-) *chi.Mux {
+type RouterParams struct {
+	FindUserByID *FindUserByIDController
+	CreateUser   *CreateUserController
+	DeleteUser   *DeleteUserController
+}
+
+func NewRouter(params RouterParams) *chi.Mux {
 	r := chi.NewRouter()
 
 	r.Use(middleware.RequestID)
@@ -16,8 +19,15 @@ func NewRouter(
 	r.Use(middleware.Recoverer)
 	r.Use(JSONContentTypeMiddleware)
 
-	r.Get("/users/{id}", findUserByID.Handle)
-	r.Post("/users", createUser.Handle)
+	if params.FindUserByID != nil {
+		r.Get("/users/{id}", params.FindUserByID.Handle)
+	}
+	if params.CreateUser != nil {
+		r.Post("/users", params.CreateUser.Handle)
+	}
+	if params.DeleteUser != nil {
+		r.Delete("/users/{id}", params.DeleteUser.Handle)
+	}
 
 	return r
 }
