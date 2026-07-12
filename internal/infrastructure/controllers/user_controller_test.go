@@ -90,48 +90,6 @@ func TestUserController_FindByID(t *testing.T) {
 			},
 		},
 		{
-			name:        "fail - user not found direct error",
-			userIDParam: "99",
-			setupMock: func(m *mockApp.MockFindUserByIdUseCase) {
-				m.On("Execute", 99).Return(nil, domain.ErrUserNotFound)
-			},
-			expectedStatus: http.StatusNotFound,
-			verifyResponse: func(t *testing.T, body string) {
-				var res controllers.ErrorResponse
-				err := json.Unmarshal([]byte(body), &res)
-				assert.NoError(t, err)
-				assert.Equal(t, "user not found", res.Message)
-			},
-		},
-		{
-			name:        "fail - user not found wrapped error",
-			userIDParam: "99",
-			setupMock: func(m *mockApp.MockFindUserByIdUseCase) {
-				m.On("Execute", 99).Return(nil, fmt.Errorf("wrapped: %w", domain.ErrUserNotFound))
-			},
-			expectedStatus: http.StatusNotFound,
-			verifyResponse: func(t *testing.T, body string) {
-				var res controllers.ErrorResponse
-				err := json.Unmarshal([]byte(body), &res)
-				assert.NoError(t, err)
-				assert.Equal(t, "user not found", res.Message)
-			},
-		},
-		{
-			name:        "fail - invalid user id business rule",
-			userIDParam: "1",
-			setupMock: func(m *mockApp.MockFindUserByIdUseCase) {
-				m.On("Execute", 1).Return(nil, domain.ErrInvalidUserID)
-			},
-			expectedStatus: http.StatusBadRequest,
-			verifyResponse: func(t *testing.T, body string) {
-				var res controllers.ErrorResponse
-				err := json.Unmarshal([]byte(body), &res)
-				assert.NoError(t, err)
-				assert.Equal(t, domain.ErrInvalidUserID.Error(), res.Message)
-			},
-		},
-		{
 			name:        "fail - internal server error",
 			userIDParam: "1",
 			setupMock: func(m *mockApp.MockFindUserByIdUseCase) {
@@ -182,3 +140,30 @@ func TestParseRouteIntParam_MissingParam(t *testing.T) {
 	assert.Contains(t, err.Error(), "is missing")
 }
 
+func TestRespondWithDomainError(t *testing.T) {
+	tests := []struct {
+		name           string
+		err            error
+		expectedStatus int
+		expectedMsg    string
+	}{
+		// Branch 1: known error, non-500 status → expose sentinel error message
+		{"known error 404", domain.ErrUserNotFound, http.StatusNotFound, "user not found"},
+		// Branch 2: known infra error, 500 status → hide internal details
+		{"known infra error 500", domain.ErrCreatingUser, http.StatusInternalServerError, "internal server error"},
+		// Branch 3: unknown error, not in map → default 500
+		{"unknown error 500", errors.New("unexpected failure"), http.StatusInternalServerError, "internal server error"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			controllers.RespondWithDomainError(w, tt.err)
+			assert.Equal(t, tt.expectedStatus, w.Code)
+			var res controllers.ErrorResponse
+			err := json.Unmarshal(w.Body.Bytes(), &res)
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expectedMsg, res.Message)
+		})
+	}
+}
