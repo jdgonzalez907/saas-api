@@ -17,12 +17,16 @@ func TestRouterAndMiddleware(t *testing.T) {
 	mockDeleteUseCase := mockApp.NewMockDeleteUserUseCase(t)
 	mockUpdatePIUseCase := mockApp.NewMockUpdateUserPersonalInformationUseCase(t)
 	mockFindPaginatedUseCase := mockApp.NewMockFindUsersPaginatedUseCase(t)
+	mockUpdateEmailUseCase := mockApp.NewMockUpdateUserEmailUseCase(t)
+	mockUpdatePhoneUseCase := mockApp.NewMockUpdateUserPhoneUseCase(t)
 
 	findController := controllers.NewFindUserByIDController(mockFindUseCase)
 	createController := controllers.NewCreateUserController(mockCreateUseCase)
 	deleteController := controllers.NewDeleteUserController(mockDeleteUseCase)
 	updatePIController := controllers.NewUpdateUserPersonalInformationController(mockUpdatePIUseCase)
 	findPaginatedController := controllers.NewFindUsersPaginatedController(mockFindPaginatedUseCase)
+	updateEmailController := controllers.NewUpdateUserEmailController(mockUpdateEmailUseCase)
+	updatePhoneController := controllers.NewUpdateUserPhoneController(mockUpdatePhoneUseCase)
 
 	router := controllers.NewRouter(controllers.RouterParams{
 		FindUserByID:              findController,
@@ -30,6 +34,8 @@ func TestRouterAndMiddleware(t *testing.T) {
 		DeleteUser:                deleteController,
 		UpdatePersonalInformation: updatePIController,
 		FindUsersPaginated:        findPaginatedController,
+		UpdateEmail:               updateEmailController,
+		UpdatePhone:               updatePhoneController,
 	})
 
 	t.Run("JSONContentTypeMiddleware sets header", func(t *testing.T) {
