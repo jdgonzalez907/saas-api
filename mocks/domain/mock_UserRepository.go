@@ -68,7 +68,7 @@ func (_c *MockUserRepository_Create_Call) RunAndReturn(run func(*domain.User) er
 }
 
 // Delete provides a mock function with given fields: id
-func (_m *MockUserRepository) Delete(id string) error {
+func (_m *MockUserRepository) Delete(id int) error {
 	ret := _m.Called(id)
 
 	if len(ret) == 0 {
@@ -76,7 +76,7 @@ func (_m *MockUserRepository) Delete(id string) error {
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string) error); ok {
+	if rf, ok := ret.Get(0).(func(int) error); ok {
 		r0 = rf(id)
 	} else {
 		r0 = ret.Error(0)
@@ -91,14 +91,14 @@ type MockUserRepository_Delete_Call struct {
 }
 
 // Delete is a helper method to define mock.On call
-//   - id string
+//   - id int
 func (_e *MockUserRepository_Expecter) Delete(id interface{}) *MockUserRepository_Delete_Call {
 	return &MockUserRepository_Delete_Call{Call: _e.mock.On("Delete", id)}
 }
 
-func (_c *MockUserRepository_Delete_Call) Run(run func(id string)) *MockUserRepository_Delete_Call {
+func (_c *MockUserRepository_Delete_Call) Run(run func(id int)) *MockUserRepository_Delete_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(string))
+		run(args[0].(int))
 	})
 	return _c
 }
@@ -108,7 +108,7 @@ func (_c *MockUserRepository_Delete_Call) Return(_a0 error) *MockUserRepository_
 	return _c
 }
 
-func (_c *MockUserRepository_Delete_Call) RunAndReturn(run func(string) error) *MockUserRepository_Delete_Call {
+func (_c *MockUserRepository_Delete_Call) RunAndReturn(run func(int) error) *MockUserRepository_Delete_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -172,7 +172,7 @@ func (_c *MockUserRepository_FindByEmail_Call) RunAndReturn(run func(domain.Emai
 }
 
 // FindById provides a mock function with given fields: id
-func (_m *MockUserRepository) FindById(id string) (*domain.User, error) {
+func (_m *MockUserRepository) FindById(id int) (*domain.User, error) {
 	ret := _m.Called(id)
 
 	if len(ret) == 0 {
@@ -181,10 +181,10 @@ func (_m *MockUserRepository) FindById(id string) (*domain.User, error) {
 
 	var r0 *domain.User
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string) (*domain.User, error)); ok {
+	if rf, ok := ret.Get(0).(func(int) (*domain.User, error)); ok {
 		return rf(id)
 	}
-	if rf, ok := ret.Get(0).(func(string) *domain.User); ok {
+	if rf, ok := ret.Get(0).(func(int) *domain.User); ok {
 		r0 = rf(id)
 	} else {
 		if ret.Get(0) != nil {
@@ -192,7 +192,7 @@ func (_m *MockUserRepository) FindById(id string) (*domain.User, error) {
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(string) error); ok {
+	if rf, ok := ret.Get(1).(func(int) error); ok {
 		r1 = rf(id)
 	} else {
 		r1 = ret.Error(1)
@@ -207,14 +207,14 @@ type MockUserRepository_FindById_Call struct {
 }
 
 // FindById is a helper method to define mock.On call
-//   - id string
+//   - id int
 func (_e *MockUserRepository_Expecter) FindById(id interface{}) *MockUserRepository_FindById_Call {
 	return &MockUserRepository_FindById_Call{Call: _e.mock.On("FindById", id)}
 }
 
-func (_c *MockUserRepository_FindById_Call) Run(run func(id string)) *MockUserRepository_FindById_Call {
+func (_c *MockUserRepository_FindById_Call) Run(run func(id int)) *MockUserRepository_FindById_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(string))
+		run(args[0].(int))
 	})
 	return _c
 }
@@ -224,7 +224,7 @@ func (_c *MockUserRepository_FindById_Call) Return(_a0 *domain.User, _a1 error) 
 	return _c
 }
 
-func (_c *MockUserRepository_FindById_Call) RunAndReturn(run func(string) (*domain.User, error)) *MockUserRepository_FindById_Call {
+func (_c *MockUserRepository_FindById_Call) RunAndReturn(run func(int) (*domain.User, error)) *MockUserRepository_FindById_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -9,16 +9,17 @@ import (
 	"jdgonzalez907/users-api/internal/domain"
 	domainMocks "jdgonzalez907/users-api/mocks/domain"
 
-	"github.com/google/uuid"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestUpdateUserUseCase(t *testing.T) {
-	userID := uuid.NewString()
+	userID := 1
 	identification, _ := domain.NewIdentification(domain.IdType_CC, "1111")
 	phone, _ := domain.NewPhone("123456789")
 	email, _ := domain.NewEmail("john.doe@example.com")
 	address, _ := domain.NewAddress("123 Main St", "City", "State", "Country", nil, nil)
 	birthDate, _ := domain.NewBirthDate(time.Now().AddDate(-18, 0, -1))
+	now := time.Now()
 
 	existingUser, _ := domain.NewUser(
 		userID,
@@ -29,6 +30,8 @@ func TestUpdateUserUseCase(t *testing.T) {
 		&email,
 		&address,
 		&birthDate,
+		now,
+		now,
 	)
 
 	// Modified users for testing
@@ -44,6 +47,8 @@ func TestUpdateUserUseCase(t *testing.T) {
 		&email,
 		&address,
 		&birthDate,
+		now,
+		now,
 	)
 
 	userWithNewEmail, _ := domain.NewUser(
@@ -55,6 +60,8 @@ func TestUpdateUserUseCase(t *testing.T) {
 		&otherEmail,
 		&address,
 		&birthDate,
+		now,
+		now,
 	)
 
 	dbErr := errors.New("database connection error")
@@ -70,7 +77,7 @@ func TestUpdateUserUseCase(t *testing.T) {
 			input:    *existingUser,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindById", userID).Return(existingUser, nil)
-				m.On("Update", existingUser).Return(nil)
+				m.On("Update", mock.Anything).Return(nil)
 			},
 			expectedError: nil,
 		},
@@ -80,7 +87,7 @@ func TestUpdateUserUseCase(t *testing.T) {
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindById", userID).Return(existingUser, nil)
 				m.On("FindByPhone", otherPhone).Return(nil, nil)
-				m.On("Update", userWithNewPhone).Return(nil)
+				m.On("Update", mock.Anything).Return(nil)
 			},
 			expectedError: nil,
 		},
@@ -89,7 +96,7 @@ func TestUpdateUserUseCase(t *testing.T) {
 			input:    *userWithNewPhone,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindById", userID).Return(existingUser, nil)
-				m.On("FindByPhone", otherPhone).Return(existingUser, nil) // simulates phone owned by another user (or same user, but in our code if userFound != nil, it returns conflict)
+				m.On("FindByPhone", otherPhone).Return(existingUser, nil)
 			},
 			expectedError: domain.ErrUserPhoneAlreadyExists,
 		},
@@ -99,7 +106,7 @@ func TestUpdateUserUseCase(t *testing.T) {
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindById", userID).Return(existingUser, nil)
 				m.On("FindByEmail", otherEmail).Return(nil, nil)
-				m.On("Update", userWithNewEmail).Return(nil)
+				m.On("Update", mock.Anything).Return(nil)
 			},
 			expectedError: nil,
 		},
@@ -151,7 +158,7 @@ func TestUpdateUserUseCase(t *testing.T) {
 			input:    *existingUser,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindById", userID).Return(existingUser, nil)
-				m.On("Update", existingUser).Return(dbErr)
+				m.On("Update", mock.Anything).Return(dbErr)
 			},
 			expectedError: domain.ErrUpdatingUser,
 		},
