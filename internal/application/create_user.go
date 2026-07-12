@@ -18,9 +18,7 @@ func NewCreateUserUseCase(userRepository domain.UserRepository) CreateUserUseCas
 }
 
 func (c *createUserUseCase) Execute(user *domain.User) error {
-	userDTO := user.ToDTO()
-
-	userFound, err := c.userRepository.FindById(userDTO.ID)
+	userFound, err := c.userRepository.FindById(user.ID())
 	if err != nil {
 		return fmt.Errorf("%v: %w", domain.ErrCreatingUser, err)
 	}
@@ -28,7 +26,7 @@ func (c *createUserUseCase) Execute(user *domain.User) error {
 		return domain.ErrUserIDAlreadyExists
 	}
 
-	userFound, err = c.userRepository.FindByPhone(userDTO.Phone)
+	userFound, err = c.userRepository.FindByPhone(user.Phone())
 	if err != nil {
 		return fmt.Errorf("%v: %w", domain.ErrCreatingUser, err)
 	}
@@ -36,8 +34,8 @@ func (c *createUserUseCase) Execute(user *domain.User) error {
 		return domain.ErrUserPhoneAlreadyExists
 	}
 
-	if userDTO.Email != nil {
-		userFound, err = c.userRepository.FindByEmail(*userDTO.Email)
+	if user.Email() != nil {
+		userFound, err = c.userRepository.FindByEmail(*user.Email())
 		if err != nil {
 			return fmt.Errorf("%v: %w", domain.ErrCreatingUser, err)
 		}

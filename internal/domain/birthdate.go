@@ -12,7 +12,7 @@ const (
 )
 
 type BirthDate struct {
-	Value time.Time `json:"value"`
+	value time.Time
 }
 
 func NewBirthDate(value time.Time) (BirthDate, error) {
@@ -26,9 +26,15 @@ func NewBirthDate(value time.Time) (BirthDate, error) {
 		return BirthDate{}, ErrInvalidBirthDate
 	}
 
-	return BirthDate{Value: value}, nil
+	return BirthDate{value: value}, nil
 }
 
-func (b BirthDate) String() string {
-	return b.Value.Format("2006-01-02")
+type BirthDateDTO struct {
+	Value time.Time `json:"value"`
+}
+
+func (b BirthDate) ToDTO() BirthDateDTO {
+	return BirthDateDTO{
+		Value: b.value,
+	}
 }
