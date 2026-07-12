@@ -6,9 +6,10 @@ import (
 )
 
 type RouterParams struct {
-	FindUserByID *FindUserByIDController
-	CreateUser   *CreateUserController
-	DeleteUser   *DeleteUserController
+	FindUserByID              *FindUserByIDController
+	CreateUser                *CreateUserController
+	DeleteUser                *DeleteUserController
+	UpdatePersonalInformation *UpdateUserPersonalInformationController
 }
 
 func NewRouter(params RouterParams) *chi.Mux {
@@ -27,6 +28,9 @@ func NewRouter(params RouterParams) *chi.Mux {
 	}
 	if params.DeleteUser != nil {
 		r.Delete("/users/{id}", params.DeleteUser.Handle)
+	}
+	if params.UpdatePersonalInformation != nil {
+		r.Put("/users/{id}", params.UpdatePersonalInformation.Handle)
 	}
 
 	return r
