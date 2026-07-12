@@ -14,13 +14,13 @@ func TestNewPhone(t *testing.T) {
 		expectedOutput domain.Phone
 	}{
 		{
-			testName:       "create phone",
+			testName:       "success - create phone",
 			input:          "123456789",
 			expectedError:  nil,
 			expectedOutput: domain.Phone{Value: "123456789"},
 		},
 		{
-			testName:       "fail to create phone with empty value",
+			testName:       "fail - empty value",
 			input:          "",
 			expectedError:  domain.ErrInvalidPhone,
 			expectedOutput: domain.Phone{},

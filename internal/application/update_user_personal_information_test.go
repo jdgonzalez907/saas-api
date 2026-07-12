@@ -2,15 +2,19 @@ package application_test
 
 import (
 	"errors"
+	"reflect"
 	"testing"
 	"time"
+	"unsafe"
 
 	"jdgonzalez907/users-api/internal/application"
 	"jdgonzalez907/users-api/internal/domain"
 	domainMocks "jdgonzalez907/users-api/mocks/domain"
+
+	"github.com/stretchr/testify/mock"
 )
 
-func TestDeleteUserUseCase(t *testing.T) {
+func TestUpdateUserPersonalInformationUseCase(t *testing.T) {
 	userID := 1
 	identification, _ := domain.NewIdentification(domain.IdType_CC, "1111")
 	phone, _ := domain.NewPhone("123456789")
@@ -32,26 +36,56 @@ func TestDeleteUserUseCase(t *testing.T) {
 		UpdatedAt:      now,
 	})
 
+	otherIdentification, _ := domain.NewIdentification(domain.IdType_CC, "2222")
+	userWithNewPersonalInformation, _ := domain.NewUser(domain.UserParams{
+		ID:             userID,
+		Identification: otherIdentification,
+		FirstName:      "Jane",
+		LastName:       "Smith",
+		Phone:          phone,
+		Email:          &email,
+		Address:        &address,
+		BirthDate:      &birthDate,
+		CreatedAt:      now,
+		UpdatedAt:      now,
+	})
+
+	// User that will fail validation in WithPersonalInformation method (e.g. empty firstName)
+	invalidUser, _ := domain.NewUser(domain.UserParams{
+		ID:             userID,
+		Identification: identification,
+		FirstName:      "John",
+		LastName:       "Doe",
+		Phone:          phone,
+		Email:          &email,
+		Address:        &address,
+		BirthDate:      &birthDate,
+		CreatedAt:      now,
+		UpdatedAt:      now,
+	})
+	rf := reflect.ValueOf(invalidUser).Elem().FieldByName("firstName")
+	reflect.NewAt(rf.Type(), unsafe.Pointer(rf.UnsafeAddr())).Elem().SetString("")
+
 	dbErr := errors.New("database connection error")
 
 	testCases := []struct {
 		testName         string
-		inputID          int
+		input            domain.User
 		mockExpectations func(*domainMocks.MockUserRepository)
 		expectedError    error
 	}{
 		{
-			testName: "success - delete user",
-			inputID:  userID,
+			testName: "success - update personal info",
+			input:    *userWithNewPersonalInformation,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindById", userID).Return(existingUser, nil)
-				m.On("Delete", userID).Return(nil)
+				m.On("Update", mock.Anything).Return(nil)
 			},
 			expectedError: nil,
 		},
 		{
 			testName: "fail - user not found",
-			inputID:  userID,
+			input:    *existingUser,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindById", userID).Return(nil, nil)
 			},
@@ -59,20 +93,28 @@ func TestDeleteUserUseCase(t *testing.T) {
 		},
 		{
 			testName: "fail - infra error on FindById",
-			inputID:  userID,
+			input:    *existingUser,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindById", userID).Return(nil, dbErr)
 			},
-			expectedError: domain.ErrDeletingUser,
+			expectedError: domain.ErrUpdatingUserPersonalInformation,
 		},
 		{
-			testName: "fail - infra error on Delete",
-			inputID:  userID,
+			testName: "fail - repo update error",
+			input:    *existingUser,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindById", userID).Return(existingUser, nil)
-				m.On("Delete", userID).Return(dbErr)
+				m.On("Update", mock.Anything).Return(dbErr)
 			},
-			expectedError: domain.ErrDeletingUser,
+			expectedError: domain.ErrUpdatingUserPersonalInformation,
+		},
+		{
+			testName: "fail - invalid firstName",
+			input:    *invalidUser,
+			mockExpectations: func(m *domainMocks.MockUserRepository) {
+				m.On("FindById", userID).Return(existingUser, nil)
+			},
+			expectedError: domain.ErrUpdatingUserPersonalInformation,
 		},
 	}
 
@@ -81,15 +123,15 @@ func TestDeleteUserUseCase(t *testing.T) {
 			mockUserRepository := new(domainMocks.MockUserRepository)
 			testCase.mockExpectations(mockUserRepository)
 
-			deleteUserUseCase := application.NewDeleteUserUseCase(mockUserRepository)
-			err := deleteUserUseCase.Execute(testCase.inputID)
+			useCase := application.NewUpdateUserPersonalInformationUseCase(mockUserRepository)
+			err := useCase.Execute(&testCase.input)
 
 			if testCase.expectedError != nil {
 				if err == nil {
 					t.Fatalf("expected error: %v, got nil", testCase.expectedError)
 				}
 				if !errors.Is(err, testCase.expectedError) {
-					if testCase.expectedError == domain.ErrDeletingUser && errors.Unwrap(err) != nil {
+					if testCase.expectedError == domain.ErrUpdatingUserPersonalInformation && errors.Unwrap(err) != nil {
 						// Success: wrapped infra error
 					} else {
 						t.Errorf("expected error: %v, got %v", testCase.expectedError, err)

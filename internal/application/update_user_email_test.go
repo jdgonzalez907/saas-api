@@ -8,9 +8,11 @@ import (
 	"jdgonzalez907/users-api/internal/application"
 	"jdgonzalez907/users-api/internal/domain"
 	domainMocks "jdgonzalez907/users-api/mocks/domain"
+
+	"github.com/stretchr/testify/mock"
 )
 
-func TestDeleteUserUseCase(t *testing.T) {
+func TestUpdateUserEmailUseCase(t *testing.T) {
 	userID := 1
 	identification, _ := domain.NewIdentification(domain.IdType_CC, "1111")
 	phone, _ := domain.NewPhone("123456789")
@@ -32,47 +34,94 @@ func TestDeleteUserUseCase(t *testing.T) {
 		UpdatedAt:      now,
 	})
 
+	otherEmail, _ := domain.NewEmail("other.email@example.com")
 	dbErr := errors.New("database connection error")
 
 	testCases := []struct {
 		testName         string
 		inputID          int
+		inputEmail       *domain.Email
 		mockExpectations func(*domainMocks.MockUserRepository)
 		expectedError    error
 	}{
 		{
-			testName: "success - delete user",
-			inputID:  userID,
+			testName:   "success - no changes to email",
+			inputID:    userID,
+			inputEmail: &email,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindById", userID).Return(existingUser, nil)
-				m.On("Delete", userID).Return(nil)
+				m.On("Update", mock.Anything).Return(nil)
 			},
 			expectedError: nil,
 		},
 		{
-			testName: "fail - user not found",
-			inputID:  userID,
+			testName:   "success - with email change",
+			inputID:    userID,
+			inputEmail: &otherEmail,
+			mockExpectations: func(m *domainMocks.MockUserRepository) {
+				m.On("FindById", userID).Return(existingUser, nil)
+				m.On("FindByEmail", otherEmail).Return(nil, nil)
+				m.On("Update", mock.Anything).Return(nil)
+			},
+			expectedError: nil,
+		},
+		{
+			testName:   "success - nil email",
+			inputID:    userID,
+			inputEmail: nil,
+			mockExpectations: func(m *domainMocks.MockUserRepository) {
+				m.On("FindById", userID).Return(existingUser, nil)
+				m.On("Update", mock.Anything).Return(nil)
+			},
+			expectedError: nil,
+		},
+		{
+			testName:   "fail - email already exists",
+			inputID:    userID,
+			inputEmail: &otherEmail,
+			mockExpectations: func(m *domainMocks.MockUserRepository) {
+				m.On("FindById", userID).Return(existingUser, nil)
+				m.On("FindByEmail", otherEmail).Return(existingUser, nil)
+			},
+			expectedError: domain.ErrUserEmailAlreadyExists,
+		},
+		{
+			testName:   "fail - user not found",
+			inputID:    userID,
+			inputEmail: &email,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindById", userID).Return(nil, nil)
 			},
 			expectedError: domain.ErrUserNotFound,
 		},
 		{
-			testName: "fail - infra error on FindById",
-			inputID:  userID,
+			testName:   "fail - infra error on FindById",
+			inputID:    userID,
+			inputEmail: &email,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindById", userID).Return(nil, dbErr)
 			},
-			expectedError: domain.ErrDeletingUser,
+			expectedError: domain.ErrUpdatingUserEmail,
 		},
 		{
-			testName: "fail - infra error on Delete",
-			inputID:  userID,
+			testName:   "fail - infra error on FindByEmail",
+			inputID:    userID,
+			inputEmail: &otherEmail,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindById", userID).Return(existingUser, nil)
-				m.On("Delete", userID).Return(dbErr)
+				m.On("FindByEmail", otherEmail).Return(nil, dbErr)
 			},
-			expectedError: domain.ErrDeletingUser,
+			expectedError: domain.ErrUpdatingUserEmail,
+		},
+		{
+			testName:   "fail - repo update error",
+			inputID:    userID,
+			inputEmail: &email,
+			mockExpectations: func(m *domainMocks.MockUserRepository) {
+				m.On("FindById", userID).Return(existingUser, nil)
+				m.On("Update", mock.Anything).Return(dbErr)
+			},
+			expectedError: domain.ErrUpdatingUserEmail,
 		},
 	}
 
@@ -81,15 +130,15 @@ func TestDeleteUserUseCase(t *testing.T) {
 			mockUserRepository := new(domainMocks.MockUserRepository)
 			testCase.mockExpectations(mockUserRepository)
 
-			deleteUserUseCase := application.NewDeleteUserUseCase(mockUserRepository)
-			err := deleteUserUseCase.Execute(testCase.inputID)
+			useCase := application.NewUpdateUserEmailUseCase(mockUserRepository)
+			err := useCase.Execute(testCase.inputID, testCase.inputEmail)
 
 			if testCase.expectedError != nil {
 				if err == nil {
 					t.Fatalf("expected error: %v, got nil", testCase.expectedError)
 				}
 				if !errors.Is(err, testCase.expectedError) {
-					if testCase.expectedError == domain.ErrDeletingUser && errors.Unwrap(err) != nil {
+					if testCase.expectedError == domain.ErrUpdatingUserEmail && errors.Unwrap(err) != nil {
 						// Success: wrapped infra error
 					} else {
 						t.Errorf("expected error: %v, got %v", testCase.expectedError, err)
