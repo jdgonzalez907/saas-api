@@ -11,6 +11,8 @@ type RouterParams struct {
 	DeleteUser                *DeleteUserController
 	UpdatePersonalInformation *UpdateUserPersonalInformationController
 	FindUsersPaginated        *FindUsersPaginatedController
+	UpdateEmail               *UpdateUserEmailController
+	UpdatePhone               *UpdateUserPhoneController
 }
 
 func NewRouter(params RouterParams) *chi.Mux {
@@ -35,6 +37,12 @@ func NewRouter(params RouterParams) *chi.Mux {
 	}
 	if params.FindUsersPaginated != nil {
 		r.Get("/users", params.FindUsersPaginated.Handle)
+	}
+	if params.UpdateEmail != nil {
+		r.Put("/users/{id}/email", params.UpdateEmail.Handle)
+	}
+	if params.UpdatePhone != nil {
+		r.Put("/users/{id}/phone", params.UpdatePhone.Handle)
 	}
 
 	return r
