@@ -2,8 +2,10 @@ package application_test
 
 import (
 	"errors"
+	"reflect"
 	"testing"
 	"time"
+	"unsafe"
 
 	"jdgonzalez907/users-api/internal/application"
 	"jdgonzalez907/users-api/internal/domain"
@@ -63,6 +65,23 @@ func TestUpdateUserUseCase(t *testing.T) {
 		CreatedAt:      now,
 		UpdatedAt:      now,
 	})
+
+	// User that will fail validation in With method
+	invalidUser, _ := domain.NewUser(domain.UserParams{
+		ID:             userID,
+		Identification: identification,
+		FirstName:      "John",
+		LastName:       "Doe",
+		Phone:          phone,
+		Email:          &email,
+		Address:        &address,
+		BirthDate:      &birthDate,
+		CreatedAt:      now,
+		UpdatedAt:      now,
+	})
+	// Use reflection and unsafe to set private field firstName to empty string
+	rf := reflect.ValueOf(invalidUser).Elem().FieldByName("firstName")
+	reflect.NewAt(rf.Type(), unsafe.Pointer(rf.UnsafeAddr())).Elem().SetString("")
 
 	dbErr := errors.New("database connection error")
 
@@ -159,6 +178,14 @@ func TestUpdateUserUseCase(t *testing.T) {
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindById", userID).Return(existingUser, nil)
 				m.On("Update", mock.Anything).Return(dbErr)
+			},
+			expectedError: domain.ErrUpdatingUser,
+		},
+		{
+			testName: "update user fails - invalid firstName in With",
+			input:    *invalidUser,
+			mockExpectations: func(m *domainMocks.MockUserRepository) {
+				m.On("FindById", userID).Return(existingUser, nil)
 			},
 			expectedError: domain.ErrUpdatingUser,
 		},
