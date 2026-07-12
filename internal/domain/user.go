@@ -17,6 +17,7 @@ var (
 	ErrUserNotFound           = errors.New("user not found")
 	ErrCreatingUser           = errors.New("error creating user")
 	ErrUpdatingUser           = errors.New("error updating user")
+	ErrDeletingUser           = errors.New("error deleting user")
 )
 
 type User struct {
