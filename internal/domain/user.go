@@ -10,16 +10,17 @@ var (
 	ErrInvalidFirstName = errors.New("invalid first name")
 	ErrInvalidLastName  = errors.New("invalid last name")
 
-	ErrUserIDAlreadyExists    = errors.New("user with id already exists")
-	ErrUserPhoneAlreadyExists = errors.New("user with phone already exists")
-	ErrUserEmailAlreadyExists = errors.New("user with email already exists")
-	ErrUserNotFound           = errors.New("user not found")
+	ErrUserIDAlreadyExists             = errors.New("user with id already exists")
+	ErrUserPhoneAlreadyExists          = errors.New("user with phone already exists")
+	ErrUserEmailAlreadyExists          = errors.New("user with email already exists")
+	ErrUserNotFound                    = errors.New("user not found")
 	ErrCreatingUser                    = errors.New("error creating user")
 	ErrUpdatingUserPersonalInformation = errors.New("error updating user personal information")
 	ErrUpdatingUserPhone               = errors.New("error updating user phone")
 	ErrUpdatingUserEmail               = errors.New("error updating user email")
 	ErrDeletingUser                    = errors.New("error deleting user")
 	ErrFindingUsers                    = errors.New("error finding users")
+	ErrFindingUserByID                 = errors.New("error finding user by id")
 )
 
 type User struct {
@@ -60,12 +61,6 @@ type UserDTO struct {
 	CreatedAt      time.Time      `json:"created_at"`
 	UpdatedAt      time.Time      `json:"updated_at"`
 }
-
-type PaginatedUsersDTO struct {
-	Users      []UserDTO `json:"users"`
-	NextCursor *int      `json:"next_cursor"`
-}
-
 
 func NewUserWithoutId(
 	identification Identification,
