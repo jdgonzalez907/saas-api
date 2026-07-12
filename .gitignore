@@ -1,0 +1,16 @@
+# Binaries and templates
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test coverage
+coverage.out
+
+# Dependency directories (only if you check them in)
+vendor/
+
+# Mocks or temporary files
+tmp_backup/
+setup_git.sh
