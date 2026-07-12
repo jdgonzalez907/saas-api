@@ -8,47 +8,40 @@ import (
 
 func TestNewEmail(t *testing.T) {
 	testCases := []struct {
-		testName       string
-		input          string
-		expectedError  error
-		expectedOutput domain.Email
+		testName      string
+		input         string
+		expectedError error
 	}{
 		{
-			testName:       "success - create email",
-			input:          "name@domain.com",
-			expectedError:  nil,
-			expectedOutput: domain.Email{Value: "name@domain.com"},
+			testName:      "success - create email",
+			input:         "name@domain.com",
+			expectedError: nil,
 		},
 		{
-			testName:       "fail - empty value",
-			input:          "",
-			expectedError:  domain.ErrInvalidEmail,
-			expectedOutput: domain.Email{},
+			testName:      "fail - empty value",
+			input:         "",
+			expectedError: domain.ErrInvalidEmail,
 		},
 		{
-			testName:       "fail - invalid format",
-			input:          "invalid-email-format",
-			expectedError:  domain.ErrInvalidEmail,
-			expectedOutput: domain.Email{},
+			testName:      "fail - invalid format",
+			input:         "invalid-email-format",
+			expectedError: domain.ErrInvalidEmail,
 		},
 	}
 
-	for _, testCase := range testCases {
-		email, err := domain.NewEmail(testCase.input)
-		if err != testCase.expectedError {
-			t.Errorf("expected error: %v, got %v", testCase.expectedError, err)
-		}
-		if email != testCase.expectedOutput {
-			t.Errorf("expected email: %v, got %v", testCase.expectedOutput, email)
-		}
-	}
-}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			email, err := domain.NewEmail(tc.input)
+			if err != tc.expectedError {
+				t.Fatalf("expected error: %v, got %v", tc.expectedError, err)
+			}
 
-func TestEmailString(t *testing.T) {
-	email := domain.Email{Value: "test@domain.com"}
-	expected := "test@domain.com"
-	result := email.String()
-	if result != expected {
-		t.Errorf("expected %q, got %q", expected, result)
+			if tc.expectedError == nil {
+				dto := email.ToDTO()
+				if dto.Value != tc.input {
+					t.Errorf("expected DTO value: %s, got: %s", tc.input, dto.Value)
+				}
+			}
+		})
 	}
 }
