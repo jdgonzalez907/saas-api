@@ -8,33 +8,49 @@ import (
 
 func TestNewPhone(t *testing.T) {
 	testCases := []struct {
-		testName      string
-		input         string
-		expectedError error
+		testName            string
+		countryCode         string
+		number              string
+		expectedCountryCode string
+		expectedNumber      string
+		expectedError       error
 	}{
 		{
-			testName:      "success - create phone",
-			input:         "123456789",
-			expectedError: nil,
+			testName:            "success - create phone",
+			countryCode:         "57",
+			number:              "3112223344",
+			expectedCountryCode: "57",
+			expectedNumber:      "3112223344",
+			expectedError:       nil,
 		},
 		{
-			testName:      "fail - empty value",
-			input:         "",
-			expectedError: domain.ErrInvalidPhone,
+			testName:            "fail - empty country code",
+			countryCode:         "",
+			number:              "3112223344",
+			expectedError:       domain.ErrInvalidPhone,
+		},
+		{
+			testName:            "fail - empty number",
+			countryCode:         "57",
+			number:              "",
+			expectedError:       domain.ErrInvalidPhone,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.testName, func(t *testing.T) {
-			phone, err := domain.NewPhone(tc.input)
+			phone, err := domain.NewPhone(tc.countryCode, tc.number)
 			if err != tc.expectedError {
 				t.Fatalf("expected error: %v, got %v", tc.expectedError, err)
 			}
 
 			if tc.expectedError == nil {
 				dto := phone.ToDTO()
-				if dto.Value != tc.input {
-					t.Errorf("expected DTO value: %s, got: %s", tc.input, dto.Value)
+				if dto.CountryCode != tc.expectedCountryCode {
+					t.Errorf("expected DTO CountryCode: %s, got: %s", tc.expectedCountryCode, dto.CountryCode)
+				}
+				if dto.Number != tc.expectedNumber {
+					t.Errorf("expected DTO Number: %s, got: %s", tc.expectedNumber, dto.Number)
 				}
 			}
 		})

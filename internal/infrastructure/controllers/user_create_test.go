@@ -29,7 +29,8 @@ func TestCreateUserController_Handle(t *testing.T) {
 			Number: "123456789",
 		},
 		Phone: domain.PhoneDTO{
-			Value: "3112223344",
+			CountryCode: "57",
+			Number:      "3112223344",
 		},
 		Email: &domain.EmailDTO{
 			Value: "john.doe@example.com",
@@ -57,7 +58,8 @@ func TestCreateUserController_Handle(t *testing.T) {
 				m.EXPECT().Execute(mock.MatchedBy(func(u *domain.User) bool {
 					return u.FirstName() == "John" &&
 						u.LastName() == "Doe" &&
-						u.Phone().ToDTO().Value == "3112223344"
+						u.Phone().ToDTO().Number == "3112223344" &&
+						u.Phone().ToDTO().CountryCode == "57"
 				})).Return(nil)
 			},
 			expectedStatus: http.StatusCreated,
@@ -91,7 +93,7 @@ func TestCreateUserController_Handle(t *testing.T) {
 			testName: "fail - invalid phone number",
 			requestBody: func() domain.UserDTO {
 				b := validBody
-				b.Phone.Value = ""
+				b.Phone.Number = ""
 				return b
 			}(),
 			setupMock:      func(m *mockApp.MockCreateUserUseCase) {},

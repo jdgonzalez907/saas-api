@@ -5,23 +5,29 @@ import "errors"
 var ErrInvalidPhone = errors.New("invalid phone")
 
 type Phone struct {
-	value string
+	countryCode string
+	number      string
 }
 
-func NewPhone(phone string) (Phone, error) {
-	if phone == "" {
+func NewPhone(countryCode, number string) (Phone, error) {
+	if countryCode == "" || number == "" {
 		return Phone{}, ErrInvalidPhone
 	}
 
-	return Phone{value: phone}, nil
+	return Phone{
+		countryCode: countryCode,
+		number:      number,
+	}, nil
 }
 
 type PhoneDTO struct {
-	Value string `json:"value"`
+	CountryCode string `json:"country_code"`
+	Number      string `json:"number"`
 }
 
 func (p Phone) ToDTO() PhoneDTO {
 	return PhoneDTO{
-		Value: p.value,
+		CountryCode: p.countryCode,
+		Number:      p.number,
 	}
 }

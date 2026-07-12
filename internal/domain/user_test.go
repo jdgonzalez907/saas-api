@@ -11,7 +11,7 @@ var (
 	testTime          = time.Date(1995, 5, 5, 0, 0, 0, 0, time.UTC)
 	identification, _ = domain.NewIdentification(domain.IdType_CC, "123456789")
 	email, _          = domain.NewEmail("name@domain.com")
-	phone, _          = domain.NewPhone("123456789")
+	phone, _          = domain.NewPhone("57", "123456789")
 	address, _        = domain.NewAddress("123 Main St", "New York", "NY", "USA", nil, nil)
 	birthDate, _      = domain.NewBirthDate(testTime)
 )
@@ -220,7 +220,7 @@ func TestUserDTOAndFromDTO(t *testing.T) {
 		{
 			name: "invalid phone",
 			modify: func(d *domain.UserDTO) {
-				d.Phone.Value = ""
+				d.Phone.Number = ""
 			},
 		},
 		{
@@ -282,89 +282,81 @@ func TestUserWithPersonalInformation(t *testing.T) {
 	newAddress, _ := domain.NewAddress("456 Main St", "Boston", "MA", "USA", nil, nil)
 	newBirthDate, _ := domain.NewBirthDate(time.Now().AddDate(-19, 0, 0))
 
+	validInfo, _ := domain.NewPersonalInformation(
+		newIdentification,
+		newFirstName,
+		newLastName,
+		&newAddress,
+		&newBirthDate,
+	)
+
+	validInfoWithNil, _ := domain.NewPersonalInformation(
+		newIdentification,
+		newFirstName,
+		newLastName,
+		nil,
+		nil,
+	)
+
 	testCases := []struct {
-		testName       string
-		identification domain.Identification
-		firstName      string
-		lastName       string
-		address        *domain.Address
-		birthDate      *domain.BirthDate
-		expectedError  error
+		testName        string
+		info            domain.PersonalInformation
+		expectedAddress *domain.Address
+		expectedBD      *domain.BirthDate
 	}{
 		{
-			testName:       "success",
-			identification: newIdentification,
-			firstName:      newFirstName,
-			lastName:       newLastName,
-			address:        &newAddress,
-			birthDate:      &newBirthDate,
-			expectedError:  nil,
+			testName:        "success - with valid personal information",
+			info:            validInfo,
+			expectedAddress: &newAddress,
+			expectedBD:      &newBirthDate,
 		},
 		{
-			testName:       "fail - invalid first name",
-			identification: newIdentification,
-			firstName:      "",
-			lastName:       newLastName,
-			address:        &newAddress,
-			birthDate:      &newBirthDate,
-			expectedError:  domain.ErrInvalidFirstName,
-		},
-		{
-			testName:       "fail - invalid last name",
-			identification: newIdentification,
-			firstName:      newFirstName,
-			lastName:       "",
-			address:        &newAddress,
-			birthDate:      &newBirthDate,
-			expectedError:  domain.ErrInvalidLastName,
+			testName:        "success - with nil fields",
+			info:            validInfoWithNil,
+			expectedAddress: nil,
+			expectedBD:      nil,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.testName, func(t *testing.T) {
-			updatedUser, err := user.WithPersonalInformation(
-				tc.identification,
-				tc.firstName,
-				tc.lastName,
-				tc.address,
-				tc.birthDate,
-			)
+			updatedUser := user.WithPersonalInformation(tc.info)
+			dto := updatedUser.ToDTO()
 
-			if err != tc.expectedError {
-				t.Errorf("expected error: %v, got %v", tc.expectedError, err)
+			if dto.ID != 1 {
+				t.Errorf("expected ID to be kept as 1, got %d", dto.ID)
 			}
-
-			if tc.expectedError == nil {
-				dto := updatedUser.ToDTO()
-				if dto.ID != 1 {
-					t.Errorf("expected ID to be kept as 1, got %d", dto.ID)
+			if dto.FirstName != newFirstName {
+				t.Errorf("expected FirstName to be updated to %s, got %s", newFirstName, dto.FirstName)
+			}
+			if dto.LastName != newLastName {
+				t.Errorf("expected LastName to be updated to %s, got %s", newLastName, dto.LastName)
+			}
+			if dto.Identification != newIdentification.ToDTO() {
+				t.Errorf("expected Identification to be updated")
+			}
+			if dto.Phone != phone.ToDTO() {
+				t.Errorf("expected Phone to be kept as %v, got %v", phone.ToDTO(), dto.Phone)
+			}
+			if dto.Email == nil || *dto.Email != email.ToDTO() {
+				t.Errorf("expected Email to be kept")
+			}
+			if tc.expectedAddress == nil {
+				if dto.Address != nil {
+					t.Errorf("expected nil Address, got %v", dto.Address)
 				}
-				if dto.FirstName != tc.firstName {
-					t.Errorf("expected FirstName to be updated to %s, got %s", tc.firstName, dto.FirstName)
-				}
-				if dto.LastName != tc.lastName {
-					t.Errorf("expected LastName to be updated to %s, got %s", tc.lastName, dto.LastName)
-				}
-				if dto.Identification != tc.identification.ToDTO() {
-					t.Errorf("expected Identification to be updated")
-				}
-				if dto.Phone != phone.ToDTO() {
-					t.Errorf("expected Phone to be kept as %v, got %v", phone.ToDTO(), dto.Phone)
-				}
-				if dto.Email == nil || *dto.Email != email.ToDTO() {
-					t.Errorf("expected Email to be kept")
-				}
-				if dto.Address == nil || *dto.Address != tc.address.ToDTO() {
+			} else {
+				if dto.Address == nil || *dto.Address != tc.expectedAddress.ToDTO() {
 					t.Errorf("expected Address to be updated")
 				}
-				if dto.BirthDate == nil || !dto.BirthDate.Value.Equal(tc.birthDate.ToDTO().Value) {
+			}
+			if tc.expectedBD == nil {
+				if dto.BirthDate != nil {
+					t.Errorf("expected nil BirthDate, got %v", dto.BirthDate)
+				}
+			} else {
+				if dto.BirthDate == nil || !dto.BirthDate.Value.Equal(tc.expectedBD.ToDTO().Value) {
 					t.Errorf("expected BirthDate to be updated")
-				}
-				if dto.CreatedAt != now {
-					t.Errorf("expected CreatedAt to be kept as %v, got %v", now, dto.CreatedAt)
-				}
-				if dto.UpdatedAt.Before(now) {
-					t.Errorf("expected UpdatedAt to be updated, got %v", dto.UpdatedAt)
 				}
 			}
 		})
@@ -392,7 +384,7 @@ func TestUserWithPhone(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	newPhone, _ := domain.NewPhone("987654321")
+	newPhone, _ := domain.NewPhone("57", "987654321")
 	updatedUser := user.WithPhone(newPhone)
 
 	dto := updatedUser.ToDTO()

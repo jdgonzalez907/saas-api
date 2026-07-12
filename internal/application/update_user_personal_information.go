@@ -7,7 +7,7 @@ import (
 )
 
 type UpdateUserPersonalInformationUseCase interface {
-	Execute(user *domain.User) error
+	Execute(id int, info domain.PersonalInformation) error
 }
 
 type updateUserPersonalInformationUseCase struct {
@@ -18,8 +18,8 @@ func NewUpdateUserPersonalInformationUseCase(userRepository domain.UserRepositor
 	return &updateUserPersonalInformationUseCase{userRepository: userRepository}
 }
 
-func (u *updateUserPersonalInformationUseCase) Execute(user *domain.User) error {
-	userFound, err := u.userRepository.FindById(user.ID())
+func (u *updateUserPersonalInformationUseCase) Execute(id int, info domain.PersonalInformation) error {
+	userFound, err := u.userRepository.FindById(id)
 	if err != nil {
 		return fmt.Errorf("%v: %w", domain.ErrUpdatingUserPersonalInformation, err)
 	}
@@ -28,16 +28,7 @@ func (u *updateUserPersonalInformationUseCase) Execute(user *domain.User) error 
 		return domain.ErrUserNotFound
 	}
 
-	updatedUser, err := userFound.WithPersonalInformation(
-		user.Identification(),
-		user.FirstName(),
-		user.LastName(),
-		user.Address(),
-		user.BirthDate(),
-	)
-	if err != nil {
-		return fmt.Errorf("%v: %w", domain.ErrUpdatingUserPersonalInformation, err)
-	}
+	updatedUser := userFound.WithPersonalInformation(info)
 
 	err = u.userRepository.Update(updatedUser)
 	if err != nil {
