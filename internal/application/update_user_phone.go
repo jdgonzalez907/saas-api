@@ -28,9 +28,7 @@ func (u *updateUserPhoneUseCase) Execute(id int, phone domain.Phone) error {
 		return domain.ErrUserNotFound
 	}
 
-	userFoundDTO := userFound.ToDTO()
-
-	if phone != userFoundDTO.Phone {
+	if phone != userFound.Phone() {
 		foundPhone, err := u.userRepository.FindByPhone(phone)
 		if err != nil {
 			return fmt.Errorf("%v: %w", domain.ErrUpdatingUserPhone, err)

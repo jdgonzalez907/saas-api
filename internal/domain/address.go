@@ -12,12 +12,12 @@ var (
 )
 
 type Address struct {
-	Street      string  `json:"street"`
-	PostalCode  *string `json:"postal_code"`
-	City        string  `json:"city"`
-	State       string  `json:"state"`
-	Country     string  `json:"country"`
-	Description *string `json:"description"`
+	street      string
+	postalCode  *string
+	city        string
+	state       string
+	country     string
+	description *string
 }
 
 func NewAddress(street, city, state, country string, postalCode, description *string) (Address, error) {
@@ -41,22 +41,31 @@ func NewAddress(street, city, state, country string, postalCode, description *st
 	}
 
 	return Address{
-		Street:      street,
-		PostalCode:  postalCode,
-		City:        city,
-		State:       state,
-		Country:     country,
-		Description: description,
+		street:      street,
+		postalCode:  postalCode,
+		city:        city,
+		state:       state,
+		country:     country,
+		description: description,
 	}, nil
 }
 
-func (a Address) String() string {
-	str := a.Street + ", " + a.City + ", " + a.State + ", " + a.Country
-	if a.Description != nil {
-		str += " " + *a.Description
+type AddressDTO struct {
+	Street      string  `json:"street"`
+	PostalCode  *string `json:"postal_code"`
+	City        string  `json:"city"`
+	State       string  `json:"state"`
+	Country     string  `json:"country"`
+	Description *string `json:"description"`
+}
+
+func (a Address) ToDTO() AddressDTO {
+	return AddressDTO{
+		Street:      a.street,
+		PostalCode:  a.postalCode,
+		City:        a.city,
+		State:       a.state,
+		Country:     a.country,
+		Description: a.description,
 	}
-	if a.PostalCode != nil {
-		str += " " + *a.PostalCode
-	}
-	return str
 }

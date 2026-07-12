@@ -1,0 +1,63 @@
+package controllers
+
+import (
+	"encoding/json"
+	"errors"
+	"net/http"
+
+	"jdgonzalez907/users-api/internal/domain"
+)
+
+type ErrorResponse struct {
+	Message string `json:"message"`
+}
+
+var domainErrorStatus = map[error]int{
+	domain.ErrUserNotFound: http.StatusNotFound,
+
+	domain.ErrUserIDAlreadyExists:    http.StatusConflict,
+	domain.ErrUserPhoneAlreadyExists: http.StatusConflict,
+	domain.ErrUserEmailAlreadyExists: http.StatusConflict,
+
+	domain.ErrInvalidUserID:    http.StatusBadRequest,
+	domain.ErrInvalidFirstName: http.StatusBadRequest,
+	domain.ErrInvalidLastName:  http.StatusBadRequest,
+
+	domain.ErrCreatingUser:                    http.StatusInternalServerError,
+	domain.ErrUpdatingUserPersonalInformation: http.StatusInternalServerError,
+	domain.ErrUpdatingUserPhone:               http.StatusInternalServerError,
+	domain.ErrUpdatingUserEmail:               http.StatusInternalServerError,
+	domain.ErrDeletingUser:                    http.StatusInternalServerError,
+	domain.ErrFindingUsers:                    http.StatusInternalServerError,
+	domain.ErrFindingUserByID:                 http.StatusInternalServerError,
+}
+
+func statusFromDomainError(err error) (int, string) {
+	for domainErr, status := range domainErrorStatus {
+		if errors.Is(err, domainErr) {
+			msg := domainErr.Error()
+			if status == http.StatusInternalServerError {
+				msg = "internal server error"
+			}
+			return status, msg
+		}
+	}
+	return http.StatusInternalServerError, "internal server error"
+}
+
+func RespondWithJSON(w http.ResponseWriter, status int, data any) {
+	w.WriteHeader(status)
+	if data == nil {
+		return
+	}
+	_ = json.NewEncoder(w).Encode(data)
+}
+
+func RespondWithError(w http.ResponseWriter, status int, message string) {
+	RespondWithJSON(w, status, ErrorResponse{Message: message})
+}
+
+func RespondWithDomainError(w http.ResponseWriter, err error) {
+	status, msg := statusFromDomainError(err)
+	RespondWithError(w, status, msg)
+}

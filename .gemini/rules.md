@@ -8,10 +8,14 @@ Este documento sirve como la fuente de verdad (Skill / Rules) para que cualquier
 
 ### Value Objects
 - **Definición**: Objetos sin identidad propia definidos únicamente por sus atributos.
-- **Inmutabilidad**: Todos los campos deben ser inmutables.
+- **Inmutabilidad Estricta**: Todos los campos internos deben ser privados (no exportados) para evitar el acoplamiento y asegurar la encapsulación. Los Value Objects nunca se mutan, solo se crean nuevas instancias. Si el Value Object es muy grande, se puede emplear el patrón "Wither" (ej. `.WithStreet(...)`) para retornar una nueva copia con el valor actualizado sin mutar la instancia original.
+- **Sin Getters por Defecto**: No se deben exponer getters públicos (`Value()`, `Street()`, etc.) para sus campos de negocio, a menos que una regla de negocio específica lo requiera (YAGNI).
 - **Constructor**: Deben crearse mediante un constructor del tipo `New[ValueObject](...) (ValueObject, error)` que valide sus reglas de negocio.
-- **Métodos**: Pueden tener métodos auxiliares de formato (como `String()`), pero ningún mutador.
-- *Ejemplos en el proyecto*: `Phone`, `Email`, `Identification`, `Address`, `BirthDate`.
+- **Métodos**: Únicamente deben exponer el método `.ToDTO()` y ningún otro método o mutador, a menos que sea requerido explícitamente por reglas de negocio (YAGNI).
+- **Patrón DTO**: 
+  - Cada VO debe tener su correspondiente estructura `[ValueObject]DTO` pública con tags `json` que define el formato de serialización.
+  - Implementar el método `.ToDTO() [ValueObject]DTO` en el VO para mapear sus campos privados a la estructura plana.
+- *Ejemplos en el proyecto*: `Phone`, `Email`, `Identification`, `Address`, `BirthDate`, `PaginatedUsers`.
 
 ### Entities
 - **Definición**: Objetos con una identidad única (`id`) que persiste en el tiempo.
@@ -27,6 +31,10 @@ Este documento sirve como la fuente de verdad (Skill / Rules) para que cualquier
   - Estos métodos retornan un nuevo puntero a la entidad actualizada, manteniendo la inmutabilidad y actualizando el campo `updatedAt`.
   - Las operaciones puras en memoria que no puedan fallar no deben retornar `error`.
 
+### Reglas de Referencias y Acoplamiento
+- **Aislamiento de Dominio**: Las Entidades y Value Objects de dominio únicamente deben referenciar/llamar a otras Entidades y Value Objects. Nunca deben acoplarse ni referenciar estructuras DTO en sus campos o lógica de negocio interna.
+- **Aislamiento de Serialización**: Los DTOs únicamente deben referenciar/llamar a otros DTOs (ej. `UserDTO` referencia `PhoneDTO`, `AddressDTO`, etc. en lugar de sus equivalentes VO de dominio).
+
 ---
 
 ## 2. Estructura de Casos de Uso (Application Layer)
@@ -34,7 +42,8 @@ Este documento sirve como la fuente de verdad (Skill / Rules) para que cualquier
 Cada caso de uso en la capa de aplicación debe seguir una estructura estricta y limpia:
 - **Interfaz**: Definida en el mismo archivo para desacoplamiento y facilidad de mocking (ej. `type UpdateUserPhoneUseCase interface`).
 - **Struct de Implementación**: Estructura privada que implementa la interfaz (ej. `type updateUserPhoneUseCase struct`).
-- **Único Método Público**: Solo debe exponer el método ejecutor principal: `Execute(...) error` (o retornar DTO y error para consultas).
+- **Único Método Público**: Solo debe exponer el método ejecutor principal: `Execute(...) error` (o retornar entidad/value object y error para consultas).
+- **Tipos de Datos de Entrada/Salida**: Los casos de uso deben recibir únicamente entidades/value objects como entrada y retornar únicamente entidades/value objects y/o errores como salida. Nunca deben recibir ni retornar estructuras DTO en sus firmas públicas.
 - **Métodos Auxiliares Privados**: Cualquier lógica de validación, mapeo o cálculo adicional debe encapsularse en métodos privados del struct de implementación.
 - **Manejo de Errores (Error Wrapping)**: Cuando se capture un error proveniente de la capa de infraestructura (ej. del repositorio), este debe envolverse con el error de dominio correspondiente utilizando `fmt.Errorf("%v: %w", domain.ErrXxx, err)`. Esto permite que el error original sea inspeccionable mediante `errors.Unwrap` manteniendo a la vez la semántica de negocio en las pruebas unitarias y capas externas.
 
@@ -66,3 +75,16 @@ Cada cambio y nueva funcionalidad debe apegarse estrictamente al siguiente flujo
 4. **Merge a Develop**: Una vez validados los tests y cobertura localmente, realizar merge a `develop`.
 5. **Merge a Master**: Integrar cambios a `master` para releases estables.
 6. **Aprobación**: Todos los merges deben ser revisados y aprobados por el desarrollador líder.
+
+---
+
+## 5. Capa de Controllers HTTP (`internal/infrastructure/controllers`)
+
+Cada controller HTTP debe seguir una estructura estricta y limpia:
+- **Router**: Configurado en `router.go` usando `go-chi/chi/v5`. Middlewares globales registrados en orden: `RequestID` → `Logger` → `Recoverer` → `JSONContentTypeMiddleware`. No usar `RealIP` (deprecated).
+- **Struct de Controller**: Estructura pública que recibe sus dependencias (casos de uso) por constructor (ej. `NewUserController(...)`).
+- **Responsabilidad del Handler**: El método handler parsea la request y construye las entidades/VOs de dominio necesarias, llama al caso de uso (que recibe y devuelve solo entidades/VOs), y convierte el resultado a DTO vía `.ToDTO()` para responder. Nunca pasar DTOs directamente a los casos de uso.
+- **Parseo de Parámetros de Ruta**: Usar siempre el helper centralizado `ParseRouteIntParam(r, "paramName")` para parámetros enteros. Agregar nuevos helpers en `request.go` para otros tipos de parseo. Cualquier fallo de parseo responde con `400 Bad Request`.
+- **Respuestas de Éxito**: Usar `RespondWithJSON(w, statusCode, entity.ToDTO())` sin envoltura. Código `200` para consultas y actualizaciones, `201` para creaciones, `204` para eliminaciones (pasar `nil` como data).
+- **Respuestas de Error de Dominio**: Usar siempre `RespondWithDomainError(w, err)`. Esta función inspecciona el error mediante `errors.Is` contra el mapa privado `domainErrorStatus` que centraliza el mapeo de cada error de dominio a su código HTTP. Al crear un nuevo error de dominio, añadir su entrada al mapa (una línea). Errores 5xx responden con el mensaje genérico `"internal server error"` para no filtrar detalles internos; errores 4xx responden con el mensaje del centinela de dominio.
+- **Pruebas Unitarias**: Usar `httptest.NewRecorder()` y `httptest.NewRequest(...)`. Levantar el router real con `controllers.NewRouter(controller)` para que los middlewares se apliquen en pruebas. Cobertura mínima del 100%. Para `RespondWithDomainError` basta con 3 casos (uno por rama): error conocido no-500, error conocido 500, y error desconocido no presente en el mapa.
