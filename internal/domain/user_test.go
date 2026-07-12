@@ -23,12 +23,11 @@ func TestNewUser(t *testing.T) {
 	now := time.Now()
 
 	testCases := []struct {
-		testName       string
-		id             int
-		firstName      string
-		lastName       string
-		expectedError  error
-		expectedOutput func(int) *domain.User
+		testName      string
+		id            int
+		firstName     string
+		lastName      string
+		expectedError error
 	}{
 		{
 			testName:      "create user",
@@ -36,10 +35,6 @@ func TestNewUser(t *testing.T) {
 			firstName:     "John",
 			lastName:      "Doe",
 			expectedError: nil,
-			expectedOutput: func(id int) *domain.User {
-				u, _ := domain.NewUser(id, identification, "John", "Doe", phone, &email, &address, &birthDate, now, now)
-				return u
-			},
 		},
 		{
 			testName:      "fail to create user with empty id (less than 0)",
@@ -47,9 +42,6 @@ func TestNewUser(t *testing.T) {
 			firstName:     "John",
 			lastName:      "Doe",
 			expectedError: domain.ErrInvalidUserID,
-			expectedOutput: func(id int) *domain.User {
-				return nil
-			},
 		},
 		{
 			testName:      "fail to create user with empty first name",
@@ -57,9 +49,6 @@ func TestNewUser(t *testing.T) {
 			firstName:     "",
 			lastName:      "Doe",
 			expectedError: domain.ErrInvalidFirstName,
-			expectedOutput: func(id int) *domain.User {
-				return nil
-			},
 		},
 		{
 			testName:      "fail to create user with empty last name",
@@ -67,52 +56,54 @@ func TestNewUser(t *testing.T) {
 			firstName:     "John",
 			lastName:      "",
 			expectedError: domain.ErrInvalidLastName,
-			expectedOutput: func(id int) *domain.User {
-				return nil
-			},
 		},
 	}
 
 	for _, testCase := range testCases {
-		user, err := domain.NewUser(
-			testCase.id,
-			identification,
-			testCase.firstName,
-			testCase.lastName,
-			phone,
-			&email,
-			&address,
-			&birthDate,
-			now,
-			now,
-		)
+		params := domain.UserParams{
+			ID:             testCase.id,
+			Identification: identification,
+			FirstName:      testCase.firstName,
+			LastName:       testCase.lastName,
+			Phone:          phone,
+			Email:          &email,
+			Address:        &address,
+			BirthDate:      &birthDate,
+			CreatedAt:      now,
+			UpdatedAt:      now,
+		}
+
+		user, err := domain.NewUser(params)
 		if err != testCase.expectedError {
 			t.Errorf("%s: expected error: %v, got %v", testCase.testName, testCase.expectedError, err)
 		}
-		expected := testCase.expectedOutput(testCase.id)
-		if !isEqual(user, expected) {
-			t.Errorf("%s: expected user: %v, got %v", testCase.testName, expected, user)
+		if testCase.expectedError == nil {
+			expected := params
+			if !isEqual(user, &expected) {
+				t.Errorf("%s: expected user values to match params, got mismatch", testCase.testName)
+			}
 		}
 	}
 }
 
-func isEqual(user1, user2 *domain.User) bool {
-	if user1 == nil && user2 == nil {
+func isEqual(user *domain.User, params *domain.UserParams) bool {
+	if user == nil && params == nil {
 		return true
 	}
-	if user1 == nil || user2 == nil {
+	if user == nil || params == nil {
 		return false
 	}
-	return user1.ID == user2.ID &&
-		user1.Identification == user2.Identification &&
-		user1.FirstName == user2.FirstName &&
-		user1.LastName == user2.LastName &&
-		user1.Phone == user2.Phone &&
-		user1.Email == user2.Email &&
-		user1.Address == user2.Address &&
-		user1.BirthDate == user2.BirthDate &&
-		user1.CreatedAt.Equal(user2.CreatedAt) &&
-		user1.UpdatedAt.Equal(user2.UpdatedAt)
+	dto := user.ToDTO()
+	return dto.ID == params.ID &&
+		dto.Identification == params.Identification &&
+		dto.FirstName == params.FirstName &&
+		dto.LastName == params.LastName &&
+		dto.Phone == params.Phone &&
+		(dto.Email == nil && params.Email == nil || dto.Email != nil && params.Email != nil && *dto.Email == *params.Email) &&
+		(dto.Address == nil && params.Address == nil || dto.Address != nil && params.Address != nil && *dto.Address == *params.Address) &&
+		(dto.BirthDate == nil && params.BirthDate == nil || dto.BirthDate != nil && params.BirthDate != nil && dto.BirthDate.Value.Equal(params.BirthDate.Value)) &&
+		dto.CreatedAt.Equal(params.CreatedAt) &&
+		dto.UpdatedAt.Equal(params.UpdatedAt)
 }
 
 func TestNewUserWithoutId(t *testing.T) {
@@ -146,8 +137,9 @@ func TestNewUserWithoutId(t *testing.T) {
 		t.Fatal("expected user to be not nil")
 	}
 
-	if user.ID != 0 {
-		t.Errorf("expected generated ID to be 0, got %d", user.ID)
+	dto := user.ToDTO()
+	if dto.ID != 0 {
+		t.Errorf("expected generated ID to be 0, got %d", dto.ID)
 	}
 
 	_, err = domain.NewUserWithoutId(
@@ -161,5 +153,132 @@ func TestNewUserWithoutId(t *testing.T) {
 	)
 	if err != domain.ErrInvalidFirstName {
 		t.Errorf("expected ErrInvalidFirstName, got %v", err)
+	}
+}
+
+func TestUserDTOAndFromDTO(t *testing.T) {
+	identification := domain.Identification{Type: domain.IdType_CC, Number: "123456789"}
+	email := domain.Email{Value: "name@domain.com"}
+	phone := domain.Phone{Value: "123456789"}
+	address := domain.Address{
+		Street:      "123 Main St",
+		PostalCode:  nil,
+		City:        "New York",
+		State:       "NY",
+		Country:     "USA",
+		Description: nil,
+	}
+	birthDate := domain.BirthDate{Value: time.Now()}
+	now := time.Now()
+
+	params := domain.UserParams{
+		ID:             1,
+		Identification: identification,
+		FirstName:      "John",
+		LastName:       "Doe",
+		Phone:          phone,
+		Email:          &email,
+		Address:        &address,
+		BirthDate:      &birthDate,
+		CreatedAt:      now,
+		UpdatedAt:      now,
+	}
+
+	user, err := domain.NewUser(params)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// ToDTO
+	dto := user.ToDTO()
+	if dto.ID != params.ID || dto.FirstName != params.FirstName {
+		t.Errorf("ToDTO mismatch")
+	}
+
+	var nilUser *domain.User
+	if nilUser.ToDTO() != nil {
+		t.Errorf("expected nil DTO for nil User")
+	}
+
+	// FromDTO
+	user2, err := domain.UserFromDTO(dto)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if !isEqual(user2, &params) {
+		t.Errorf("UserFromDTO values do not match original params")
+	}
+
+	nilUser2, err := domain.UserFromDTO(nil)
+	if err != nil || nilUser2 != nil {
+		t.Errorf("expected nil user for nil DTO without error")
+	}
+}
+
+func TestUserWith(t *testing.T) {
+	identification := domain.Identification{Type: domain.IdType_CC, Number: "123456789"}
+	email := domain.Email{Value: "name@domain.com"}
+	phone := domain.Phone{Value: "123456789"}
+	address := domain.Address{
+		Street:      "123 Main St",
+		PostalCode:  nil,
+		City:        "New York",
+		State:       "NY",
+		Country:     "USA",
+		Description: nil,
+	}
+	birthDate := domain.BirthDate{Value: time.Now()}
+	now := time.Now()
+
+	params := domain.UserParams{
+		ID:             1,
+		Identification: identification,
+		FirstName:      "John",
+		LastName:       "Doe",
+		Phone:          phone,
+		Email:          &email,
+		Address:        &address,
+		BirthDate:      &birthDate,
+		CreatedAt:      now,
+		UpdatedAt:      now,
+	}
+
+	user, err := domain.NewUser(params)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	newPhone := domain.Phone{Value: "987654321"}
+	newFirstName := "Jane"
+
+	updatedUser, err := user.With(domain.UserParams{
+		Identification: identification,
+		FirstName:      newFirstName,
+		LastName:       "Doe",
+		Phone:          newPhone,
+		Email:          &email,
+		Address:        &address,
+		BirthDate:      &birthDate,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error on With: %v", err)
+	}
+
+	dto := updatedUser.ToDTO()
+	if dto.ID != 1 {
+		t.Errorf("expected ID to be kept as 1, got %d", dto.ID)
+	}
+	if dto.FirstName != newFirstName {
+		t.Errorf("expected FirstName to be updated to %s, got %s", newFirstName, dto.FirstName)
+	}
+	if dto.Phone != newPhone {
+		t.Errorf("expected Phone to be updated to %v, got %v", newPhone, dto.Phone)
+	}
+	if dto.CreatedAt != now {
+		t.Errorf("expected CreatedAt to be kept as %v, got %v", now, dto.CreatedAt)
+	}
+	if dto.UpdatedAt.Before(now) {
+		t.Errorf("expected UpdatedAt to be updated, got %v", dto.UpdatedAt)
 	}
 }
