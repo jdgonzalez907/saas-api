@@ -8,8 +8,6 @@ import (
 	"jdgonzalez907/users-api/internal/application"
 	"jdgonzalez907/users-api/internal/domain"
 	domainMocks "jdgonzalez907/users-api/mocks/domain"
-
-	"github.com/google/uuid"
 )
 
 func TestCreateUserUseCase(t *testing.T) {
@@ -18,8 +16,10 @@ func TestCreateUserUseCase(t *testing.T) {
 	email, _ := domain.NewEmail("john.doe@example.com")
 	address, _ := domain.NewAddress("123 Main St", "City", "State", "Country", nil, nil)
 	birthDate, _ := domain.NewBirthDate(time.Now().AddDate(-18, 0, -1))
+	now := time.Now()
+
 	user, _ := domain.NewUser(
-		uuid.NewString(),
+		1,
 		identification,
 		"John",
 		"Doe",
@@ -27,10 +27,12 @@ func TestCreateUserUseCase(t *testing.T) {
 		&email,
 		&address,
 		&birthDate,
+		now,
+		now,
 	)
 
 	userWithNilEmail, _ := domain.NewUser(
-		uuid.NewString(),
+		2,
 		identification,
 		"John",
 		"Doe",
@@ -38,6 +40,8 @@ func TestCreateUserUseCase(t *testing.T) {
 		nil,
 		&address,
 		&birthDate,
+		now,
+		now,
 	)
 
 	dbErr := errors.New("database connection error")
