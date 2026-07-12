@@ -14,19 +14,19 @@ func TestNewEmail(t *testing.T) {
 		expectedOutput domain.Email
 	}{
 		{
-			testName:       "create email",
+			testName:       "success - create email",
 			input:          "name@domain.com",
 			expectedError:  nil,
 			expectedOutput: domain.Email{Value: "name@domain.com"},
 		},
 		{
-			testName:       "fail to create email with empty value",
+			testName:       "fail - empty value",
 			input:          "",
 			expectedError:  domain.ErrInvalidEmail,
 			expectedOutput: domain.Email{},
 		},
 		{
-			testName:       "fail to create email with invalid format",
+			testName:       "fail - invalid format",
 			input:          "invalid-email-format",
 			expectedError:  domain.ErrInvalidEmail,
 			expectedOutput: domain.Email{},

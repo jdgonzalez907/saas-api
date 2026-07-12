@@ -22,7 +22,7 @@ func TestNewAddress(t *testing.T) {
 		expectedOutput domain.Address
 	}{
 		{
-			testName: "create address",
+			testName: "success - create address",
 			input: domain.Address{
 				Street:      "street",
 				City:        "city",
@@ -42,7 +42,7 @@ func TestNewAddress(t *testing.T) {
 			},
 		},
 		{
-			testName: "create address with postal code and description",
+			testName: "success - with postal code and description",
 			input: domain.Address{
 				Street:      "street",
 				City:        "city",
@@ -62,7 +62,7 @@ func TestNewAddress(t *testing.T) {
 			},
 		},
 		{
-			testName: "fail to create address with empty street",
+			testName: "fail - empty street",
 			input: domain.Address{
 				Street:      "",
 				City:        "city",
@@ -75,7 +75,7 @@ func TestNewAddress(t *testing.T) {
 			expectedOutput: domain.Address{},
 		},
 		{
-			testName: "fail to create address with empty city",
+			testName: "fail - empty city",
 			input: domain.Address{
 				Street:      "street",
 				City:        "",
@@ -88,7 +88,7 @@ func TestNewAddress(t *testing.T) {
 			expectedOutput: domain.Address{},
 		},
 		{
-			testName: "fail to create address with empty state",
+			testName: "fail - empty state",
 			input: domain.Address{
 				Street:      "street",
 				City:        "city",
@@ -101,7 +101,7 @@ func TestNewAddress(t *testing.T) {
 			expectedOutput: domain.Address{},
 		},
 		{
-			testName: "fail to create address with empty country",
+			testName: "fail - empty country",
 			input: domain.Address{
 				Street:      "street",
 				City:        "city",
@@ -114,7 +114,7 @@ func TestNewAddress(t *testing.T) {
 			expectedOutput: domain.Address{},
 		},
 		{
-			testName: "fail to create address with empty postal code",
+			testName: "fail - empty postal code pointer",
 			input: domain.Address{
 				Street:      "street",
 				City:        "city",
@@ -127,7 +127,7 @@ func TestNewAddress(t *testing.T) {
 			expectedOutput: domain.Address{},
 		},
 		{
-			testName: "fail to create address with empty description",
+			testName: "fail - empty description pointer",
 			input: domain.Address{
 				Street:      "street",
 				City:        "city",
@@ -162,7 +162,7 @@ func TestAddressString(t *testing.T) {
 		expected string
 	}{
 		{
-			testName: "address with street city state country",
+			testName: "success - address with street city state country",
 			input: domain.Address{
 				Street:  "123 Main St",
 				City:    "Springfield",
@@ -172,7 +172,7 @@ func TestAddressString(t *testing.T) {
 			expected: "123 Main St, Springfield, IL, USA",
 		},
 		{
-			testName: "address with all fields",
+			testName: "success - address with all fields",
 			input: domain.Address{
 				Street:      "123 Main St",
 				City:        "Springfield",
