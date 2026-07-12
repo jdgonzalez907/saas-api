@@ -14,7 +14,7 @@ func TestNewIdentification(t *testing.T) {
 		expectedOutput domain.Identification
 	}{
 		{
-			testName: "create identification",
+			testName: "success - create identification",
 			input: domain.Identification{
 				Type:   domain.IdType_CC,
 				Number: "123456789",
@@ -26,7 +26,7 @@ func TestNewIdentification(t *testing.T) {
 			},
 		},
 		{
-			testName: "fail to create identification with invalid type",
+			testName: "fail - invalid type",
 			input: domain.Identification{
 				Type:   domain.IdentificationType("invalid"),
 				Number: "123456789",
