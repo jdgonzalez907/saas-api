@@ -1,0 +1,11 @@
+# Reglas de Desarrollo y Buenas Prácticas (AI Agent Guidelines)
+
+Este repositorio (`users-api`) sigue estrictos patrones de diseño, inmutabilidad y estándares de pruebas. Lee las reglas detalladas en el archivo:
+[rules.md](file:///.gemini/rules.md)
+
+## Resumen de Reglas Críticas:
+1. **Value Objects**: Inmutables y validados en constructores.
+2. **Entities**: Campos privados, inmutables. Constructor recibe `Params`. Serialización vía `.ToDTO()` y `FromDTO`. Mutadores específicos `WithXxx` que retornan copias nuevas.
+3. **Casos de Uso**: Interfaz y struct privada en el mismo archivo. Único punto de entrada público: `Execute(...) error`.
+4. **Pruebas**: Table-driven tests obligatorios para más de 2 caminos lógicos. Nombres de casos deben iniciar con `"success - xxx"` o `"fail - xxx"`. Cobertura requerida del **100% de sentencias** en `internal/domain` e `internal/application`. Mocks vía `mockery`.
+5. **GitFlow**: Develop -> `feature/` -> Min 2 commits (funcional + tests) -> Merge develop -> Merge master.
