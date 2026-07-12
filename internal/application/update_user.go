@@ -2,7 +2,6 @@ package application
 
 import (
 	"fmt"
-	"time"
 
 	"jdgonzalez907/users-api/internal/domain"
 )
@@ -20,7 +19,9 @@ func NewUpdateUserUseCase(userRepository domain.UserRepository) UpdateUserUseCas
 }
 
 func (u *updateUserUseCase) Execute(user *domain.User) error {
-	userFound, err := u.userRepository.FindById(user.ID)
+	userDTO := user.ToDTO()
+
+	userFound, err := u.userRepository.FindById(userDTO.ID)
 	if err != nil {
 		return fmt.Errorf("%v: %w", domain.ErrUpdatingUser, err)
 	}
@@ -29,8 +30,10 @@ func (u *updateUserUseCase) Execute(user *domain.User) error {
 		return domain.ErrUserNotFound
 	}
 
-	if user.Phone != userFound.Phone {
-		foundPhone, err := u.userRepository.FindByPhone(user.Phone)
+	userFoundDTO := userFound.ToDTO()
+
+	if userDTO.Phone != userFoundDTO.Phone {
+		foundPhone, err := u.userRepository.FindByPhone(userDTO.Phone)
 		if err != nil {
 			return fmt.Errorf("%v: %w", domain.ErrUpdatingUser, err)
 		}
@@ -39,10 +42,10 @@ func (u *updateUserUseCase) Execute(user *domain.User) error {
 		}
 	}
 
-	if user.Email != nil {
-		emailChanged := userFound.Email == nil || *userFound.Email != *user.Email
+	if userDTO.Email != nil {
+		emailChanged := userFoundDTO.Email == nil || *userFoundDTO.Email != *userDTO.Email
 		if emailChanged {
-			foundEmail, err := u.userRepository.FindByEmail(*user.Email)
+			foundEmail, err := u.userRepository.FindByEmail(*userDTO.Email)
 			if err != nil {
 				return fmt.Errorf("%v: %w", domain.ErrUpdatingUser, err)
 			}
@@ -52,8 +55,20 @@ func (u *updateUserUseCase) Execute(user *domain.User) error {
 		}
 	}
 
-	user.UpdatedAt = time.Now()
-	err = u.userRepository.Update(user)
+	updatedUser, err := userFound.With(domain.UserParams{
+		Identification: userDTO.Identification,
+		FirstName:      userDTO.FirstName,
+		LastName:       userDTO.LastName,
+		Phone:          userDTO.Phone,
+		Email:          userDTO.Email,
+		Address:        userDTO.Address,
+		BirthDate:      userDTO.BirthDate,
+	})
+	if err != nil {
+		return fmt.Errorf("%v: %w", domain.ErrUpdatingUser, err)
+	}
+
+	err = u.userRepository.Update(updatedUser)
 	if err != nil {
 		return fmt.Errorf("%v: %w", domain.ErrUpdatingUser, err)
 	}
