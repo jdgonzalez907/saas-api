@@ -22,22 +22,22 @@ func (_m *MockFindUsersPaginatedUseCase) EXPECT() *MockFindUsersPaginatedUseCase
 }
 
 // Execute provides a mock function with given fields: pagination
-func (_m *MockFindUsersPaginatedUseCase) Execute(pagination domain.Pagination) (domain.PaginatedUsersDTO, error) {
+func (_m *MockFindUsersPaginatedUseCase) Execute(pagination domain.Pagination) (domain.PaginatedUsers, error) {
 	ret := _m.Called(pagination)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Execute")
 	}
 
-	var r0 domain.PaginatedUsersDTO
+	var r0 domain.PaginatedUsers
 	var r1 error
-	if rf, ok := ret.Get(0).(func(domain.Pagination) (domain.PaginatedUsersDTO, error)); ok {
+	if rf, ok := ret.Get(0).(func(domain.Pagination) (domain.PaginatedUsers, error)); ok {
 		return rf(pagination)
 	}
-	if rf, ok := ret.Get(0).(func(domain.Pagination) domain.PaginatedUsersDTO); ok {
+	if rf, ok := ret.Get(0).(func(domain.Pagination) domain.PaginatedUsers); ok {
 		r0 = rf(pagination)
 	} else {
-		r0 = ret.Get(0).(domain.PaginatedUsersDTO)
+		r0 = ret.Get(0).(domain.PaginatedUsers)
 	}
 
 	if rf, ok := ret.Get(1).(func(domain.Pagination) error); ok {
@@ -67,12 +67,12 @@ func (_c *MockFindUsersPaginatedUseCase_Execute_Call) Run(run func(pagination do
 	return _c
 }
 
-func (_c *MockFindUsersPaginatedUseCase_Execute_Call) Return(_a0 domain.PaginatedUsersDTO, _a1 error) *MockFindUsersPaginatedUseCase_Execute_Call {
+func (_c *MockFindUsersPaginatedUseCase_Execute_Call) Return(_a0 domain.PaginatedUsers, _a1 error) *MockFindUsersPaginatedUseCase_Execute_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *MockFindUsersPaginatedUseCase_Execute_Call) RunAndReturn(run func(domain.Pagination) (domain.PaginatedUsersDTO, error)) *MockFindUsersPaginatedUseCase_Execute_Call {
+func (_c *MockFindUsersPaginatedUseCase_Execute_Call) RunAndReturn(run func(domain.Pagination) (domain.PaginatedUsers, error)) *MockFindUsersPaginatedUseCase_Execute_Call {
 	_c.Call.Return(run)
 	return _c
 }
