@@ -54,7 +54,7 @@ func TestFindUsersPaginatedUseCase(t *testing.T) {
 		testName         string
 		pagination       domain.Pagination
 		mockExpectations func(*domainMocks.MockUserRepository)
-		expectedResult   domain.PaginatedUsersDTO
+		expectedResult   domain.PaginatedUsers
 		expectedError    error
 	}{
 		{
@@ -65,13 +65,10 @@ func TestFindUsersPaginatedUseCase(t *testing.T) {
 					return p.Limit() == 10 && p.LastID() != nil && *p.LastID() == cursor
 				})).Return([]*domain.User{user1, user2}, nil)
 			},
-			expectedResult: domain.PaginatedUsersDTO{
-				Users: []domain.UserDTO{
-					*user1.ToDTO(),
-					*user2.ToDTO(),
-				},
-				NextCursor: func() *int { i := 2; return &i }(),
-			},
+			expectedResult: domain.NewPaginatedUsers(
+				[]*domain.User{user1, user2},
+				func() *int { i := 2; return &i }(),
+			),
 			expectedError: nil,
 		},
 		{
@@ -82,10 +79,10 @@ func TestFindUsersPaginatedUseCase(t *testing.T) {
 					return p.Limit() == 25 && p.LastID() == nil
 				})).Return([]*domain.User{}, nil)
 			},
-			expectedResult: domain.PaginatedUsersDTO{
-				Users:      []domain.UserDTO{},
-				NextCursor: nil,
-			},
+			expectedResult: domain.NewPaginatedUsers(
+				[]*domain.User{},
+				nil,
+			),
 			expectedError: nil,
 		},
 		{
@@ -96,7 +93,7 @@ func TestFindUsersPaginatedUseCase(t *testing.T) {
 					return p.Limit() == 50 && p.LastID() == nil
 				})).Return(nil, dbErr)
 			},
-			expectedResult: domain.PaginatedUsersDTO{},
+			expectedResult: domain.PaginatedUsers{},
 			expectedError:  domain.ErrFindingUsers,
 		},
 	}
@@ -124,8 +121,13 @@ func TestFindUsersPaginatedUseCase(t *testing.T) {
 				if err != nil {
 					t.Fatalf("expected no error, got %v", err)
 				}
-				if !reflect.DeepEqual(result, tc.expectedResult) {
-					t.Errorf("expected result: %+v, got %+v", tc.expectedResult, result)
+				if !reflect.DeepEqual(result.Users(), tc.expectedResult.Users()) {
+					t.Errorf("expected users: %+v, got %+v", tc.expectedResult.Users(), result.Users())
+				}
+				if (tc.expectedResult.NextCursor() == nil && result.NextCursor() != nil) ||
+					(tc.expectedResult.NextCursor() != nil && result.NextCursor() == nil) ||
+					(tc.expectedResult.NextCursor() != nil && result.NextCursor() != nil && *tc.expectedResult.NextCursor() != *result.NextCursor()) {
+					t.Errorf("expected next cursor: %v, got %v", tc.expectedResult.NextCursor(), result.NextCursor())
 				}
 			}
 		})
