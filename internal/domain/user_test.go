@@ -20,100 +20,78 @@ func TestNewUser(t *testing.T) {
 		Description: nil,
 	}
 	birthDate := domain.BirthDate{Value: time.Now()}
+	now := time.Now()
 
 	testCases := []struct {
 		testName       string
-		input          domain.User
+		id             int
+		firstName      string
+		lastName       string
 		expectedError  error
-		expectedOutput *domain.User
+		expectedOutput func(int) *domain.User
 	}{
 		{
-			testName: "create user",
-			input: domain.User{
-				ID:             "1",
-				Identification: identification,
-				FirstName:      "John",
-				LastName:       "Doe",
-				Phone:          phone,
-				Email:          &email,
-				Address:        &address,
-				BirthDate:      &birthDate,
-			},
+			testName:      "create user",
+			id:            1,
+			firstName:     "John",
+			lastName:      "Doe",
 			expectedError: nil,
-			expectedOutput: &domain.User{
-				ID:             "1",
-				Identification: identification,
-				FirstName:      "John",
-				LastName:       "Doe",
-				Phone:          phone,
-				Email:          &email,
-				Address:        &address,
-				BirthDate:      &birthDate,
+			expectedOutput: func(id int) *domain.User {
+				u, _ := domain.NewUser(id, identification, "John", "Doe", phone, &email, &address, &birthDate, now, now)
+				return u
 			},
 		},
 		{
-			testName: "fail to create user with empty id",
-			input: domain.User{
-				ID:             "",
-				Identification: identification,
-				FirstName:      "John",
-				LastName:       "Doe",
-				Phone:          phone,
-				Email:          &email,
-				Address:        &address,
-				BirthDate:      &birthDate,
+			testName:      "fail to create user with empty id (less than 0)",
+			id:            -1,
+			firstName:     "John",
+			lastName:      "Doe",
+			expectedError: domain.ErrInvalidUserID,
+			expectedOutput: func(id int) *domain.User {
+				return nil
 			},
-			expectedError:  domain.ErrInvalidUserID,
-			expectedOutput: nil,
 		},
 		{
-			testName: "fail to create user with empty first name",
-			input: domain.User{
-				ID:             "1",
-				Identification: identification,
-				FirstName:      "",
-				LastName:       "Doe",
-				Phone:          phone,
-				Email:          &email,
-				Address:        &address,
-				BirthDate:      &birthDate,
+			testName:      "fail to create user with empty first name",
+			id:            1,
+			firstName:     "",
+			lastName:      "Doe",
+			expectedError: domain.ErrInvalidFirstName,
+			expectedOutput: func(id int) *domain.User {
+				return nil
 			},
-			expectedError:  domain.ErrInvalidFirstName,
-			expectedOutput: nil,
 		},
 		{
-			testName: "fail to create user with empty last name",
-			input: domain.User{
-				ID:             "1",
-				Identification: identification,
-				FirstName:      "John",
-				LastName:       "",
-				Phone:          phone,
-				Email:          &email,
-				Address:        &address,
-				BirthDate:      &birthDate,
+			testName:      "fail to create user with empty last name",
+			id:            1,
+			firstName:     "John",
+			lastName:      "",
+			expectedError: domain.ErrInvalidLastName,
+			expectedOutput: func(id int) *domain.User {
+				return nil
 			},
-			expectedError:  domain.ErrInvalidLastName,
-			expectedOutput: nil,
 		},
 	}
 
 	for _, testCase := range testCases {
 		user, err := domain.NewUser(
-			testCase.input.ID,
-			testCase.input.Identification,
-			testCase.input.FirstName,
-			testCase.input.LastName,
-			testCase.input.Phone,
-			testCase.input.Email,
-			testCase.input.Address,
-			testCase.input.BirthDate,
+			testCase.id,
+			identification,
+			testCase.firstName,
+			testCase.lastName,
+			phone,
+			&email,
+			&address,
+			&birthDate,
+			now,
+			now,
 		)
 		if err != testCase.expectedError {
-			t.Errorf("expected error: %v, got %v", testCase.expectedError, err)
+			t.Errorf("%s: expected error: %v, got %v", testCase.testName, testCase.expectedError, err)
 		}
-		if !isEqual(user, testCase.expectedOutput) {
-			t.Errorf("expected user: %v, got %v", testCase.expectedOutput, user)
+		expected := testCase.expectedOutput(testCase.id)
+		if !isEqual(user, expected) {
+			t.Errorf("%s: expected user: %v, got %v", testCase.testName, expected, user)
 		}
 	}
 }
@@ -132,7 +110,9 @@ func isEqual(user1, user2 *domain.User) bool {
 		user1.Phone == user2.Phone &&
 		user1.Email == user2.Email &&
 		user1.Address == user2.Address &&
-		user1.BirthDate == user2.BirthDate
+		user1.BirthDate == user2.BirthDate &&
+		user1.CreatedAt.Equal(user2.CreatedAt) &&
+		user1.UpdatedAt.Equal(user2.UpdatedAt)
 }
 
 func TestNewUserWithoutId(t *testing.T) {
@@ -166,8 +146,8 @@ func TestNewUserWithoutId(t *testing.T) {
 		t.Fatal("expected user to be not nil")
 	}
 
-	if user.ID == "" {
-		t.Error("expected generated ID to be not empty")
+	if user.ID != 0 {
+		t.Errorf("expected generated ID to be 0, got %d", user.ID)
 	}
 
 	_, err = domain.NewUserWithoutId(
