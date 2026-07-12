@@ -2,6 +2,8 @@ package application
 
 import (
 	"fmt"
+	"time"
+
 	"jdgonzalez907/users-api/internal/domain"
 )
 
@@ -50,6 +52,7 @@ func (u *updateUserUseCase) Execute(user *domain.User) error {
 		}
 	}
 
+	user.UpdatedAt = time.Now()
 	err = u.userRepository.Update(user)
 	if err != nil {
 		return fmt.Errorf("%v: %w", domain.ErrUpdatingUser, err)
