@@ -7,7 +7,7 @@ import (
 )
 
 type FindUsersPaginatedUseCase interface {
-	Execute(pagination domain.Pagination) (domain.PaginatedUsersDTO, error)
+	Execute(pagination domain.Pagination) (domain.PaginatedUsers, error)
 }
 
 type findUsersPaginatedUseCase struct {
@@ -20,16 +20,10 @@ func NewFindUsersPaginatedUseCase(userRepository domain.UserRepository) FindUser
 	}
 }
 
-func (u *findUsersPaginatedUseCase) Execute(pagination domain.Pagination) (domain.PaginatedUsersDTO, error) {
-
+func (u *findUsersPaginatedUseCase) Execute(pagination domain.Pagination) (domain.PaginatedUsers, error) {
 	users, err := u.userRepository.FindAll(pagination)
 	if err != nil {
-		return domain.PaginatedUsersDTO{}, fmt.Errorf("%v: %w", domain.ErrFindingUsers, err)
-	}
-
-	userDTOs := make([]domain.UserDTO, 0, len(users))
-	for _, user := range users {
-		userDTOs = append(userDTOs, *user.ToDTO())
+		return domain.PaginatedUsers{}, fmt.Errorf("%v: %w", domain.ErrFindingUsers, err)
 	}
 
 	var nextCursor *int
@@ -38,8 +32,5 @@ func (u *findUsersPaginatedUseCase) Execute(pagination domain.Pagination) (domai
 		nextCursor = &nextCursorVal
 	}
 
-	return domain.PaginatedUsersDTO{
-		Users:      userDTOs,
-		NextCursor: nextCursor,
-	}, nil
+	return domain.NewPaginatedUsers(users, nextCursor), nil
 }
