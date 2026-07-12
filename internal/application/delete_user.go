@@ -6,7 +6,7 @@ import (
 )
 
 type DeleteUserUseCase interface {
-	Execute(id string) error
+	Execute(id int) error
 }
 
 type deleteUserUseCase struct {
@@ -17,7 +17,7 @@ func NewDeleteUserUseCase(userRepository domain.UserRepository) DeleteUserUseCas
 	return &deleteUserUseCase{userRepository: userRepository}
 }
 
-func (d *deleteUserUseCase) Execute(id string) error {
+func (d *deleteUserUseCase) Execute(id int) error {
 	userFound, err := d.userRepository.FindById(id)
 	if err != nil {
 		return fmt.Errorf("%v: %w", domain.ErrDeletingUser, err)
