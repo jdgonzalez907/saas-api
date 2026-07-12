@@ -2,8 +2,7 @@ package domain
 
 import (
 	"errors"
-
-	"github.com/google/uuid"
+	"time"
 )
 
 var (
@@ -21,7 +20,7 @@ var (
 )
 
 type User struct {
-	ID             string         `json:"id"`
+	ID             int            `json:"id"`
 	Identification Identification `json:"identification"`
 	FirstName      string         `json:"first_name"`
 	LastName       string         `json:"last_name"`
@@ -29,6 +28,8 @@ type User struct {
 	Email          *Email         `json:"email"`
 	Address        *Address       `json:"address"`
 	BirthDate      *BirthDate     `json:"birth_date"`
+	CreatedAt      time.Time      `json:"created_at"`
+	UpdatedAt      time.Time      `json:"updated_at"`
 }
 
 func NewUserWithoutId(
@@ -39,8 +40,9 @@ func NewUserWithoutId(
 	address *Address,
 	birthDate *BirthDate,
 ) (*User, error) {
+	now := time.Now()
 	return NewUser(
-		uuid.NewString(),
+		0,
 		identification,
 		firstName,
 		lastName,
@@ -48,19 +50,23 @@ func NewUserWithoutId(
 		email,
 		address,
 		birthDate,
+		now,
+		now,
 	)
 }
 
 func NewUser(
-	id string,
+	id int,
 	identification Identification,
 	firstName, lastName string,
 	phone Phone,
 	email *Email,
 	address *Address,
 	birthDate *BirthDate,
+	createdAt time.Time,
+	updatedAt time.Time,
 ) (*User, error) {
-	if id == "" {
+	if id < 0 {
 		return nil, ErrInvalidUserID
 	}
 
@@ -81,5 +87,7 @@ func NewUser(
 		Email:          email,
 		Address:        address,
 		BirthDate:      birthDate,
+		CreatedAt:      createdAt,
+		UpdatedAt:      updatedAt,
 	}, nil
 }
