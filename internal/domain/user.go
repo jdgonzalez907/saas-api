@@ -19,6 +19,7 @@ var (
 	ErrUpdatingUserPhone               = errors.New("error updating user phone")
 	ErrUpdatingUserEmail               = errors.New("error updating user email")
 	ErrDeletingUser                    = errors.New("error deleting user")
+	ErrFindingUsers                    = errors.New("error finding users")
 )
 
 type User struct {
@@ -59,6 +60,12 @@ type UserDTO struct {
 	CreatedAt      time.Time      `json:"created_at"`
 	UpdatedAt      time.Time      `json:"updated_at"`
 }
+
+type PaginatedUsersDTO struct {
+	Users      []UserDTO `json:"users"`
+	NextCursor *int      `json:"next_cursor"`
+}
+
 
 func NewUserWithoutId(
 	identification Identification,
