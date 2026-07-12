@@ -4,6 +4,7 @@ type UserRepository interface {
 	FindById(id int) (*User, error)
 	FindByPhone(phone Phone) (*User, error)
 	FindByEmail(email Email) (*User, error)
+	FindAll(pagination Pagination) ([]*User, error)
 	Create(user *User) error
 	Update(user *User) error
 	Delete(id int) error
