@@ -30,7 +30,7 @@ func (c *CreateUserController) Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	phone, err := domain.NewPhone(body.Phone.Value)
+	phone, err := domain.NewPhone(body.Phone.CountryCode, body.Phone.Number)
 	if err != nil {
 		RespondWithDomainError(w, err)
 		return

@@ -21,17 +21,17 @@ func (_m *MockUpdateUserPersonalInformationUseCase) EXPECT() *MockUpdateUserPers
 	return &MockUpdateUserPersonalInformationUseCase_Expecter{mock: &_m.Mock}
 }
 
-// Execute provides a mock function with given fields: user
-func (_m *MockUpdateUserPersonalInformationUseCase) Execute(user *domain.User) error {
-	ret := _m.Called(user)
+// Execute provides a mock function with given fields: id, info
+func (_m *MockUpdateUserPersonalInformationUseCase) Execute(id int, info domain.PersonalInformation) error {
+	ret := _m.Called(id, info)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Execute")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*domain.User) error); ok {
-		r0 = rf(user)
+	if rf, ok := ret.Get(0).(func(int, domain.PersonalInformation) error); ok {
+		r0 = rf(id, info)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -45,14 +45,15 @@ type MockUpdateUserPersonalInformationUseCase_Execute_Call struct {
 }
 
 // Execute is a helper method to define mock.On call
-//   - user *domain.User
-func (_e *MockUpdateUserPersonalInformationUseCase_Expecter) Execute(user interface{}) *MockUpdateUserPersonalInformationUseCase_Execute_Call {
-	return &MockUpdateUserPersonalInformationUseCase_Execute_Call{Call: _e.mock.On("Execute", user)}
+//   - id int
+//   - info domain.PersonalInformation
+func (_e *MockUpdateUserPersonalInformationUseCase_Expecter) Execute(id interface{}, info interface{}) *MockUpdateUserPersonalInformationUseCase_Execute_Call {
+	return &MockUpdateUserPersonalInformationUseCase_Execute_Call{Call: _e.mock.On("Execute", id, info)}
 }
 
-func (_c *MockUpdateUserPersonalInformationUseCase_Execute_Call) Run(run func(user *domain.User)) *MockUpdateUserPersonalInformationUseCase_Execute_Call {
+func (_c *MockUpdateUserPersonalInformationUseCase_Execute_Call) Run(run func(id int, info domain.PersonalInformation)) *MockUpdateUserPersonalInformationUseCase_Execute_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(*domain.User))
+		run(args[0].(int), args[1].(domain.PersonalInformation))
 	})
 	return _c
 }
@@ -62,7 +63,7 @@ func (_c *MockUpdateUserPersonalInformationUseCase_Execute_Call) Return(_a0 erro
 	return _c
 }
 
-func (_c *MockUpdateUserPersonalInformationUseCase_Execute_Call) RunAndReturn(run func(*domain.User) error) *MockUpdateUserPersonalInformationUseCase_Execute_Call {
+func (_c *MockUpdateUserPersonalInformationUseCase_Execute_Call) RunAndReturn(run func(int, domain.PersonalInformation) error) *MockUpdateUserPersonalInformationUseCase_Execute_Call {
 	_c.Call.Return(run)
 	return _c
 }

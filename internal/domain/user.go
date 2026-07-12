@@ -199,7 +199,7 @@ func UserFromDTO(dto *UserDTO) (*User, error) {
 		return nil, err
 	}
 
-	phone, err := NewPhone(dto.Phone.Value)
+	phone, err := NewPhone(dto.Phone.CountryCode, dto.Phone.Number)
 	if err != nil {
 		return nil, err
 	}
@@ -252,32 +252,19 @@ func UserFromDTO(dto *UserDTO) (*User, error) {
 	})
 }
 
-func (u *User) WithPersonalInformation(
-	identification Identification,
-	firstName, lastName string,
-	address *Address,
-	birthDate *BirthDate,
-) (*User, error) {
-	if firstName == "" {
-		return nil, ErrInvalidFirstName
-	}
-
-	if lastName == "" {
-		return nil, ErrInvalidLastName
-	}
-
+func (u *User) WithPersonalInformation(info PersonalInformation) *User {
 	return &User{
 		id:             u.id,
-		identification: identification,
-		firstName:      firstName,
-		lastName:       lastName,
+		identification: info.identification,
+		firstName:      info.firstName,
+		lastName:       info.lastName,
 		phone:          u.phone,
 		email:          u.email,
-		address:        address,
-		birthDate:      birthDate,
+		address:        info.address,
+		birthDate:      info.birthDate,
 		createdAt:      u.createdAt,
 		updatedAt:      time.Now(),
-	}, nil
+	}
 }
 
 func (u *User) WithPhone(phone Phone) *User {
