@@ -10,6 +10,7 @@ type RouterParams struct {
 	CreateUser                *CreateUserController
 	DeleteUser                *DeleteUserController
 	UpdatePersonalInformation *UpdateUserPersonalInformationController
+	FindUsersPaginated        *FindUsersPaginatedController
 }
 
 func NewRouter(params RouterParams) *chi.Mux {
@@ -31,6 +32,9 @@ func NewRouter(params RouterParams) *chi.Mux {
 	}
 	if params.UpdatePersonalInformation != nil {
 		r.Put("/users/{id}", params.UpdatePersonalInformation.Handle)
+	}
+	if params.FindUsersPaginated != nil {
+		r.Get("/users", params.FindUsersPaginated.Handle)
 	}
 
 	return r

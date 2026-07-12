@@ -11,8 +11,9 @@ import (
 )
 
 var (
-	ErrInvalidRouteParam   = errors.New("invalid route parameter")
-	ErrInvalidRequestBody  = errors.New("invalid request body")
+	ErrInvalidRouteParam = errors.New("invalid route parameter")
+	ErrInvalidQueryParam = errors.New("invalid query parameter")
+	ErrInvalidRequestBody = errors.New("invalid request body")
 )
 
 func ParseRouteIntParam(r *http.Request, paramName string) (int, error) {
@@ -27,6 +28,20 @@ func ParseRouteIntParam(r *http.Request, paramName string) (int, error) {
 	}
 
 	return val, nil
+}
+
+func ParseQueryIntParam(r *http.Request, paramName string) (*int, error) {
+	valStr := r.URL.Query().Get(paramName)
+	if valStr == "" {
+		return nil, nil
+	}
+
+	val, err := strconv.Atoi(valStr)
+	if err != nil || val <= 0 {
+		return nil, fmt.Errorf("%w: parameter %s must be a positive integer", ErrInvalidQueryParam, paramName)
+	}
+
+	return &val, nil
 }
 
 func ParseJSONBody(r *http.Request, dst any) error {
