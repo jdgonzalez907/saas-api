@@ -14,9 +14,11 @@ var (
 	ErrUserPhoneAlreadyExists = errors.New("user with phone already exists")
 	ErrUserEmailAlreadyExists = errors.New("user with email already exists")
 	ErrUserNotFound           = errors.New("user not found")
-	ErrCreatingUser           = errors.New("error creating user")
-	ErrUpdatingUser           = errors.New("error updating user")
-	ErrDeletingUser           = errors.New("error deleting user")
+	ErrCreatingUser                    = errors.New("error creating user")
+	ErrUpdatingUserPersonalInformation = errors.New("error updating user personal information")
+	ErrUpdatingUserPhone               = errors.New("error updating user phone")
+	ErrUpdatingUserEmail               = errors.New("error updating user email")
+	ErrDeletingUser                    = errors.New("error deleting user")
 )
 
 type User struct {
@@ -144,17 +146,60 @@ func UserFromDTO(dto *UserDTO) (*User, error) {
 	})
 }
 
-func (u *User) With(params UserParams) (*User, error) {
-	return NewUser(UserParams{
-		ID:             u.id,
-		Identification: params.Identification,
-		FirstName:      params.FirstName,
-		LastName:       params.LastName,
-		Phone:          params.Phone,
-		Email:          params.Email,
-		Address:        params.Address,
-		BirthDate:      params.BirthDate,
-		CreatedAt:      u.createdAt,
-		UpdatedAt:      time.Now(),
-	})
+func (u *User) WithPersonalInformation(
+	identification Identification,
+	firstName, lastName string,
+	address *Address,
+	birthDate *BirthDate,
+) (*User, error) {
+	if firstName == "" {
+		return nil, ErrInvalidFirstName
+	}
+
+	if lastName == "" {
+		return nil, ErrInvalidLastName
+	}
+
+	return &User{
+		id:             u.id,
+		identification: identification,
+		firstName:      firstName,
+		lastName:       lastName,
+		phone:          u.phone,
+		email:          u.email,
+		address:        address,
+		birthDate:      birthDate,
+		createdAt:      u.createdAt,
+		updatedAt:      time.Now(),
+	}, nil
+}
+
+func (u *User) WithPhone(phone Phone) *User {
+	return &User{
+		id:             u.id,
+		identification: u.identification,
+		firstName:      u.firstName,
+		lastName:       u.lastName,
+		phone:          phone,
+		email:          u.email,
+		address:        u.address,
+		birthDate:      u.birthDate,
+		createdAt:      u.createdAt,
+		updatedAt:      time.Now(),
+	}
+}
+
+func (u *User) WithEmail(email *Email) *User {
+	return &User{
+		id:             u.id,
+		identification: u.identification,
+		firstName:      u.firstName,
+		lastName:       u.lastName,
+		phone:          u.phone,
+		email:          email,
+		address:        u.address,
+		birthDate:      u.birthDate,
+		createdAt:      u.createdAt,
+		updatedAt:      time.Now(),
+	}
 }
