@@ -20,13 +20,13 @@ func TestNewBirthDate(t *testing.T) {
 		expectedOutput domain.BirthDate
 	}{
 		{
-			testName:       "create birth date",
+			testName:       "success - create birth date",
 			input:          date18yearsAgo,
 			expectedError:  nil,
 			expectedOutput: domain.BirthDate{Value: date18yearsAgo},
 		},
 		{
-			testName:       "fail to create birth date with age less than 18",
+			testName:       "fail - age less than 18",
 			input:          date17yearsAgo,
 			expectedError:  domain.ErrInvalidBirthDate,
 			expectedOutput: domain.BirthDate{},
