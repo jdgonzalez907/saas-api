@@ -86,5 +86,5 @@ func (c *CreateUserController) Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	RespondWithJSON(w, http.StatusCreated, nil)
+	RespondWithJSON(w, http.StatusCreated, user.ToDTO())
 }
