@@ -58,12 +58,22 @@ SELECT
 FROM users 
 WHERE email = $1 AND deleted_at IS NULL;
 
--- name: FindUsersPaginated :many
+-- name: FindUsersPaginatedWithCursor :many
 SELECT 
     id, identification_type, identification_number, first_name, last_name, 
     birth_date, address, phone_country_code, phone_number, email, 
     created_at, updated_at 
 FROM users 
-WHERE (sqlc.narg('last_id')::bigint IS NULL OR id > sqlc.narg('last_id')::bigint) AND deleted_at IS NULL 
+WHERE id > $1 AND deleted_at IS NULL 
+ORDER BY id ASC 
+LIMIT $2;
+
+-- name: FindUsersPaginatedWithoutCursor :many
+SELECT 
+    id, identification_type, identification_number, first_name, last_name, 
+    birth_date, address, phone_country_code, phone_number, email, 
+    created_at, updated_at 
+FROM users 
+WHERE deleted_at IS NULL 
 ORDER BY id ASC 
 LIMIT $1;
