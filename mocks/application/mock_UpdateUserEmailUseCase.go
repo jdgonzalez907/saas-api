@@ -3,6 +3,7 @@
 package application
 
 import (
+	context "context"
 	domain "jdgonzalez907/users-api/internal/domain"
 
 	mock "github.com/stretchr/testify/mock"
@@ -21,17 +22,17 @@ func (_m *MockUpdateUserEmailUseCase) EXPECT() *MockUpdateUserEmailUseCase_Expec
 	return &MockUpdateUserEmailUseCase_Expecter{mock: &_m.Mock}
 }
 
-// Execute provides a mock function with given fields: id, email
-func (_m *MockUpdateUserEmailUseCase) Execute(id int, email *domain.Email) error {
-	ret := _m.Called(id, email)
+// Execute provides a mock function with given fields: ctx, id, email
+func (_m *MockUpdateUserEmailUseCase) Execute(ctx context.Context, id int, email *domain.Email) error {
+	ret := _m.Called(ctx, id, email)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Execute")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(int, *domain.Email) error); ok {
-		r0 = rf(id, email)
+	if rf, ok := ret.Get(0).(func(context.Context, int, *domain.Email) error); ok {
+		r0 = rf(ctx, id, email)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -45,15 +46,16 @@ type MockUpdateUserEmailUseCase_Execute_Call struct {
 }
 
 // Execute is a helper method to define mock.On call
+//   - ctx context.Context
 //   - id int
 //   - email *domain.Email
-func (_e *MockUpdateUserEmailUseCase_Expecter) Execute(id interface{}, email interface{}) *MockUpdateUserEmailUseCase_Execute_Call {
-	return &MockUpdateUserEmailUseCase_Execute_Call{Call: _e.mock.On("Execute", id, email)}
+func (_e *MockUpdateUserEmailUseCase_Expecter) Execute(ctx interface{}, id interface{}, email interface{}) *MockUpdateUserEmailUseCase_Execute_Call {
+	return &MockUpdateUserEmailUseCase_Execute_Call{Call: _e.mock.On("Execute", ctx, id, email)}
 }
 
-func (_c *MockUpdateUserEmailUseCase_Execute_Call) Run(run func(id int, email *domain.Email)) *MockUpdateUserEmailUseCase_Execute_Call {
+func (_c *MockUpdateUserEmailUseCase_Execute_Call) Run(run func(ctx context.Context, id int, email *domain.Email)) *MockUpdateUserEmailUseCase_Execute_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(int), args[1].(*domain.Email))
+		run(args[0].(context.Context), args[1].(int), args[2].(*domain.Email))
 	})
 	return _c
 }
@@ -63,7 +65,7 @@ func (_c *MockUpdateUserEmailUseCase_Execute_Call) Return(_a0 error) *MockUpdate
 	return _c
 }
 
-func (_c *MockUpdateUserEmailUseCase_Execute_Call) RunAndReturn(run func(int, *domain.Email) error) *MockUpdateUserEmailUseCase_Execute_Call {
+func (_c *MockUpdateUserEmailUseCase_Execute_Call) RunAndReturn(run func(context.Context, int, *domain.Email) error) *MockUpdateUserEmailUseCase_Execute_Call {
 	_c.Call.Return(run)
 	return _c
 }

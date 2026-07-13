@@ -46,7 +46,14 @@ func TestNewBirthDate(t *testing.T) {
 				if string(dto) != tc.input {
 					t.Errorf("expected DTO value: %v, got %v", tc.input, dto)
 				}
+				if birthDate.Formatted() != tc.input {
+					t.Errorf("expected Formatted(): %s, got: %s", tc.input, birthDate.Formatted())
+				}
+				if birthDate.Time().IsZero() {
+					t.Error("expected Time() to be non-zero")
+				}
 			}
 		})
 	}
 }
+

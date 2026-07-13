@@ -1,12 +1,13 @@
 package application
 
 import (
+	"context"
 	"fmt"
 	"jdgonzalez907/users-api/internal/domain"
 )
 
 type DeleteUserUseCase interface {
-	Execute(id int) error
+	Execute(ctx context.Context, id int) error
 }
 
 type deleteUserUseCase struct {
@@ -17,8 +18,8 @@ func NewDeleteUserUseCase(userRepository domain.UserRepository) DeleteUserUseCas
 	return &deleteUserUseCase{userRepository: userRepository}
 }
 
-func (d *deleteUserUseCase) Execute(id int) error {
-	userFound, err := d.userRepository.FindById(id)
+func (d *deleteUserUseCase) Execute(ctx context.Context, id int) error {
+	userFound, err := d.userRepository.FindById(ctx, id)
 	if err != nil {
 		return fmt.Errorf("%v: %w", domain.ErrDeletingUser, err)
 	}
@@ -27,7 +28,7 @@ func (d *deleteUserUseCase) Execute(id int) error {
 		return domain.ErrUserNotFound
 	}
 
-	err = d.userRepository.Delete(id)
+	err = d.userRepository.Delete(ctx, id)
 	if err != nil {
 		return fmt.Errorf("%v: %w", domain.ErrDeletingUser, err)
 	}

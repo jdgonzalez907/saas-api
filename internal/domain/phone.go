@@ -31,3 +31,11 @@ func (p Phone) ToDTO() PhoneDTO {
 		Number:      p.number,
 	}
 }
+
+func (p Phone) CountryCode() string {
+	return p.countryCode
+}
+
+func (p Phone) Number() string {
+	return p.number
+}

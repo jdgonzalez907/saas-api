@@ -54,7 +54,7 @@ func TestFindUsersPaginatedController_Handle(t *testing.T) {
 			testName: "success - default pagination without query params",
 			urlQuery: "",
 			setupMock: func(m *mockApp.MockFindUsersPaginatedUseCase) {
-				m.EXPECT().Execute(mock.MatchedBy(func(p domain.Pagination) bool {
+				m.EXPECT().Execute(mock.Anything, mock.MatchedBy(func(p domain.Pagination) bool {
 					return p.LastID() == nil && p.Limit() == 10
 				})).Return(paginatedUsers, nil)
 			},
@@ -65,7 +65,7 @@ func TestFindUsersPaginatedController_Handle(t *testing.T) {
 			testName: "success - valid cursor and limit",
 			urlQuery: "?cursor=5&limit=25",
 			setupMock: func(m *mockApp.MockFindUsersPaginatedUseCase) {
-				m.EXPECT().Execute(mock.MatchedBy(func(p domain.Pagination) bool {
+				m.EXPECT().Execute(mock.Anything, mock.MatchedBy(func(p domain.Pagination) bool {
 					return p.LastID() != nil && *p.LastID() == 5 && p.Limit() == 25
 				})).Return(paginatedUsers, nil)
 			},
@@ -104,7 +104,7 @@ func TestFindUsersPaginatedController_Handle(t *testing.T) {
 			testName: "fail - usecase execution error",
 			urlQuery: "",
 			setupMock: func(m *mockApp.MockFindUsersPaginatedUseCase) {
-				m.EXPECT().Execute(mock.Anything).Return(domain.PaginatedUsers{}, domain.ErrFindingUsers)
+				m.EXPECT().Execute(mock.Anything, mock.Anything).Return(domain.PaginatedUsers{}, domain.ErrFindingUsers)
 			},
 			expectedStatus: http.StatusInternalServerError,
 			expectedBody:   "internal server error",

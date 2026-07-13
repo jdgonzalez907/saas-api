@@ -23,7 +23,7 @@ func (c *FindUserByIDController) Handle(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	user, err := c.useCase.Execute(id)
+	user, err := c.useCase.Execute(r.Context(), id)
 	if err != nil {
 		RespondWithDomainError(w, err)
 		return

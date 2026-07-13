@@ -1,6 +1,7 @@
 package application_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
@@ -61,8 +62,8 @@ func TestUpdateUserPersonalInformationUseCase(t *testing.T) {
 			id:       userID,
 			info:     personalInfo,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", userID).Return(existingUser, nil)
-				m.On("Update", mock.Anything).Return(nil)
+				m.On("FindById", mock.Anything, userID).Return(existingUser, nil)
+				m.On("Update", mock.Anything, mock.Anything).Return(nil)
 			},
 			expectedError: nil,
 		},
@@ -71,7 +72,7 @@ func TestUpdateUserPersonalInformationUseCase(t *testing.T) {
 			id:       userID,
 			info:     personalInfo,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", userID).Return(nil, nil)
+				m.On("FindById", mock.Anything, userID).Return(nil, nil)
 			},
 			expectedError: domain.ErrUserNotFound,
 		},
@@ -80,7 +81,7 @@ func TestUpdateUserPersonalInformationUseCase(t *testing.T) {
 			id:       userID,
 			info:     personalInfo,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", userID).Return(nil, dbErr)
+				m.On("FindById", mock.Anything, userID).Return(nil, dbErr)
 			},
 			expectedError: domain.ErrUpdatingUserPersonalInformation,
 		},
@@ -89,8 +90,8 @@ func TestUpdateUserPersonalInformationUseCase(t *testing.T) {
 			id:       userID,
 			info:     personalInfo,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", userID).Return(existingUser, nil)
-				m.On("Update", mock.Anything).Return(dbErr)
+				m.On("FindById", mock.Anything, userID).Return(existingUser, nil)
+				m.On("Update", mock.Anything, mock.Anything).Return(dbErr)
 			},
 			expectedError: domain.ErrUpdatingUserPersonalInformation,
 		},
@@ -102,7 +103,7 @@ func TestUpdateUserPersonalInformationUseCase(t *testing.T) {
 			tc.mockExpectations(mockUserRepository)
 
 			useCase := application.NewUpdateUserPersonalInformationUseCase(mockUserRepository)
-			err := useCase.Execute(tc.id, tc.info)
+			err := useCase.Execute(context.Background(), tc.id, tc.info)
 
 			if tc.expectedError != nil {
 				if err == nil {

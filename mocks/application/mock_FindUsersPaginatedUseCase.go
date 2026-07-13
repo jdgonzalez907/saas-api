@@ -3,6 +3,7 @@
 package application
 
 import (
+	context "context"
 	domain "jdgonzalez907/users-api/internal/domain"
 
 	mock "github.com/stretchr/testify/mock"
@@ -21,9 +22,9 @@ func (_m *MockFindUsersPaginatedUseCase) EXPECT() *MockFindUsersPaginatedUseCase
 	return &MockFindUsersPaginatedUseCase_Expecter{mock: &_m.Mock}
 }
 
-// Execute provides a mock function with given fields: pagination
-func (_m *MockFindUsersPaginatedUseCase) Execute(pagination domain.Pagination) (domain.PaginatedUsers, error) {
-	ret := _m.Called(pagination)
+// Execute provides a mock function with given fields: ctx, pagination
+func (_m *MockFindUsersPaginatedUseCase) Execute(ctx context.Context, pagination domain.Pagination) (domain.PaginatedUsers, error) {
+	ret := _m.Called(ctx, pagination)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Execute")
@@ -31,17 +32,17 @@ func (_m *MockFindUsersPaginatedUseCase) Execute(pagination domain.Pagination) (
 
 	var r0 domain.PaginatedUsers
 	var r1 error
-	if rf, ok := ret.Get(0).(func(domain.Pagination) (domain.PaginatedUsers, error)); ok {
-		return rf(pagination)
+	if rf, ok := ret.Get(0).(func(context.Context, domain.Pagination) (domain.PaginatedUsers, error)); ok {
+		return rf(ctx, pagination)
 	}
-	if rf, ok := ret.Get(0).(func(domain.Pagination) domain.PaginatedUsers); ok {
-		r0 = rf(pagination)
+	if rf, ok := ret.Get(0).(func(context.Context, domain.Pagination) domain.PaginatedUsers); ok {
+		r0 = rf(ctx, pagination)
 	} else {
 		r0 = ret.Get(0).(domain.PaginatedUsers)
 	}
 
-	if rf, ok := ret.Get(1).(func(domain.Pagination) error); ok {
-		r1 = rf(pagination)
+	if rf, ok := ret.Get(1).(func(context.Context, domain.Pagination) error); ok {
+		r1 = rf(ctx, pagination)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -55,14 +56,15 @@ type MockFindUsersPaginatedUseCase_Execute_Call struct {
 }
 
 // Execute is a helper method to define mock.On call
+//   - ctx context.Context
 //   - pagination domain.Pagination
-func (_e *MockFindUsersPaginatedUseCase_Expecter) Execute(pagination interface{}) *MockFindUsersPaginatedUseCase_Execute_Call {
-	return &MockFindUsersPaginatedUseCase_Execute_Call{Call: _e.mock.On("Execute", pagination)}
+func (_e *MockFindUsersPaginatedUseCase_Expecter) Execute(ctx interface{}, pagination interface{}) *MockFindUsersPaginatedUseCase_Execute_Call {
+	return &MockFindUsersPaginatedUseCase_Execute_Call{Call: _e.mock.On("Execute", ctx, pagination)}
 }
 
-func (_c *MockFindUsersPaginatedUseCase_Execute_Call) Run(run func(pagination domain.Pagination)) *MockFindUsersPaginatedUseCase_Execute_Call {
+func (_c *MockFindUsersPaginatedUseCase_Execute_Call) Run(run func(ctx context.Context, pagination domain.Pagination)) *MockFindUsersPaginatedUseCase_Execute_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(domain.Pagination))
+		run(args[0].(context.Context), args[1].(domain.Pagination))
 	})
 	return _c
 }
@@ -72,7 +74,7 @@ func (_c *MockFindUsersPaginatedUseCase_Execute_Call) Return(_a0 domain.Paginate
 	return _c
 }
 
-func (_c *MockFindUsersPaginatedUseCase_Execute_Call) RunAndReturn(run func(domain.Pagination) (domain.PaginatedUsers, error)) *MockFindUsersPaginatedUseCase_Execute_Call {
+func (_c *MockFindUsersPaginatedUseCase_Execute_Call) RunAndReturn(run func(context.Context, domain.Pagination) (domain.PaginatedUsers, error)) *MockFindUsersPaginatedUseCase_Execute_Call {
 	_c.Call.Return(run)
 	return _c
 }

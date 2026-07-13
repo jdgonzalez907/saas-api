@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"time"
 
 	"jdgonzalez907/users-api/internal/domain"
 	"jdgonzalez907/users-api/internal/infrastructure/database/sqlc"
@@ -27,8 +26,8 @@ func NewPostgresUserRepository(pool *pgxpool.Pool) *PostgresUserRepository {
 	}
 }
 
-func (r *PostgresUserRepository) FindById(id int) (*domain.User, error) {
-	row, err := r.queries.FindUserByID(context.Background(), int64(id))
+func (r *PostgresUserRepository) FindById(ctx context.Context, id int) (*domain.User, error) {
+	row, err := r.queries.FindUserByID(ctx, int64(id))
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
@@ -43,11 +42,10 @@ func (r *PostgresUserRepository) FindById(id int) (*domain.User, error) {
 	)
 }
 
-func (r *PostgresUserRepository) FindByPhone(phone domain.Phone) (*domain.User, error) {
-	dto := phone.ToDTO()
-	row, err := r.queries.FindUserByPhone(context.Background(), sqlc.FindUserByPhoneParams{
-		PhoneCountryCode: dto.CountryCode,
-		PhoneNumber:      dto.Number,
+func (r *PostgresUserRepository) FindByPhone(ctx context.Context, phone domain.Phone) (*domain.User, error) {
+	row, err := r.queries.FindUserByPhone(ctx, sqlc.FindUserByPhoneParams{
+		PhoneCountryCode: phone.CountryCode(),
+		PhoneNumber:      phone.Number(),
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -63,10 +61,9 @@ func (r *PostgresUserRepository) FindByPhone(phone domain.Phone) (*domain.User, 
 	)
 }
 
-func (r *PostgresUserRepository) FindByEmail(email domain.Email) (*domain.User, error) {
-	dto := email.ToDTO()
-	row, err := r.queries.FindUserByEmail(context.Background(), pgtype.Text{
-		String: string(dto),
+func (r *PostgresUserRepository) FindByEmail(ctx context.Context, email domain.Email) (*domain.User, error) {
+	row, err := r.queries.FindUserByEmail(ctx, pgtype.Text{
+		String: email.Value(),
 		Valid:  true,
 	})
 	if err != nil {
@@ -83,8 +80,7 @@ func (r *PostgresUserRepository) FindByEmail(email domain.Email) (*domain.User, 
 	)
 }
 
-func (r *PostgresUserRepository) FindAll(pagination domain.Pagination) ([]*domain.User, error) {
-	ctx := context.Background()
+func (r *PostgresUserRepository) FindAll(ctx context.Context, pagination domain.Pagination) ([]*domain.User, error) {
 	limit := int32(pagination.Limit())
 	var dbRows []sqlc.FindUsersPaginatedWithCursorRow
 
@@ -123,26 +119,21 @@ func (r *PostgresUserRepository) FindAll(pagination domain.Pagination) ([]*domai
 	return users, nil
 }
 
-func (r *PostgresUserRepository) Create(user *domain.User) error {
-	birthDate, err := toPgDate(user.BirthDate())
-	if err != nil {
-		return err
-	}
-
+func (r *PostgresUserRepository) Create(ctx context.Context, user *domain.User) error {
 	addressBytes, err := toJSONB(user.Address())
 	if err != nil {
 		return err
 	}
 
-	id, err := r.queries.CreateUser(context.Background(), sqlc.CreateUserParams{
-		IdentificationType:   string(user.Identification().ToDTO().Type),
-		IdentificationNumber: user.Identification().ToDTO().Number,
+	id, err := r.queries.CreateUser(ctx, sqlc.CreateUserParams{
+		IdentificationType:   string(user.Identification().Type()),
+		IdentificationNumber: user.Identification().Number(),
 		FirstName:            user.FirstName(),
 		LastName:             user.LastName(),
-		BirthDate:            birthDate,
+		BirthDate:            toPgDate(user.BirthDate()),
 		Address:              addressBytes,
-		PhoneCountryCode:     user.Phone().ToDTO().CountryCode,
-		PhoneNumber:          user.Phone().ToDTO().Number,
+		PhoneCountryCode:     user.Phone().CountryCode(),
+		PhoneNumber:          user.Phone().Number(),
 		Email:                toPgText(user.Email()),
 		CreatedAt:            pgtype.Timestamptz{Time: user.CreatedAt(), Valid: true},
 		UpdatedAt:            pgtype.Timestamptz{Time: user.UpdatedAt(), Valid: true},
@@ -155,52 +146,43 @@ func (r *PostgresUserRepository) Create(user *domain.User) error {
 	return nil
 }
 
-func (r *PostgresUserRepository) Update(user *domain.User) error {
-	birthDate, err := toPgDate(user.BirthDate())
-	if err != nil {
-		return err
-	}
-
+func (r *PostgresUserRepository) Update(ctx context.Context, user *domain.User) error {
 	addressBytes, err := toJSONB(user.Address())
 	if err != nil {
 		return err
 	}
 
-	return r.queries.UpdateUser(context.Background(), sqlc.UpdateUserParams{
-		IdentificationType:   string(user.Identification().ToDTO().Type),
-		IdentificationNumber: user.Identification().ToDTO().Number,
+	return r.queries.UpdateUser(ctx, sqlc.UpdateUserParams{
+		IdentificationType:   string(user.Identification().Type()),
+		IdentificationNumber: user.Identification().Number(),
 		FirstName:            user.FirstName(),
 		LastName:             user.LastName(),
-		BirthDate:            birthDate,
+		BirthDate:            toPgDate(user.BirthDate()),
 		Address:              addressBytes,
-		PhoneCountryCode:     user.Phone().ToDTO().CountryCode,
-		PhoneNumber:          user.Phone().ToDTO().Number,
+		PhoneCountryCode:     user.Phone().CountryCode(),
+		PhoneNumber:          user.Phone().Number(),
 		Email:                toPgText(user.Email()),
 		UpdatedAt:            pgtype.Timestamptz{Time: user.UpdatedAt(), Valid: true},
 		ID:                   int64(user.ID()),
 	})
 }
 
-func (r *PostgresUserRepository) Delete(id int) error {
-	return r.queries.DeleteUser(context.Background(), int64(id))
+func (r *PostgresUserRepository) Delete(ctx context.Context, id int) error {
+	return r.queries.DeleteUser(ctx, int64(id))
 }
 
-func toPgDate(bd *domain.BirthDate) (pgtype.Date, error) {
+func toPgDate(bd *domain.BirthDate) pgtype.Date {
 	if bd == nil {
-		return pgtype.Date{}, nil
+		return pgtype.Date{}
 	}
-	t, err := time.Parse("2006-01-02", string(bd.ToDTO()))
-	if err != nil {
-		return pgtype.Date{}, fmt.Errorf("error parsing birth date: %w", err)
-	}
-	return pgtype.Date{Time: t, Valid: true}, nil
+	return pgtype.Date{Time: bd.Time(), Valid: true}
 }
 
 func toPgText(email *domain.Email) pgtype.Text {
 	if email == nil {
 		return pgtype.Text{}
 	}
-	return pgtype.Text{String: string(email.ToDTO()), Valid: true}
+	return pgtype.Text{String: email.Value(), Valid: true}
 }
 
 func toJSONB(addr *domain.Address) ([]byte, error) {

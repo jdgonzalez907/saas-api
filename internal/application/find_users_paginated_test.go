@@ -1,6 +1,7 @@
 package application_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
@@ -54,7 +55,7 @@ func TestFindUsersPaginatedUseCase(t *testing.T) {
 			testName:   "success - page with users",
 			pagination: domain.NewPagination(&cursor, 10),
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindAll", mock.MatchedBy(func(p domain.Pagination) bool {
+				m.On("FindAll", mock.Anything, mock.MatchedBy(func(p domain.Pagination) bool {
 					return p.Limit() == 10 && p.LastID() != nil && *p.LastID() == cursor
 				})).Return([]*domain.User{firstUser, secondUser}, nil)
 			},
@@ -68,7 +69,7 @@ func TestFindUsersPaginatedUseCase(t *testing.T) {
 			testName:   "success - empty page",
 			pagination: domain.NewPagination(nil, 25),
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindAll", mock.MatchedBy(func(p domain.Pagination) bool {
+				m.On("FindAll", mock.Anything, mock.MatchedBy(func(p domain.Pagination) bool {
 					return p.Limit() == 25 && p.LastID() == nil
 				})).Return([]*domain.User{}, nil)
 			},
@@ -82,7 +83,7 @@ func TestFindUsersPaginatedUseCase(t *testing.T) {
 			testName:   "fail - repository error",
 			pagination: domain.NewPagination(nil, 50),
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindAll", mock.MatchedBy(func(p domain.Pagination) bool {
+				m.On("FindAll", mock.Anything, mock.MatchedBy(func(p domain.Pagination) bool {
 					return p.Limit() == 50 && p.LastID() == nil
 				})).Return(nil, dbErr)
 			},
@@ -97,7 +98,7 @@ func TestFindUsersPaginatedUseCase(t *testing.T) {
 			tc.mockExpectations(mockUserRepository)
 
 			useCase := application.NewFindUsersPaginatedUseCase(mockUserRepository)
-			result, err := useCase.Execute(tc.pagination)
+			result, err := useCase.Execute(context.Background(), tc.pagination)
 
 			if tc.expectedError != nil {
 				if err == nil {

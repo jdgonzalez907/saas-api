@@ -1,6 +1,7 @@
 package application_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
@@ -8,6 +9,8 @@ import (
 	"jdgonzalez907/users-api/internal/application"
 	"jdgonzalez907/users-api/internal/domain"
 	domainMocks "jdgonzalez907/users-api/mocks/domain"
+
+	"github.com/stretchr/testify/mock"
 )
 
 func TestDeleteUserUseCase(t *testing.T) {
@@ -48,8 +51,8 @@ func TestDeleteUserUseCase(t *testing.T) {
 			testName: "success - delete user",
 			inputID:  userID,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", userID).Return(existingUser, nil)
-				m.On("Delete", userID).Return(nil)
+				m.On("FindById", mock.Anything, userID).Return(existingUser, nil)
+				m.On("Delete", mock.Anything, userID).Return(nil)
 			},
 			expectedError: nil,
 		},
@@ -57,7 +60,7 @@ func TestDeleteUserUseCase(t *testing.T) {
 			testName: "fail - user not found",
 			inputID:  userID,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", userID).Return(nil, nil)
+				m.On("FindById", mock.Anything, userID).Return(nil, nil)
 			},
 			expectedError: domain.ErrUserNotFound,
 		},
@@ -65,7 +68,7 @@ func TestDeleteUserUseCase(t *testing.T) {
 			testName: "fail - infra error on FindById",
 			inputID:  userID,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", userID).Return(nil, dbErr)
+				m.On("FindById", mock.Anything, userID).Return(nil, dbErr)
 			},
 			expectedError: domain.ErrDeletingUser,
 		},
@@ -73,8 +76,8 @@ func TestDeleteUserUseCase(t *testing.T) {
 			testName: "fail - infra error on Delete",
 			inputID:  userID,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", userID).Return(existingUser, nil)
-				m.On("Delete", userID).Return(dbErr)
+				m.On("FindById", mock.Anything, userID).Return(existingUser, nil)
+				m.On("Delete", mock.Anything, userID).Return(dbErr)
 			},
 			expectedError: domain.ErrDeletingUser,
 		},
@@ -86,7 +89,7 @@ func TestDeleteUserUseCase(t *testing.T) {
 			tc.mockExpectations(mockUserRepository)
 
 			deleteUserUseCase := application.NewDeleteUserUseCase(mockUserRepository)
-			err := deleteUserUseCase.Execute(tc.inputID)
+			err := deleteUserUseCase.Execute(context.Background(), tc.inputID)
 
 			if tc.expectedError != nil {
 				if err == nil {
