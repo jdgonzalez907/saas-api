@@ -56,7 +56,9 @@ Cada caso de uso en la capa de aplicación debe seguir una estructura estricta y
   - `"success - [descripción corta del éxito]"`
   - `"fail - [descripción corta del error/falla]"`
 - **Mocking**: Utilizar `mockery` para la generación automática de mocks. Los mocks deben estar ubicados bajo la carpeta `mocks/`.
-- **Cobertura de Código**: Se requiere obligatoriamente una cobertura del **100.0% de sentencias** (statement coverage) para los paquetes `internal/domain` e `internal/application`.
+- **Cobertura de Código**: Se requiere obligatoriamente una cobertura del **100.0% de sentencias** (statement coverage) para todos los paquetes de negocio y de infraestructura bajo el directorio `internal/` (incluyendo `internal/domain`, `internal/application` e `internal/infrastructure/controllers`).
+- **Prohibición de Reflexión (No Reflection)**: Está estrictamente prohibido usar el paquete `reflect` o funciones como `reflect.DeepEqual` en las pruebas unitarias. Las validaciones de aserción e igualdad de entidades y value objects deben realizarse de forma explícita y manual, campo por campo. Ante campos opcionales o punteros, se debe validar si son diferentes de `nil` y, de ser así, verificar sus campos internos individualmente. Esto asegura claridad, legibilidad y facilidad de depuración.
+- **Nombres de Variables con Intención**: Queda prohibido el uso de nombres de variables genéricos, numerados o confusos (`x1`, `x2`, `user1`, `user2`, etc.) en los archivos de pruebas. Las variables deben ser nombradas con nombres que demuestren claramente su intención (ej. `firstUser`, `secondUser`, `personalInfo`, `badEmail`).
 - **Verificación**: Ejecutar la validación con:
   ```bash
   go test -coverprofile=coverage.out ./internal/... && go tool cover -func=coverage.out
@@ -84,6 +86,9 @@ Cada controller HTTP debe seguir una estructura estricta y limpia:
 - **Router**: Configurado en `router.go` usando `go-chi/chi/v5`. Middlewares globales registrados en orden: `RequestID` → `Logger` → `Recoverer` → `JSONContentTypeMiddleware`. No usar `RealIP` (deprecated).
 - **Struct de Controller**: Estructura pública que recibe sus dependencias (casos de uso) por constructor (ej. `NewUserController(...)`).
 - **Responsabilidad del Handler**: El método handler parsea la request y construye las entidades/VOs de dominio necesarias, llama al caso de uso (que recibe y devuelve solo entidades/VOs), y convierte el resultado a DTO vía `.ToDTO()` para responder. Nunca pasar DTOs directamente a los casos de uso.
+- **Mapeo de DTOs Planos y Embebidos**:
+  - Para campos que usan DTOs de tipo primitivo (ej. `EmailDTO` definido como `string`), el handler debe decodificar la request directamente a este tipo y luego pasar el valor subyacente para construir el Value Object del dominio (`Email`) antes de llamar al caso de uso.
+  - Para DTOs que usan composición por struct embedding (ej. `UserDTO` que embebe anónimamente `PersonalInformationDTO`), el handler debe extraer los campos del DTO embebido para construir primero el Value Object de dominio (`PersonalInformation`) y luego pasarlo al constructor de la entidad (`User`).
 - **Parseo de Parámetros de Ruta**: Usar siempre el helper centralizado `ParseRouteIntParam(r, "paramName")` para parámetros enteros. Agregar nuevos helpers en `request.go` para otros tipos de parseo. Cualquier fallo de parseo responde con `400 Bad Request`.
 - **Respuestas de Éxito**: Usar `RespondWithJSON(w, statusCode, entity.ToDTO())` sin envoltura. Código `200` para consultas y actualizaciones, `201` para creaciones, `204` para eliminaciones (pasar `nil` como data).
 - **Respuestas de Error de Dominio**: Usar siempre `RespondWithDomainError(w, err)`. Esta función inspecciona el error mediante `errors.Is` contra el mapa privado `domainErrorStatus` que centraliza el mapeo de cada error de dominio a su código HTTP. Al crear un nuevo error de dominio, añadir su entrada al mapa (una línea). Errores 5xx responden con el mensaje genérico `"internal server error"` para no filtrar detalles internos; errores 4xx responden con el mensaje del centinela de dominio.
