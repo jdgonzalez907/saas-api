@@ -24,64 +24,45 @@ var (
 )
 
 type User struct {
-	id             int
-	identification Identification
-	firstName      string
-	lastName       string
-	phone          Phone
-	email          *Email
-	address        *Address
-	birthDate      *BirthDate
-	createdAt      time.Time
-	updatedAt      time.Time
+	id                  int
+	personalInformation PersonalInformation
+	phone               Phone
+	email               *Email
+	createdAt           time.Time
+	updatedAt           time.Time
 }
 
 type UserParams struct {
-	ID             int
-	Identification Identification
-	FirstName      string
-	LastName       string
-	Phone          Phone
-	Email          *Email
-	Address        *Address
-	BirthDate      *BirthDate
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
+	ID                  int
+	PersonalInformation PersonalInformation
+	Phone               Phone
+	Email               *Email
+	CreatedAt           time.Time
+	UpdatedAt           time.Time
 }
 
 type UserDTO struct {
-	ID             int               `json:"id"`
-	Identification IdentificationDTO `json:"identification"`
-	FirstName      string            `json:"first_name"`
-	LastName       string            `json:"last_name"`
-	Phone          PhoneDTO          `json:"phone"`
-	Email          *EmailDTO         `json:"email"`
-	Address        *AddressDTO       `json:"address"`
-	BirthDate      *BirthDateDTO     `json:"birth_date"`
-	CreatedAt      time.Time         `json:"created_at"`
-	UpdatedAt      time.Time         `json:"updated_at"`
+	ID                     int `json:"id"`
+	PersonalInformationDTO     // Embedded
+	Phone                  PhoneDTO `json:"phone"`
+	Email                  *EmailDTO `json:"email"`
+	CreatedAt              time.Time `json:"created_at"`
+	UpdatedAt              time.Time `json:"updated_at"`
 }
 
 func NewUserWithoutId(
-	identification Identification,
-	firstName, lastName string,
+	personalInformation PersonalInformation,
 	phone Phone,
 	email *Email,
-	address *Address,
-	birthDate *BirthDate,
 ) (*User, error) {
 	now := time.Now()
 	return NewUser(UserParams{
-		ID:             0,
-		Identification: identification,
-		FirstName:      firstName,
-		LastName:       lastName,
-		Phone:          phone,
-		Email:          email,
-		Address:        address,
-		BirthDate:      birthDate,
-		CreatedAt:      now,
-		UpdatedAt:      now,
+		ID:                  0,
+		PersonalInformation: personalInformation,
+		Phone:               phone,
+		Email:               email,
+		CreatedAt:           now,
+		UpdatedAt:           now,
 	})
 }
 
@@ -90,25 +71,13 @@ func NewUser(params UserParams) (*User, error) {
 		return nil, ErrInvalidUserID
 	}
 
-	if params.FirstName == "" {
-		return nil, ErrInvalidFirstName
-	}
-
-	if params.LastName == "" {
-		return nil, ErrInvalidLastName
-	}
-
 	return &User{
-		id:             params.ID,
-		identification: params.Identification,
-		firstName:      params.FirstName,
-		lastName:       params.LastName,
-		phone:          params.Phone,
-		email:          params.Email,
-		address:        params.Address,
-		birthDate:      params.BirthDate,
-		createdAt:      params.CreatedAt,
-		updatedAt:      params.UpdatedAt,
+		id:                  params.ID,
+		personalInformation: params.PersonalInformation,
+		phone:               params.Phone,
+		email:               params.Email,
+		createdAt:           params.CreatedAt,
+		updatedAt:           params.UpdatedAt,
 	}, nil
 }
 
@@ -117,15 +86,15 @@ func (u *User) ID() int {
 }
 
 func (u *User) Identification() Identification {
-	return u.identification
+	return u.personalInformation.identification
 }
 
 func (u *User) FirstName() string {
-	return u.firstName
+	return u.personalInformation.firstName
 }
 
 func (u *User) LastName() string {
-	return u.lastName
+	return u.personalInformation.lastName
 }
 
 func (u *User) Phone() Phone {
@@ -137,11 +106,11 @@ func (u *User) Email() *Email {
 }
 
 func (u *User) Address() *Address {
-	return u.address
+	return u.personalInformation.address
 }
 
 func (u *User) BirthDate() *BirthDate {
-	return u.birthDate
+	return u.personalInformation.birthDate
 }
 
 func (u *User) CreatedAt() time.Time {
@@ -150,6 +119,10 @@ func (u *User) CreatedAt() time.Time {
 
 func (u *User) UpdatedAt() time.Time {
 	return u.updatedAt
+}
+
+func (u *User) PersonalInformation() PersonalInformation {
+	return u.personalInformation
 }
 
 func (u *User) ToDTO() *UserDTO {
@@ -163,29 +136,13 @@ func (u *User) ToDTO() *UserDTO {
 		emailDTO = &dto
 	}
 
-	var addressDTO *AddressDTO
-	if u.address != nil {
-		dto := u.address.ToDTO()
-		addressDTO = &dto
-	}
-
-	var birthDateDTO *BirthDateDTO
-	if u.birthDate != nil {
-		dto := u.birthDate.ToDTO()
-		birthDateDTO = &dto
-	}
-
 	return &UserDTO{
-		ID:             u.id,
-		Identification: u.identification.ToDTO(),
-		FirstName:      u.firstName,
-		LastName:       u.lastName,
-		Phone:          u.phone.ToDTO(),
-		Email:          emailDTO,
-		Address:        addressDTO,
-		BirthDate:      birthDateDTO,
-		CreatedAt:      u.createdAt,
-		UpdatedAt:      u.updatedAt,
+		ID:                     u.id,
+		PersonalInformationDTO: u.personalInformation.ToDTO(),
+		Phone:                  u.phone.ToDTO(),
+		Email:                  emailDTO,
+		CreatedAt:              u.createdAt,
+		UpdatedAt:              u.updatedAt,
 	}
 }
 
@@ -197,20 +154,6 @@ func UserFromDTO(dto *UserDTO) (*User, error) {
 	identification, err := NewIdentification(dto.Identification.Type, dto.Identification.Number)
 	if err != nil {
 		return nil, err
-	}
-
-	phone, err := NewPhone(dto.Phone.CountryCode, dto.Phone.Number)
-	if err != nil {
-		return nil, err
-	}
-
-	var email *Email
-	if dto.Email != nil {
-		e, err := NewEmail(dto.Email.Value)
-		if err != nil {
-			return nil, err
-		}
-		email = &e
 	}
 
 	var address *Address
@@ -238,61 +181,70 @@ func UserFromDTO(dto *UserDTO) (*User, error) {
 		birthDate = &b
 	}
 
+	personalInfo, err := NewPersonalInformation(
+		identification,
+		dto.FirstName,
+		dto.LastName,
+		address,
+		birthDate,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	phone, err := NewPhone(dto.Phone.CountryCode, dto.Phone.Number)
+	if err != nil {
+		return nil, err
+	}
+
+	var email *Email
+	if dto.Email != nil {
+		e, err := NewEmail(string(*dto.Email))
+		if err != nil {
+			return nil, err
+		}
+		email = &e
+	}
+
 	return NewUser(UserParams{
-		ID:             dto.ID,
-		Identification: identification,
-		FirstName:      dto.FirstName,
-		LastName:       dto.LastName,
-		Phone:          phone,
-		Email:          email,
-		Address:        address,
-		BirthDate:      birthDate,
-		CreatedAt:      dto.CreatedAt,
-		UpdatedAt:      dto.UpdatedAt,
+		ID:                  dto.ID,
+		PersonalInformation: personalInfo,
+		Phone:               phone,
+		Email:               email,
+		CreatedAt:           dto.CreatedAt,
+		UpdatedAt:           dto.UpdatedAt,
 	})
 }
 
 func (u *User) WithPersonalInformation(info PersonalInformation) *User {
 	return &User{
-		id:             u.id,
-		identification: info.identification,
-		firstName:      info.firstName,
-		lastName:       info.lastName,
-		phone:          u.phone,
-		email:          u.email,
-		address:        info.address,
-		birthDate:      info.birthDate,
-		createdAt:      u.createdAt,
-		updatedAt:      time.Now(),
+		id:                  u.id,
+		personalInformation: info,
+		phone:               u.phone,
+		email:               u.email,
+		createdAt:           u.createdAt,
+		updatedAt:           time.Now(),
 	}
 }
 
 func (u *User) WithPhone(phone Phone) *User {
 	return &User{
-		id:             u.id,
-		identification: u.identification,
-		firstName:      u.firstName,
-		lastName:       u.lastName,
-		phone:          phone,
-		email:          u.email,
-		address:        u.address,
-		birthDate:      u.birthDate,
-		createdAt:      u.createdAt,
-		updatedAt:      time.Now(),
+		id:                  u.id,
+		personalInformation: u.personalInformation,
+		phone:               phone,
+		email:               u.email,
+		createdAt:           u.createdAt,
+		updatedAt:           time.Now(),
 	}
 }
 
 func (u *User) WithEmail(email *Email) *User {
 	return &User{
-		id:             u.id,
-		identification: u.identification,
-		firstName:      u.firstName,
-		lastName:       u.lastName,
-		phone:          u.phone,
-		email:          email,
-		address:        u.address,
-		birthDate:      u.birthDate,
-		createdAt:      u.createdAt,
-		updatedAt:      time.Now(),
+		id:                  u.id,
+		personalInformation: u.personalInformation,
+		phone:               u.phone,
+		email:               email,
+		createdAt:           u.createdAt,
+		updatedAt:           time.Now(),
 	}
 }

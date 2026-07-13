@@ -19,7 +19,7 @@ import (
 )
 
 func TestUpdateUserEmailController_Handle(t *testing.T) {
-	validBody := domain.EmailDTO{Value: "new@example.com"}
+	validBody := domain.EmailDTO("new@example.com")
 
 	testCases := []struct {
 		testName       string
@@ -35,7 +35,7 @@ func TestUpdateUserEmailController_Handle(t *testing.T) {
 			requestBody:  validBody,
 			setupMock: func(m *mockApp.MockUpdateUserEmailUseCase) {
 				m.EXPECT().Execute(1, mock.MatchedBy(func(e *domain.Email) bool {
-					return e != nil && e.ToDTO().Value == "new@example.com"
+					return e != nil && e.ToDTO() == "new@example.com"
 				})).Return(nil)
 			},
 			expectedStatus: http.StatusOK,
@@ -43,9 +43,7 @@ func TestUpdateUserEmailController_Handle(t *testing.T) {
 		{
 			testName:     "success - email set to nil",
 			routeParamID: "1",
-			requestBody: domain.EmailDTO{
-				Value: "",
-			},
+			requestBody:  domain.EmailDTO(""),
 			setupMock: func(m *mockApp.MockUpdateUserEmailUseCase) {
 				m.EXPECT().Execute(1, (*domain.Email)(nil)).Return(nil)
 			},
@@ -76,11 +74,9 @@ func TestUpdateUserEmailController_Handle(t *testing.T) {
 			expectedBody:   controllers.ErrInvalidRequestBody.Error(),
 		},
 		{
-			testName:     "fail - invalid email format",
-			routeParamID: "1",
-			requestBody: domain.EmailDTO{
-				Value: "invalid-email",
-			},
+			testName:       "fail - invalid email format",
+			routeParamID:   "1",
+			requestBody:    domain.EmailDTO("invalid-email"),
 			setupMock:      func(m *mockApp.MockUpdateUserEmailUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   domain.ErrInvalidEmail.Error(),

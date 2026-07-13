@@ -1,7 +1,6 @@
 package domain_test
 
 import (
-	"reflect"
 	"testing"
 	"time"
 
@@ -16,30 +15,24 @@ func TestPaginatedUsersVO(t *testing.T) {
 	address, _ := domain.NewAddress("123 Main St", "City", "State", "Country", nil, nil)
 	birthDate, _ := domain.NewBirthDate(now.AddDate(-18, 0, -1))
 
-	user1, _ := domain.NewUser(domain.UserParams{
-		ID:             1,
-		Identification: identification,
-		FirstName:      "John",
-		LastName:       "Doe",
-		Phone:          phone,
-		Email:          &email,
-		Address:        &address,
-		BirthDate:      &birthDate,
-		CreatedAt:      now,
-		UpdatedAt:      now,
+	firstPersonalInfo, _ := domain.NewPersonalInformation(identification, "John", "Doe", &address, &birthDate)
+	firstUser, _ := domain.NewUser(domain.UserParams{
+		ID:                  1,
+		PersonalInformation: firstPersonalInfo,
+		Phone:               phone,
+		Email:               &email,
+		CreatedAt:           now,
+		UpdatedAt:           now,
 	})
 
-	user2, _ := domain.NewUser(domain.UserParams{
-		ID:             2,
-		Identification: identification,
-		FirstName:      "Jane",
-		LastName:       "Smith",
-		Phone:          phone,
-		Email:          &email,
-		Address:        &address,
-		BirthDate:      &birthDate,
-		CreatedAt:      now,
-		UpdatedAt:      now,
+	secondPersonalInfo, _ := domain.NewPersonalInformation(identification, "Jane", "Smith", &address, &birthDate)
+	secondUser, _ := domain.NewUser(domain.UserParams{
+		ID:                  2,
+		PersonalInformation: secondPersonalInfo,
+		Phone:               phone,
+		Email:               &email,
+		CreatedAt:           now,
+		UpdatedAt:           now,
 	})
 
 	nextCursor := 2
@@ -52,7 +45,7 @@ func TestPaginatedUsersVO(t *testing.T) {
 	}{
 		{
 			testName:           "success - create paginated users VO and convert to DTO",
-			users:              []*domain.User{user1, user2},
+			users:              []*domain.User{firstUser, secondUser},
 			nextCursor:         &nextCursor,
 			expectedUsersCount: 2,
 		},
@@ -86,8 +79,44 @@ func TestPaginatedUsersVO(t *testing.T) {
 			}
 
 			if tc.expectedUsersCount > 0 {
-				if !reflect.DeepEqual(dto.Users[0], *user1.ToDTO()) {
-					t.Errorf("expected DTO user1: %+v, got %+v", *user1.ToDTO(), dto.Users[0])
+				actual := dto.Users[0]
+				expected := *firstUser.ToDTO()
+
+				if actual.ID != expected.ID {
+					t.Errorf("expected ID %d, got %d", expected.ID, actual.ID)
+				}
+				if actual.FirstName != expected.FirstName {
+					t.Errorf("expected FirstName %s, got %s", expected.FirstName, actual.FirstName)
+				}
+				if actual.LastName != expected.LastName {
+					t.Errorf("expected LastName %s, got %s", expected.LastName, actual.LastName)
+				}
+				if actual.Identification != expected.Identification {
+					t.Errorf("expected Identification")
+				}
+				if actual.Phone != expected.Phone {
+					t.Errorf("expected Phone")
+				}
+				if (actual.Email == nil) != (expected.Email == nil) {
+					t.Errorf("expected Email nil mismatch")
+				} else if actual.Email != nil {
+					if *actual.Email != *expected.Email {
+						t.Errorf("expected Email value mismatch")
+					}
+				}
+				if (actual.Address == nil) != (expected.Address == nil) {
+					t.Errorf("expected Address nil mismatch")
+				} else if actual.Address != nil {
+					if *actual.Address != *expected.Address {
+						t.Errorf("expected Address value mismatch")
+					}
+				}
+				if (actual.BirthDate == nil) != (expected.BirthDate == nil) {
+					t.Errorf("expected BirthDate nil mismatch")
+				} else if actual.BirthDate != nil {
+					if !actual.BirthDate.Value.Equal(expected.BirthDate.Value) {
+						t.Errorf("expected BirthDate value mismatch")
+					}
 				}
 			}
 		})
