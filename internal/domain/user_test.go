@@ -13,7 +13,7 @@ var (
 	email, _          = domain.NewEmail("name@domain.com")
 	phone, _          = domain.NewPhone("57", "123456789")
 	address, _        = domain.NewAddress("123 Main St", "New York", "NY", "USA", nil, nil)
-	birthDate, _      = domain.NewBirthDate(testTime)
+	birthDate, _      = domain.NewBirthDate("1995-05-05")
 
 	personalInfo, _ = domain.NewPersonalInformation(
 		identification,
@@ -93,7 +93,7 @@ func isEqual(user *domain.User, params *domain.UserParams) bool {
 		dto.Phone == params.Phone.ToDTO() &&
 		(dto.Email == nil && paramsEmailDTO == nil || dto.Email != nil && paramsEmailDTO != nil && *dto.Email == *paramsEmailDTO) &&
 		(dto.Address == nil && paramsInfoDTO.Address == nil || dto.Address != nil && paramsInfoDTO.Address != nil && *dto.Address == *paramsInfoDTO.Address) &&
-		(dto.BirthDate == nil && paramsInfoDTO.BirthDate == nil || dto.BirthDate != nil && paramsInfoDTO.BirthDate != nil && dto.BirthDate.Value.Equal(paramsInfoDTO.BirthDate.Value)) &&
+		(dto.BirthDate == nil && paramsInfoDTO.BirthDate == nil || dto.BirthDate != nil && paramsInfoDTO.BirthDate != nil && *dto.BirthDate == *paramsInfoDTO.BirthDate) &&
 		dto.CreatedAt.Equal(params.CreatedAt) &&
 		dto.UpdatedAt.Equal(params.UpdatedAt)
 }
@@ -193,9 +193,17 @@ func TestUserDTOAndFromDTO(t *testing.T) {
 			},
 		},
 		{
-			name: "invalid birthdate",
+			name: "invalid birthdate format",
 			modify: func(d *domain.UserDTO) {
-				d.BirthDate = &domain.BirthDateDTO{Value: time.Now()}
+				bd := domain.BirthDateDTO("invalid-date")
+				d.BirthDate = &bd
+			},
+		},
+		{
+			name: "invalid birthdate underage",
+			modify: func(d *domain.UserDTO) {
+				bd := domain.BirthDateDTO(time.Now().Format("2006-01-02"))
+				d.BirthDate = &bd
 			},
 		},
 		{
@@ -251,7 +259,7 @@ func TestUserWithPersonalInformation(t *testing.T) {
 	newFirstName := "Jane"
 	newLastName := "Smith"
 	newAddress, _ := domain.NewAddress("456 Main St", "Boston", "MA", "USA", nil, nil)
-	newBirthDate, _ := domain.NewBirthDate(time.Now().AddDate(-19, 0, 0))
+	newBirthDate, _ := domain.NewBirthDate(time.Now().AddDate(-19, 0, 0).Format("2006-01-02"))
 
 	validInfo, _ := domain.NewPersonalInformation(
 		newIdentification,
@@ -326,7 +334,7 @@ func TestUserWithPersonalInformation(t *testing.T) {
 					t.Errorf("expected nil BirthDate, got %v", dto.BirthDate)
 				}
 			} else {
-				if dto.BirthDate == nil || !dto.BirthDate.Value.Equal(tc.expectedBD.ToDTO().Value) {
+				if dto.BirthDate == nil || *dto.BirthDate != tc.expectedBD.ToDTO() {
 					t.Errorf("expected BirthDate to be updated")
 				}
 			}
@@ -435,7 +443,7 @@ func TestUserGetters(t *testing.T) {
 	if user.Address() != nil && params.PersonalInformation.ToDTO().Address != nil && user.Address().ToDTO() != *params.PersonalInformation.ToDTO().Address {
 		t.Errorf("expected Address")
 	}
-	if user.BirthDate() != nil && params.PersonalInformation.ToDTO().BirthDate != nil && user.BirthDate().ToDTO().Value != params.PersonalInformation.ToDTO().BirthDate.Value {
+	if user.BirthDate() != nil && params.PersonalInformation.ToDTO().BirthDate != nil && user.BirthDate().ToDTO() != *params.PersonalInformation.ToDTO().BirthDate {
 		t.Errorf("expected BirthDate")
 	}
 	if !user.CreatedAt().Equal(params.CreatedAt) {
@@ -466,7 +474,7 @@ func TestUserGetters(t *testing.T) {
 	if (infoDTO.BirthDate == nil) != (expectedInfoDTO.BirthDate == nil) {
 		t.Errorf("expected BirthDate nil status to match")
 	} else if infoDTO.BirthDate != nil {
-		if !infoDTO.BirthDate.Value.Equal(expectedInfoDTO.BirthDate.Value) {
+		if *infoDTO.BirthDate != *expectedInfoDTO.BirthDate {
 			t.Errorf("expected BirthDate value to match")
 		}
 	}

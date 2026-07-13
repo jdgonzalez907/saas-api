@@ -19,7 +19,7 @@ func TestFindUsersPaginatedController_Handle(t *testing.T) {
 	phone, _ := domain.NewPhone("57", "987654321")
 	email, _ := domain.NewEmail("test@example.com")
 	address, _ := domain.NewAddress("St", "City", "State", "Country", nil, nil)
-	birthDate, _ := domain.NewBirthDate(time.Now().AddDate(-25, 0, 0))
+	birthDate, _ := domain.NewBirthDate(time.Now().AddDate(-25, 0, 0).Format("2006-01-02"))
 
 	personalInfo, _ := domain.NewPersonalInformation(
 		identification,
