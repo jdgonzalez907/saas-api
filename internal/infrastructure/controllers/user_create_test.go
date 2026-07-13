@@ -19,7 +19,7 @@ import (
 
 func TestCreateUserController_Handle(t *testing.T) {
 	validBirthDate := time.Now().AddDate(-25, 0, 0)
-	validBirthDateDTO := domain.BirthDateDTO{Value: validBirthDate}
+	validBirthDateDTO := domain.BirthDateDTO(validBirthDate.Format("2006-01-02"))
 
 	validEmail := domain.EmailDTO("john.doe@example.com")
 
@@ -134,12 +134,25 @@ func TestCreateUserController_Handle(t *testing.T) {
 			testName: "fail - invalid birth date (too young)",
 			requestBody: func() domain.UserDTO {
 				b := validBody
-				b.BirthDate = &domain.BirthDateDTO{Value: time.Now().AddDate(-5, 0, 0)}
+				bd := domain.BirthDateDTO(time.Now().AddDate(-5, 0, 0).Format("2006-01-02"))
+				b.BirthDate = &bd
 				return b
 			}(),
 			setupMock:      func(m *mockApp.MockCreateUserUseCase) {},
 			expectedStatus: http.StatusBadRequest,
-			expectedBody:   domain.ErrInvalidBirthDate.Error(),
+			expectedBody:   domain.ErrUserUnderage.Error(),
+		},
+		{
+			testName: "fail - invalid birth date format",
+			requestBody: func() domain.UserDTO {
+				b := validBody
+				bd := domain.BirthDateDTO("invalid-format")
+				b.BirthDate = &bd
+				return b
+			}(),
+			setupMock:      func(m *mockApp.MockCreateUserUseCase) {},
+			expectedStatus: http.StatusBadRequest,
+			expectedBody:   domain.ErrInvalidBirthDateFormat.Error(),
 		},
 		{
 			testName: "fail - invalid user first name",

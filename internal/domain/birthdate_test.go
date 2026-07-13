@@ -9,23 +9,28 @@ import (
 
 func TestNewBirthDate(t *testing.T) {
 	today := time.Now()
-	date18yearsAgo := today.AddDate(-18, 0, -1)
-	date17yearsAgo := today.AddDate(-18, 0, 0)
+	date18yearsAgoStr := today.AddDate(-18, 0, -1).Format("2006-01-02")
+	date17yearsAgoStr := today.AddDate(-18, 0, 1).Format("2006-01-02")
 
 	testCases := []struct {
 		testName      string
-		input         time.Time
+		input         string
 		expectedError error
 	}{
 		{
 			testName:      "success - create birth date",
-			input:         date18yearsAgo,
+			input:         date18yearsAgoStr,
 			expectedError: nil,
 		},
 		{
 			testName:      "fail - age less than 18",
-			input:         date17yearsAgo,
-			expectedError: domain.ErrInvalidBirthDate,
+			input:         date17yearsAgoStr,
+			expectedError: domain.ErrUserUnderage,
+		},
+		{
+			testName:      "fail - invalid format",
+			input:         "invalid-date",
+			expectedError: domain.ErrInvalidBirthDateFormat,
 		},
 	}
 
@@ -38,8 +43,8 @@ func TestNewBirthDate(t *testing.T) {
 
 			if tc.expectedError == nil {
 				dto := birthDate.ToDTO()
-				if !dto.Value.Equal(tc.input) {
-					t.Errorf("expected DTO value: %v, got %v", tc.input, dto.Value)
+				if string(dto) != tc.input {
+					t.Errorf("expected DTO value: %v, got %v", tc.input, dto)
 				}
 			}
 		})

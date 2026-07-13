@@ -21,7 +21,7 @@ import (
 
 func TestUpdateUserPersonalInformationController_Handle(t *testing.T) {
 	validBirthDate := time.Now().AddDate(-25, 0, 0)
-	validBirthDateDTO := domain.BirthDateDTO{Value: validBirthDate}
+	validBirthDateDTO := domain.BirthDateDTO(validBirthDate.Format("2006-01-02"))
 
 	validBody := domain.PersonalInformationDTO{
 		FirstName: "Jane",
@@ -135,12 +135,26 @@ func TestUpdateUserPersonalInformationController_Handle(t *testing.T) {
 			routeParamID: "1",
 			requestBody: func() domain.PersonalInformationDTO {
 				b := validBody
-				b.BirthDate = &domain.BirthDateDTO{Value: time.Now().AddDate(-5, 0, 0)}
+				bd := domain.BirthDateDTO(time.Now().AddDate(-5, 0, 0).Format("2006-01-02"))
+				b.BirthDate = &bd
 				return b
 			}(),
 			setupMock:      func(m *mockApp.MockUpdateUserPersonalInformationUseCase) {},
 			expectedStatus: http.StatusBadRequest,
-			expectedBody:   domain.ErrInvalidBirthDate.Error(),
+			expectedBody:   domain.ErrUserUnderage.Error(),
+		},
+		{
+			testName:     "fail - invalid birth date format",
+			routeParamID: "1",
+			requestBody: func() domain.PersonalInformationDTO {
+				b := validBody
+				bd := domain.BirthDateDTO("invalid-format")
+				b.BirthDate = &bd
+				return b
+			}(),
+			setupMock:      func(m *mockApp.MockUpdateUserPersonalInformationUseCase) {},
+			expectedStatus: http.StatusBadRequest,
+			expectedBody:   domain.ErrInvalidBirthDateFormat.Error(),
 		},
 		{
 			testName:     "fail - invalid first name",

@@ -22,7 +22,7 @@ func TestFindUserByIDController_Handle(t *testing.T) {
 	phone, _ := domain.NewPhone("57", "3112223344")
 	email, _ := domain.NewEmail("test@example.com")
 	address, _ := domain.NewAddress("Street 1", "City", "State", "Country", nil, nil)
-	birthDate, _ := domain.NewBirthDate(time.Now().AddDate(-20, 0, 0))
+	birthDate, _ := domain.NewBirthDate(time.Now().AddDate(-20, 0, 0).Format("2006-01-02"))
 
 	personalInfo, _ := domain.NewPersonalInformation(
 		identification,
