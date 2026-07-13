@@ -13,7 +13,7 @@ import (
 )
 
 func TestRouterAndMiddleware(t *testing.T) {
-	mockFindUseCase := mockApp.NewMockFindUserByIdUseCase(t)
+	mockFindUseCase := mockApp.NewMockFindUserByIDUseCase(t)
 	mockCreateUseCase := mockApp.NewMockCreateUserUseCase(t)
 	mockDeleteUseCase := mockApp.NewMockDeleteUserUseCase(t)
 	mockUpdatePIUseCase := mockApp.NewMockUpdateUserPersonalInformationUseCase(t)
