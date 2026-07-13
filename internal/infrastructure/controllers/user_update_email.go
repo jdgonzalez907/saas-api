@@ -31,8 +31,8 @@ func (c *UpdateUserEmailController) Handle(w http.ResponseWriter, r *http.Reques
 	}
 
 	var emailPtr *domain.Email
-	if body.Value != "" {
-		email, err := domain.NewEmail(body.Value)
+	if body != "" {
+		email, err := domain.NewEmail(string(body))
 		if err != nil {
 			RespondWithDomainError(w, err)
 			return

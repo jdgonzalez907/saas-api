@@ -21,27 +21,29 @@ func TestCreateUserController_Handle(t *testing.T) {
 	validBirthDate := time.Now().AddDate(-25, 0, 0)
 	validBirthDateDTO := domain.BirthDateDTO{Value: validBirthDate}
 
+	validEmail := domain.EmailDTO("john.doe@example.com")
+
 	validBody := domain.UserDTO{
-		FirstName: "John",
-		LastName:  "Doe",
-		Identification: domain.IdentificationDTO{
-			Type:   domain.IdType_CC,
-			Number: "123456789",
+		PersonalInformationDTO: domain.PersonalInformationDTO{
+			FirstName: "John",
+			LastName:  "Doe",
+			Identification: domain.IdentificationDTO{
+				Type:   domain.IdType_CC,
+				Number: "123456789",
+			},
+			Address: &domain.AddressDTO{
+				Street:  "Street 123",
+				City:    "New York",
+				State:   "NY",
+				Country: "USA",
+			},
+			BirthDate: &validBirthDateDTO,
 		},
 		Phone: domain.PhoneDTO{
 			CountryCode: "57",
 			Number:      "3112223344",
 		},
-		Email: &domain.EmailDTO{
-			Value: "john.doe@example.com",
-		},
-		Address: &domain.AddressDTO{
-			Street:  "Street 123",
-			City:    "New York",
-			State:   "NY",
-			Country: "USA",
-		},
-		BirthDate: &validBirthDateDTO,
+		Email: &validEmail,
 	}
 
 	testCases := []struct {
@@ -104,7 +106,8 @@ func TestCreateUserController_Handle(t *testing.T) {
 			testName: "fail - invalid email",
 			requestBody: func() domain.UserDTO {
 				b := validBody
-				b.Email = &domain.EmailDTO{Value: "invalid-email"}
+				badEmail := domain.EmailDTO("invalid-email")
+				b.Email = &badEmail
 				return b
 			}(),
 			setupMock:      func(m *mockApp.MockCreateUserUseCase) {},
