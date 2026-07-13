@@ -25,7 +25,7 @@ func NewBirthDate(value string) (BirthDate, error) {
 		return BirthDate{}, ErrInvalidBirthDateFormat
 	}
 
-	now := time.Now()
+	now := time.Now().UTC()
 	age := now.Year() - t.Year()
 
 	if now.YearDay() < t.YearDay() {

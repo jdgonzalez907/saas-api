@@ -7,10 +7,10 @@ import (
 )
 
 type FindUserByIDController struct {
-	useCase application.FindUserByIdUseCase
+	useCase application.FindUserByIDUseCase
 }
 
-func NewFindUserByIDController(useCase application.FindUserByIdUseCase) *FindUserByIDController {
+func NewFindUserByIDController(useCase application.FindUserByIDUseCase) *FindUserByIDController {
 	return &FindUserByIDController{
 		useCase: useCase,
 	}
