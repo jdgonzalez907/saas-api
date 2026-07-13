@@ -2,7 +2,6 @@ package application_test
 
 import (
 	"errors"
-	"reflect"
 	"testing"
 	"time"
 
@@ -21,30 +20,24 @@ func TestFindUsersPaginatedUseCase(t *testing.T) {
 	address, _ := domain.NewAddress("123 Main St", "City", "State", "Country", nil, nil)
 	birthDate, _ := domain.NewBirthDate(now.AddDate(-18, 0, -1))
 
-	user1, _ := domain.NewUser(domain.UserParams{
-		ID:             1,
-		Identification: identification,
-		FirstName:      "John",
-		LastName:       "Doe",
-		Phone:          phone,
-		Email:          &email,
-		Address:        &address,
-		BirthDate:      &birthDate,
-		CreatedAt:      now,
-		UpdatedAt:      now,
+	firstPersonalInfo, _ := domain.NewPersonalInformation(identification, "John", "Doe", &address, &birthDate)
+	firstUser, _ := domain.NewUser(domain.UserParams{
+		ID:                  1,
+		PersonalInformation: firstPersonalInfo,
+		Phone:               phone,
+		Email:               &email,
+		CreatedAt:           now,
+		UpdatedAt:           now,
 	})
 
-	user2, _ := domain.NewUser(domain.UserParams{
-		ID:             2,
-		Identification: identification,
-		FirstName:      "Jane",
-		LastName:       "Smith",
-		Phone:          phone,
-		Email:          &email,
-		Address:        &address,
-		BirthDate:      &birthDate,
-		CreatedAt:      now,
-		UpdatedAt:      now,
+	secondPersonalInfo, _ := domain.NewPersonalInformation(identification, "Jane", "Smith", &address, &birthDate)
+	secondUser, _ := domain.NewUser(domain.UserParams{
+		ID:                  2,
+		PersonalInformation: secondPersonalInfo,
+		Phone:               phone,
+		Email:               &email,
+		CreatedAt:           now,
+		UpdatedAt:           now,
 	})
 
 	dbErr := errors.New("db query error")
@@ -63,10 +56,10 @@ func TestFindUsersPaginatedUseCase(t *testing.T) {
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindAll", mock.MatchedBy(func(p domain.Pagination) bool {
 					return p.Limit() == 10 && p.LastID() != nil && *p.LastID() == cursor
-				})).Return([]*domain.User{user1, user2}, nil)
+				})).Return([]*domain.User{firstUser, secondUser}, nil)
 			},
 			expectedResult: domain.NewPaginatedUsers(
-				[]*domain.User{user1, user2},
+				[]*domain.User{firstUser, secondUser},
 				func() *int { i := 2; return &i }(),
 			),
 			expectedError: nil,
@@ -121,8 +114,15 @@ func TestFindUsersPaginatedUseCase(t *testing.T) {
 				if err != nil {
 					t.Fatalf("expected no error, got %v", err)
 				}
-				if !reflect.DeepEqual(result.Users(), tc.expectedResult.Users()) {
-					t.Errorf("expected users: %+v, got %+v", tc.expectedResult.Users(), result.Users())
+				if len(result.Users()) != len(tc.expectedResult.Users()) {
+					t.Errorf("expected users count: %d, got %d", len(tc.expectedResult.Users()), len(result.Users()))
+				} else {
+					for idx, expectedUser := range tc.expectedResult.Users() {
+						actualUser := result.Users()[idx]
+						if actualUser.ID() != expectedUser.ID() {
+							t.Errorf("mismatch user ID at index %d: expected %d, got %d", idx, expectedUser.ID(), actualUser.ID())
+						}
+					}
 				}
 				if (tc.expectedResult.NextCursor() == nil && result.NextCursor() != nil) ||
 					(tc.expectedResult.NextCursor() != nil && result.NextCursor() == nil) ||

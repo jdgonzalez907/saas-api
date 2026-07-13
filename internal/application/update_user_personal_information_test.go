@@ -21,17 +21,21 @@ func TestUpdateUserPersonalInformationUseCase(t *testing.T) {
 	birthDate, _ := domain.NewBirthDate(time.Now().AddDate(-18, 0, -1))
 	now := time.Now()
 
+	existingPersonalInfo, _ := domain.NewPersonalInformation(
+		identification,
+		"John",
+		"Doe",
+		&address,
+		&birthDate,
+	)
+
 	existingUser, _ := domain.NewUser(domain.UserParams{
-		ID:             userID,
-		Identification: identification,
-		FirstName:      "John",
-		LastName:       "Doe",
-		Phone:          phone,
-		Email:          &email,
-		Address:        &address,
-		BirthDate:      &birthDate,
-		CreatedAt:      now,
-		UpdatedAt:      now,
+		ID:                  userID,
+		PersonalInformation: existingPersonalInfo,
+		Phone:               phone,
+		Email:               &email,
+		CreatedAt:           now,
+		UpdatedAt:           now,
 	})
 
 	otherIdentification, _ := domain.NewIdentification(domain.IdType_CC, "2222")
@@ -92,23 +96,23 @@ func TestUpdateUserPersonalInformationUseCase(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range testCases {
-		t.Run(testCase.testName, func(t *testing.T) {
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
 			mockUserRepository := new(domainMocks.MockUserRepository)
-			testCase.mockExpectations(mockUserRepository)
+			tc.mockExpectations(mockUserRepository)
 
 			useCase := application.NewUpdateUserPersonalInformationUseCase(mockUserRepository)
-			err := useCase.Execute(testCase.id, testCase.info)
+			err := useCase.Execute(tc.id, tc.info)
 
-			if testCase.expectedError != nil {
+			if tc.expectedError != nil {
 				if err == nil {
-					t.Fatalf("expected error: %v, got nil", testCase.expectedError)
+					t.Fatalf("expected error: %v, got nil", tc.expectedError)
 				}
-				if !errors.Is(err, testCase.expectedError) {
-					if testCase.expectedError == domain.ErrUpdatingUserPersonalInformation && errors.Unwrap(err) != nil {
+				if !errors.Is(err, tc.expectedError) {
+					if tc.expectedError == domain.ErrUpdatingUserPersonalInformation && errors.Unwrap(err) != nil {
 						// Success: wrapped infra error
 					} else {
-						t.Errorf("expected error: %v, got %v", testCase.expectedError, err)
+						t.Errorf("expected error: %v, got %v", tc.expectedError, err)
 					}
 				}
 			} else {

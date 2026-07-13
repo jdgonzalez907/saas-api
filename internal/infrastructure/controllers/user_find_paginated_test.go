@@ -21,17 +21,21 @@ func TestFindUsersPaginatedController_Handle(t *testing.T) {
 	address, _ := domain.NewAddress("St", "City", "State", "Country", nil, nil)
 	birthDate, _ := domain.NewBirthDate(time.Now().AddDate(-25, 0, 0))
 
+	personalInfo, _ := domain.NewPersonalInformation(
+		identification,
+		"John",
+		"Doe",
+		&address,
+		&birthDate,
+	)
+
 	userParams := domain.UserParams{
-		ID:             1,
-		Identification: identification,
-		FirstName:      "John",
-		LastName:       "Doe",
-		Phone:          phone,
-		Email:          &email,
-		Address:        &address,
-		BirthDate:      &birthDate,
-		CreatedAt:      time.Now(),
-		UpdatedAt:      time.Now(),
+		ID:                  1,
+		PersonalInformation: personalInfo,
+		Phone:               phone,
+		Email:               &email,
+		CreatedAt:           time.Now(),
+		UpdatedAt:           time.Now(),
 	}
 	u, err := domain.NewUser(userParams)
 	assert.NoError(t, err)
@@ -121,11 +125,7 @@ func TestFindUsersPaginatedController_Handle(t *testing.T) {
 
 			assert.Equal(t, tc.expectedStatus, rec.Code)
 			if tc.expectedBody != "" {
-				var responseMap map[string]any
-				// If expectedBody is not a JSON object but a substring we expect in raw body, check that
-				// otherwise unmarshal and check. Here let's just assert on the raw string for simplicity
 				assert.Contains(t, rec.Body.String(), tc.expectedBody)
-				_ = responseMap
 			}
 		})
 	}
