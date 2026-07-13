@@ -16,7 +16,7 @@ func TestFindUserByIdUseCase(t *testing.T) {
 	phone, _ := domain.NewPhone("57", "123456789")
 	email, _ := domain.NewEmail("john.doe@example.com")
 	address, _ := domain.NewAddress("123 Main St", "City", "State", "Country", nil, nil)
-	birthDate, _ := domain.NewBirthDate(now.AddDate(-18, 0, -1))
+	birthDate, _ := domain.NewBirthDate(now.AddDate(-18, 0, -1).Format("2006-01-02"))
 
 	personalInfo, _ := domain.NewPersonalInformation(
 		identification,

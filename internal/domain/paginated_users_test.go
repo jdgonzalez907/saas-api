@@ -13,7 +13,7 @@ func TestPaginatedUsersVO(t *testing.T) {
 	phone, _ := domain.NewPhone("57", "123456789")
 	email, _ := domain.NewEmail("john.doe@example.com")
 	address, _ := domain.NewAddress("123 Main St", "City", "State", "Country", nil, nil)
-	birthDate, _ := domain.NewBirthDate(now.AddDate(-18, 0, -1))
+	birthDate, _ := domain.NewBirthDate(now.AddDate(-18, 0, -1).Format("2006-01-02"))
 
 	firstPersonalInfo, _ := domain.NewPersonalInformation(identification, "John", "Doe", &address, &birthDate)
 	firstUser, _ := domain.NewUser(domain.UserParams{
@@ -114,7 +114,7 @@ func TestPaginatedUsersVO(t *testing.T) {
 				if (actual.BirthDate == nil) != (expected.BirthDate == nil) {
 					t.Errorf("expected BirthDate nil mismatch")
 				} else if actual.BirthDate != nil {
-					if !actual.BirthDate.Value.Equal(expected.BirthDate.Value) {
+					if *actual.BirthDate != *expected.BirthDate {
 						t.Errorf("expected BirthDate value mismatch")
 					}
 				}

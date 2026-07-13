@@ -18,7 +18,7 @@ func TestUpdateUserEmailUseCase(t *testing.T) {
 	phone, _ := domain.NewPhone("57", "123456789")
 	email, _ := domain.NewEmail("john.doe@example.com")
 	address, _ := domain.NewAddress("123 Main St", "City", "State", "Country", nil, nil)
-	birthDate, _ := domain.NewBirthDate(time.Now().AddDate(-18, 0, -1))
+	birthDate, _ := domain.NewBirthDate(time.Now().AddDate(-18, 0, -1).Format("2006-01-02"))
 	now := time.Now()
 
 	personalInfo, _ := domain.NewPersonalInformation(
