@@ -77,7 +77,7 @@ func (c *UpdateUserPersonalInformationController) Handle(w http.ResponseWriter, 
 		return
 	}
 
-	if err := c.useCase.Execute(id, personalInfo); err != nil {
+	if err := c.useCase.Execute(r.Context(), id, personalInfo); err != nil {
 		RespondWithDomainError(w, err)
 		return
 	}

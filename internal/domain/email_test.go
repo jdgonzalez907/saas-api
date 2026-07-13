@@ -41,6 +41,9 @@ func TestNewEmail(t *testing.T) {
 				if string(dto) != tc.input {
 					t.Errorf("expected DTO value: %s, got: %s", tc.input, dto)
 				}
+				if email.Value() != tc.input {
+					t.Errorf("expected Value(): %s, got: %s", tc.input, email.Value())
+				}
 			}
 		})
 	}

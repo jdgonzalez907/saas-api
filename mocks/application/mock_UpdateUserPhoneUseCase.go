@@ -3,6 +3,7 @@
 package application
 
 import (
+	context "context"
 	domain "jdgonzalez907/users-api/internal/domain"
 
 	mock "github.com/stretchr/testify/mock"
@@ -21,17 +22,17 @@ func (_m *MockUpdateUserPhoneUseCase) EXPECT() *MockUpdateUserPhoneUseCase_Expec
 	return &MockUpdateUserPhoneUseCase_Expecter{mock: &_m.Mock}
 }
 
-// Execute provides a mock function with given fields: id, phone
-func (_m *MockUpdateUserPhoneUseCase) Execute(id int, phone domain.Phone) error {
-	ret := _m.Called(id, phone)
+// Execute provides a mock function with given fields: ctx, id, phone
+func (_m *MockUpdateUserPhoneUseCase) Execute(ctx context.Context, id int, phone domain.Phone) error {
+	ret := _m.Called(ctx, id, phone)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Execute")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(int, domain.Phone) error); ok {
-		r0 = rf(id, phone)
+	if rf, ok := ret.Get(0).(func(context.Context, int, domain.Phone) error); ok {
+		r0 = rf(ctx, id, phone)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -45,15 +46,16 @@ type MockUpdateUserPhoneUseCase_Execute_Call struct {
 }
 
 // Execute is a helper method to define mock.On call
+//   - ctx context.Context
 //   - id int
 //   - phone domain.Phone
-func (_e *MockUpdateUserPhoneUseCase_Expecter) Execute(id interface{}, phone interface{}) *MockUpdateUserPhoneUseCase_Execute_Call {
-	return &MockUpdateUserPhoneUseCase_Execute_Call{Call: _e.mock.On("Execute", id, phone)}
+func (_e *MockUpdateUserPhoneUseCase_Expecter) Execute(ctx interface{}, id interface{}, phone interface{}) *MockUpdateUserPhoneUseCase_Execute_Call {
+	return &MockUpdateUserPhoneUseCase_Execute_Call{Call: _e.mock.On("Execute", ctx, id, phone)}
 }
 
-func (_c *MockUpdateUserPhoneUseCase_Execute_Call) Run(run func(id int, phone domain.Phone)) *MockUpdateUserPhoneUseCase_Execute_Call {
+func (_c *MockUpdateUserPhoneUseCase_Execute_Call) Run(run func(ctx context.Context, id int, phone domain.Phone)) *MockUpdateUserPhoneUseCase_Execute_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(int), args[1].(domain.Phone))
+		run(args[0].(context.Context), args[1].(int), args[2].(domain.Phone))
 	})
 	return _c
 }
@@ -63,7 +65,7 @@ func (_c *MockUpdateUserPhoneUseCase_Execute_Call) Return(_a0 error) *MockUpdate
 	return _c
 }
 
-func (_c *MockUpdateUserPhoneUseCase_Execute_Call) RunAndReturn(run func(int, domain.Phone) error) *MockUpdateUserPhoneUseCase_Execute_Call {
+func (_c *MockUpdateUserPhoneUseCase_Execute_Call) RunAndReturn(run func(context.Context, int, domain.Phone) error) *MockUpdateUserPhoneUseCase_Execute_Call {
 	_c.Call.Return(run)
 	return _c
 }

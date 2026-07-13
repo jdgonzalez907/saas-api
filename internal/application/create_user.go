@@ -1,12 +1,13 @@
 package application
 
 import (
+	"context"
 	"fmt"
 	"jdgonzalez907/users-api/internal/domain"
 )
 
 type CreateUserUseCase interface {
-	Execute(user *domain.User) error
+	Execute(ctx context.Context, user *domain.User) error
 }
 
 type createUserUseCase struct {
@@ -17,8 +18,8 @@ func NewCreateUserUseCase(userRepository domain.UserRepository) CreateUserUseCas
 	return &createUserUseCase{userRepository: userRepository}
 }
 
-func (c *createUserUseCase) Execute(user *domain.User) error {
-	userFound, err := c.userRepository.FindById(user.ID())
+func (c *createUserUseCase) Execute(ctx context.Context, user *domain.User) error {
+	userFound, err := c.userRepository.FindById(ctx, user.ID())
 	if err != nil {
 		return fmt.Errorf("%v: %w", domain.ErrCreatingUser, err)
 	}
@@ -26,7 +27,7 @@ func (c *createUserUseCase) Execute(user *domain.User) error {
 		return domain.ErrUserIDAlreadyExists
 	}
 
-	userFound, err = c.userRepository.FindByPhone(user.Phone())
+	userFound, err = c.userRepository.FindByPhone(ctx, user.Phone())
 	if err != nil {
 		return fmt.Errorf("%v: %w", domain.ErrCreatingUser, err)
 	}
@@ -35,7 +36,7 @@ func (c *createUserUseCase) Execute(user *domain.User) error {
 	}
 
 	if user.Email() != nil {
-		userFound, err = c.userRepository.FindByEmail(*user.Email())
+		userFound, err = c.userRepository.FindByEmail(ctx, *user.Email())
 		if err != nil {
 			return fmt.Errorf("%v: %w", domain.ErrCreatingUser, err)
 		}
@@ -44,7 +45,7 @@ func (c *createUserUseCase) Execute(user *domain.User) error {
 		}
 	}
 
-	err = c.userRepository.Create(user)
+	err = c.userRepository.Create(ctx, user)
 	if err != nil {
 		return fmt.Errorf("%v: %w", domain.ErrCreatingUser, err)
 	}

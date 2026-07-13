@@ -1,6 +1,7 @@
 package application_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
@@ -8,6 +9,8 @@ import (
 	"jdgonzalez907/users-api/internal/application"
 	"jdgonzalez907/users-api/internal/domain"
 	domainMocks "jdgonzalez907/users-api/mocks/domain"
+
+	"github.com/stretchr/testify/mock"
 )
 
 func TestFindUserByIdUseCase(t *testing.T) {
@@ -48,7 +51,7 @@ func TestFindUserByIdUseCase(t *testing.T) {
 			testName: "success - user found",
 			inputID:  1,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", 1).Return(user, nil)
+				m.On("FindById", mock.Anything, 1).Return(user, nil)
 			},
 			expectedResult: user,
 			expectedError:  nil,
@@ -66,7 +69,7 @@ func TestFindUserByIdUseCase(t *testing.T) {
 			testName: "fail - user not found",
 			inputID:  99,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", 99).Return(nil, nil)
+				m.On("FindById", mock.Anything, 99).Return(nil, nil)
 			},
 			expectedResult: nil,
 			expectedError:  domain.ErrUserNotFound,
@@ -75,7 +78,7 @@ func TestFindUserByIdUseCase(t *testing.T) {
 			testName: "fail - repository error",
 			inputID:  1,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", 1).Return(nil, dbErr)
+				m.On("FindById", mock.Anything, 1).Return(nil, dbErr)
 			},
 			expectedResult: nil,
 			expectedError:  domain.ErrFindingUserByID,
@@ -88,7 +91,7 @@ func TestFindUserByIdUseCase(t *testing.T) {
 			tc.mockExpectations(mockUserRepository)
 
 			useCase := application.NewFindUserByIdUseCase(mockUserRepository)
-			result, err := useCase.Execute(tc.inputID)
+			result, err := useCase.Execute(context.Background(), tc.inputID)
 
 			if tc.expectedError != nil {
 				if err == nil {

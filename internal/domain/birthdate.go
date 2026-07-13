@@ -15,7 +15,8 @@ const (
 )
 
 type BirthDate struct {
-	value time.Time
+	value     time.Time
+	formatted string
 }
 
 func NewBirthDate(value string) (BirthDate, error) {
@@ -34,11 +35,22 @@ func NewBirthDate(value string) (BirthDate, error) {
 		return BirthDate{}, ErrUserUnderage
 	}
 
-	return BirthDate{value: t}, nil
+	return BirthDate{
+		value:     t,
+		formatted: t.Format("2006-01-02"),
+	}, nil
 }
 
 type BirthDateDTO string
 
 func (b BirthDate) ToDTO() BirthDateDTO {
-	return BirthDateDTO(b.value.Format("2006-01-02"))
+	return BirthDateDTO(b.formatted)
+}
+
+func (b BirthDate) Formatted() string {
+	return b.formatted
+}
+
+func (b BirthDate) Time() time.Time {
+	return b.value
 }

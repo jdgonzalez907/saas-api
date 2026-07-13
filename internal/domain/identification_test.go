@@ -39,6 +39,12 @@ func TestNewIdentification(t *testing.T) {
 				if dto.Type != tc.idType || dto.Number != tc.number {
 					t.Errorf("expected DTO: %+v", dto)
 				}
+				if id.Type() != tc.idType {
+					t.Errorf("expected Type(): %s, got: %s", tc.idType, id.Type())
+				}
+				if id.Number() != tc.number {
+					t.Errorf("expected Number(): %s, got: %s", tc.number, id.Number())
+				}
 			}
 		})
 	}

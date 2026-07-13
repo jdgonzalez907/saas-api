@@ -3,6 +3,7 @@
 package application
 
 import (
+	context "context"
 	domain "jdgonzalez907/users-api/internal/domain"
 
 	mock "github.com/stretchr/testify/mock"
@@ -21,17 +22,17 @@ func (_m *MockCreateUserUseCase) EXPECT() *MockCreateUserUseCase_Expecter {
 	return &MockCreateUserUseCase_Expecter{mock: &_m.Mock}
 }
 
-// Execute provides a mock function with given fields: user
-func (_m *MockCreateUserUseCase) Execute(user *domain.User) error {
-	ret := _m.Called(user)
+// Execute provides a mock function with given fields: ctx, user
+func (_m *MockCreateUserUseCase) Execute(ctx context.Context, user *domain.User) error {
+	ret := _m.Called(ctx, user)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Execute")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*domain.User) error); ok {
-		r0 = rf(user)
+	if rf, ok := ret.Get(0).(func(context.Context, *domain.User) error); ok {
+		r0 = rf(ctx, user)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -45,14 +46,15 @@ type MockCreateUserUseCase_Execute_Call struct {
 }
 
 // Execute is a helper method to define mock.On call
+//   - ctx context.Context
 //   - user *domain.User
-func (_e *MockCreateUserUseCase_Expecter) Execute(user interface{}) *MockCreateUserUseCase_Execute_Call {
-	return &MockCreateUserUseCase_Execute_Call{Call: _e.mock.On("Execute", user)}
+func (_e *MockCreateUserUseCase_Expecter) Execute(ctx interface{}, user interface{}) *MockCreateUserUseCase_Execute_Call {
+	return &MockCreateUserUseCase_Execute_Call{Call: _e.mock.On("Execute", ctx, user)}
 }
 
-func (_c *MockCreateUserUseCase_Execute_Call) Run(run func(user *domain.User)) *MockCreateUserUseCase_Execute_Call {
+func (_c *MockCreateUserUseCase_Execute_Call) Run(run func(ctx context.Context, user *domain.User)) *MockCreateUserUseCase_Execute_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(*domain.User))
+		run(args[0].(context.Context), args[1].(*domain.User))
 	})
 	return _c
 }
@@ -62,7 +64,7 @@ func (_c *MockCreateUserUseCase_Execute_Call) Return(_a0 error) *MockCreateUserU
 	return _c
 }
 
-func (_c *MockCreateUserUseCase_Execute_Call) RunAndReturn(run func(*domain.User) error) *MockCreateUserUseCase_Execute_Call {
+func (_c *MockCreateUserUseCase_Execute_Call) RunAndReturn(run func(context.Context, *domain.User) error) *MockCreateUserUseCase_Execute_Call {
 	_c.Call.Return(run)
 	return _c
 }

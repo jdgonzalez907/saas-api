@@ -40,7 +40,7 @@ func (c *UpdateUserEmailController) Handle(w http.ResponseWriter, r *http.Reques
 		emailPtr = &email
 	}
 
-	err = c.useCase.Execute(id, emailPtr)
+	err = c.useCase.Execute(r.Context(), id, emailPtr)
 	if err != nil {
 		RespondWithDomainError(w, err)
 		return

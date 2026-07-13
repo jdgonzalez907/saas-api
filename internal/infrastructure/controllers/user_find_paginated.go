@@ -37,7 +37,7 @@ func (c *FindUsersPaginatedController) Handle(w http.ResponseWriter, r *http.Req
 
 	pagination := domain.NewPagination(cursorPtr, limitVal)
 
-	paginatedUsers, err := c.useCase.Execute(pagination)
+	paginatedUsers, err := c.useCase.Execute(r.Context(), pagination)
 	if err != nil {
 		RespondWithDomainError(w, err)
 		return

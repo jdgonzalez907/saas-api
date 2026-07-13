@@ -1,13 +1,14 @@
 package application
 
 import (
+	"context"
 	"fmt"
 
 	"jdgonzalez907/users-api/internal/domain"
 )
 
 type FindUserByIdUseCase interface {
-	Execute(id int) (*domain.User, error)
+	Execute(ctx context.Context, id int) (*domain.User, error)
 }
 
 type findUserByIdUseCase struct {
@@ -20,12 +21,12 @@ func NewFindUserByIdUseCase(userRepository domain.UserRepository) FindUserByIdUs
 	}
 }
 
-func (u *findUserByIdUseCase) Execute(id int) (*domain.User, error) {
+func (u *findUserByIdUseCase) Execute(ctx context.Context, id int) (*domain.User, error) {
 	if id <= 0 {
 		return nil, domain.ErrInvalidUserID
 	}
 
-	userFound, err := u.userRepository.FindById(id)
+	userFound, err := u.userRepository.FindById(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("%v: %w", domain.ErrFindingUserByID, err)
 	}
