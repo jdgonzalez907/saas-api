@@ -85,23 +85,33 @@ func (r *PostgresUserRepository) FindByEmail(email domain.Email) (*domain.User, 
 
 func (r *PostgresUserRepository) FindAll(pagination domain.Pagination) ([]*domain.User, error) {
 	ctx := context.Background()
+	limit := int32(pagination.Limit())
+	var dbRows []sqlc.FindUsersPaginatedWithCursorRow
 
-	var lastID pgtype.Int8
 	if pagination.LastID() != nil {
-		lastID = pgtype.Int8{Int64: int64(*pagination.LastID()), Valid: true}
+		var err error
+		dbRows, err = r.queries.FindUsersPaginatedWithCursor(ctx, sqlc.FindUsersPaginatedWithCursorParams{
+			ID:    int64(*pagination.LastID()),
+			Limit: limit,
+		})
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		rows, err := r.queries.FindUsersPaginatedWithoutCursor(ctx, limit)
+		if err != nil {
+			return nil, err
+		}
+		dbRows = make([]sqlc.FindUsersPaginatedWithCursorRow, len(rows))
+		for i, row := range rows {
+			dbRows[i] = sqlc.FindUsersPaginatedWithCursorRow(row)
+		}
 	}
 
-	dbRows, err := r.queries.FindUsersPaginated(ctx, sqlc.FindUsersPaginatedParams{
-		LastID: lastID,
-		Limit:  int32(pagination.Limit()),
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	users := make([]*domain.User, 0, len(dbRows))
-	for _, row := range dbRows {
-		u, err := mapToDomain(
+	users := make([]*domain.User, len(dbRows))
+	for i, row := range dbRows {
+		var err error
+		users[i], err = mapToDomain(
 			row.ID, row.IdentificationType, row.IdentificationNumber, row.FirstName, row.LastName,
 			row.BirthDate, row.Address, row.PhoneCountryCode, row.PhoneNumber, row.Email,
 			row.CreatedAt, row.UpdatedAt,
@@ -109,7 +119,6 @@ func (r *PostgresUserRepository) FindAll(pagination domain.Pagination) ([]*domai
 		if err != nil {
 			return nil, err
 		}
-		users = append(users, u)
 	}
 	return users, nil
 }
@@ -214,47 +223,62 @@ func mapToDomain(
 	email pgtype.Text,
 	createdAt, updatedAt pgtype.Timestamptz,
 ) (*domain.User, error) {
-	var addrDTO *domain.AddressDTO
+	identification, err := domain.NewIdentification(domain.IdentificationType(idType), idNumber)
+	if err != nil {
+		return nil, err
+	}
+
+	var address *domain.Address
 	if len(addressBytes) > 0 {
 		var dto domain.AddressDTO
 		if err := json.Unmarshal(addressBytes, &dto); err != nil {
 			return nil, fmt.Errorf("error deserializing address: %w", err)
 		}
-		addrDTO = &dto
+		addr, err := domain.NewAddress(
+			dto.Street, dto.City, dto.State, dto.Country, dto.PostalCode, dto.Description,
+		)
+		if err != nil {
+			return nil, err
+		}
+		address = &addr
 	}
 
-	var bdDTO *domain.BirthDateDTO
+	var birthDateVO *domain.BirthDate
 	if birthDate.Valid {
-		dto := domain.BirthDateDTO(birthDate.Time.Format("2006-01-02"))
-		bdDTO = &dto
+		bd, err := domain.NewBirthDate(birthDate.Time.Format("2006-01-02"))
+		if err != nil {
+			return nil, err
+		}
+		birthDateVO = &bd
 	}
 
-	var emailDTO *domain.EmailDTO
+	personalInfo, err := domain.NewPersonalInformation(
+		identification, firstName, lastName, address, birthDateVO,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	phone, err := domain.NewPhone(phoneCountryCode, phoneNumber)
+	if err != nil {
+		return nil, err
+	}
+
+	var emailVO *domain.Email
 	if email.Valid {
-		dto := domain.EmailDTO(email.String)
-		emailDTO = &dto
+		e, err := domain.NewEmail(email.String)
+		if err != nil {
+			return nil, err
+		}
+		emailVO = &e
 	}
 
-	userDTO := &domain.UserDTO{
-		ID: int(id),
-		PersonalInformationDTO: domain.PersonalInformationDTO{
-			Identification: domain.IdentificationDTO{
-				Type:   domain.IdentificationType(idType),
-				Number: idNumber,
-			},
-			FirstName: firstName,
-			LastName:  lastName,
-			Address:   addrDTO,
-			BirthDate: bdDTO,
-		},
-		Phone: domain.PhoneDTO{
-			CountryCode: phoneCountryCode,
-			Number:      phoneNumber,
-		},
-		Email:     emailDTO,
-		CreatedAt: createdAt.Time,
-		UpdatedAt: updatedAt.Time,
-	}
-
-	return domain.UserFromDTO(userDTO)
+	return domain.NewUser(domain.UserParams{
+		ID:                  int(id),
+		PersonalInformation: personalInfo,
+		Phone:               phone,
+		Email:               emailVO,
+		CreatedAt:           createdAt.Time,
+		UpdatedAt:           updatedAt.Time,
+	})
 }
