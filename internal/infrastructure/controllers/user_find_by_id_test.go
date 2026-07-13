@@ -46,43 +46,43 @@ func TestFindUserByIDController_Handle(t *testing.T) {
 	testCases := []struct {
 		testName       string
 		routeParamID   string
-		setupMock      func(m *mockApp.MockFindUserByIdUseCase)
+		setupMock      func(m *mockApp.MockFindUserByIDUseCase)
 		expectedStatus int
 		expectedBody   string
 	}{
 		{
 			testName:     "success - user found",
 			routeParamID: "1",
-			setupMock: func(m *mockApp.MockFindUserByIdUseCase) {
+			setupMock: func(m *mockApp.MockFindUserByIDUseCase) {
 				m.EXPECT().Execute(mock.Anything, 1).Return(validUser, nil)
 			},
 			expectedStatus: http.StatusOK,
 		},
 		{
-			testName:     "fail - route parameter is not an integer",
-			routeParamID: "abc",
-			setupMock:    func(m *mockApp.MockFindUserByIdUseCase) {},
+			testName:       "fail - route parameter is not an integer",
+			routeParamID:   "abc",
+			setupMock:      func(m *mockApp.MockFindUserByIDUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   "parameter id must be a positive integer",
 		},
 		{
-			testName:     "fail - route parameter is empty",
-			routeParamID: "",
-			setupMock:    func(m *mockApp.MockFindUserByIdUseCase) {},
+			testName:       "fail - route parameter is empty",
+			routeParamID:   "",
+			setupMock:      func(m *mockApp.MockFindUserByIDUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   "parameter id is missing",
 		},
 		{
-			testName:     "fail - route parameter is negative",
-			routeParamID: "-5",
-			setupMock:    func(m *mockApp.MockFindUserByIdUseCase) {},
+			testName:       "fail - route parameter is negative",
+			routeParamID:   "-5",
+			setupMock:      func(m *mockApp.MockFindUserByIDUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   "parameter id must be a positive integer",
 		},
 		{
 			testName:     "fail - user not found",
 			routeParamID: "1",
-			setupMock: func(m *mockApp.MockFindUserByIdUseCase) {
+			setupMock: func(m *mockApp.MockFindUserByIDUseCase) {
 				m.EXPECT().Execute(mock.Anything, 1).Return(nil, domain.ErrUserNotFound)
 			},
 			expectedStatus: http.StatusNotFound,
@@ -91,7 +91,7 @@ func TestFindUserByIDController_Handle(t *testing.T) {
 		{
 			testName:     "fail - internal server error from usecase",
 			routeParamID: "1",
-			setupMock: func(m *mockApp.MockFindUserByIdUseCase) {
+			setupMock: func(m *mockApp.MockFindUserByIDUseCase) {
 				m.EXPECT().Execute(mock.Anything, 1).Return(nil, errors.New("database connection lost"))
 			},
 			expectedStatus: http.StatusInternalServerError,
@@ -101,7 +101,7 @@ func TestFindUserByIDController_Handle(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.testName, func(t *testing.T) {
-			mockUseCase := mockApp.NewMockFindUserByIdUseCase(t)
+			mockUseCase := mockApp.NewMockFindUserByIDUseCase(t)
 			tc.setupMock(mockUseCase)
 
 			controller := controllers.NewFindUserByIDController(mockUseCase)
