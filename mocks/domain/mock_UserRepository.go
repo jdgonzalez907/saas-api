@@ -3,6 +3,7 @@
 package domain
 
 import (
+	context "context"
 	domain "jdgonzalez907/users-api/internal/domain"
 
 	mock "github.com/stretchr/testify/mock"
@@ -21,17 +22,17 @@ func (_m *MockUserRepository) EXPECT() *MockUserRepository_Expecter {
 	return &MockUserRepository_Expecter{mock: &_m.Mock}
 }
 
-// Create provides a mock function with given fields: user
-func (_m *MockUserRepository) Create(user *domain.User) error {
-	ret := _m.Called(user)
+// Create provides a mock function with given fields: ctx, user
+func (_m *MockUserRepository) Create(ctx context.Context, user *domain.User) error {
+	ret := _m.Called(ctx, user)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Create")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*domain.User) error); ok {
-		r0 = rf(user)
+	if rf, ok := ret.Get(0).(func(context.Context, *domain.User) error); ok {
+		r0 = rf(ctx, user)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -45,14 +46,15 @@ type MockUserRepository_Create_Call struct {
 }
 
 // Create is a helper method to define mock.On call
+//   - ctx context.Context
 //   - user *domain.User
-func (_e *MockUserRepository_Expecter) Create(user interface{}) *MockUserRepository_Create_Call {
-	return &MockUserRepository_Create_Call{Call: _e.mock.On("Create", user)}
+func (_e *MockUserRepository_Expecter) Create(ctx interface{}, user interface{}) *MockUserRepository_Create_Call {
+	return &MockUserRepository_Create_Call{Call: _e.mock.On("Create", ctx, user)}
 }
 
-func (_c *MockUserRepository_Create_Call) Run(run func(user *domain.User)) *MockUserRepository_Create_Call {
+func (_c *MockUserRepository_Create_Call) Run(run func(ctx context.Context, user *domain.User)) *MockUserRepository_Create_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(*domain.User))
+		run(args[0].(context.Context), args[1].(*domain.User))
 	})
 	return _c
 }
@@ -62,22 +64,22 @@ func (_c *MockUserRepository_Create_Call) Return(_a0 error) *MockUserRepository_
 	return _c
 }
 
-func (_c *MockUserRepository_Create_Call) RunAndReturn(run func(*domain.User) error) *MockUserRepository_Create_Call {
+func (_c *MockUserRepository_Create_Call) RunAndReturn(run func(context.Context, *domain.User) error) *MockUserRepository_Create_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// Delete provides a mock function with given fields: id
-func (_m *MockUserRepository) Delete(id int) error {
-	ret := _m.Called(id)
+// Delete provides a mock function with given fields: ctx, id
+func (_m *MockUserRepository) Delete(ctx context.Context, id int) error {
+	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Delete")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(int) error); ok {
-		r0 = rf(id)
+	if rf, ok := ret.Get(0).(func(context.Context, int) error); ok {
+		r0 = rf(ctx, id)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -91,14 +93,15 @@ type MockUserRepository_Delete_Call struct {
 }
 
 // Delete is a helper method to define mock.On call
+//   - ctx context.Context
 //   - id int
-func (_e *MockUserRepository_Expecter) Delete(id interface{}) *MockUserRepository_Delete_Call {
-	return &MockUserRepository_Delete_Call{Call: _e.mock.On("Delete", id)}
+func (_e *MockUserRepository_Expecter) Delete(ctx interface{}, id interface{}) *MockUserRepository_Delete_Call {
+	return &MockUserRepository_Delete_Call{Call: _e.mock.On("Delete", ctx, id)}
 }
 
-func (_c *MockUserRepository_Delete_Call) Run(run func(id int)) *MockUserRepository_Delete_Call {
+func (_c *MockUserRepository_Delete_Call) Run(run func(ctx context.Context, id int)) *MockUserRepository_Delete_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(int))
+		run(args[0].(context.Context), args[1].(int))
 	})
 	return _c
 }
@@ -108,14 +111,14 @@ func (_c *MockUserRepository_Delete_Call) Return(_a0 error) *MockUserRepository_
 	return _c
 }
 
-func (_c *MockUserRepository_Delete_Call) RunAndReturn(run func(int) error) *MockUserRepository_Delete_Call {
+func (_c *MockUserRepository_Delete_Call) RunAndReturn(run func(context.Context, int) error) *MockUserRepository_Delete_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// FindAll provides a mock function with given fields: pagination
-func (_m *MockUserRepository) FindAll(pagination domain.Pagination) ([]*domain.User, error) {
-	ret := _m.Called(pagination)
+// FindAll provides a mock function with given fields: ctx, pagination
+func (_m *MockUserRepository) FindAll(ctx context.Context, pagination domain.Pagination) ([]*domain.User, error) {
+	ret := _m.Called(ctx, pagination)
 
 	if len(ret) == 0 {
 		panic("no return value specified for FindAll")
@@ -123,19 +126,19 @@ func (_m *MockUserRepository) FindAll(pagination domain.Pagination) ([]*domain.U
 
 	var r0 []*domain.User
 	var r1 error
-	if rf, ok := ret.Get(0).(func(domain.Pagination) ([]*domain.User, error)); ok {
-		return rf(pagination)
+	if rf, ok := ret.Get(0).(func(context.Context, domain.Pagination) ([]*domain.User, error)); ok {
+		return rf(ctx, pagination)
 	}
-	if rf, ok := ret.Get(0).(func(domain.Pagination) []*domain.User); ok {
-		r0 = rf(pagination)
+	if rf, ok := ret.Get(0).(func(context.Context, domain.Pagination) []*domain.User); ok {
+		r0 = rf(ctx, pagination)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*domain.User)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(domain.Pagination) error); ok {
-		r1 = rf(pagination)
+	if rf, ok := ret.Get(1).(func(context.Context, domain.Pagination) error); ok {
+		r1 = rf(ctx, pagination)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -149,14 +152,15 @@ type MockUserRepository_FindAll_Call struct {
 }
 
 // FindAll is a helper method to define mock.On call
+//   - ctx context.Context
 //   - pagination domain.Pagination
-func (_e *MockUserRepository_Expecter) FindAll(pagination interface{}) *MockUserRepository_FindAll_Call {
-	return &MockUserRepository_FindAll_Call{Call: _e.mock.On("FindAll", pagination)}
+func (_e *MockUserRepository_Expecter) FindAll(ctx interface{}, pagination interface{}) *MockUserRepository_FindAll_Call {
+	return &MockUserRepository_FindAll_Call{Call: _e.mock.On("FindAll", ctx, pagination)}
 }
 
-func (_c *MockUserRepository_FindAll_Call) Run(run func(pagination domain.Pagination)) *MockUserRepository_FindAll_Call {
+func (_c *MockUserRepository_FindAll_Call) Run(run func(ctx context.Context, pagination domain.Pagination)) *MockUserRepository_FindAll_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(domain.Pagination))
+		run(args[0].(context.Context), args[1].(domain.Pagination))
 	})
 	return _c
 }
@@ -166,14 +170,14 @@ func (_c *MockUserRepository_FindAll_Call) Return(_a0 []*domain.User, _a1 error)
 	return _c
 }
 
-func (_c *MockUserRepository_FindAll_Call) RunAndReturn(run func(domain.Pagination) ([]*domain.User, error)) *MockUserRepository_FindAll_Call {
+func (_c *MockUserRepository_FindAll_Call) RunAndReturn(run func(context.Context, domain.Pagination) ([]*domain.User, error)) *MockUserRepository_FindAll_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// FindByEmail provides a mock function with given fields: email
-func (_m *MockUserRepository) FindByEmail(email domain.Email) (*domain.User, error) {
-	ret := _m.Called(email)
+// FindByEmail provides a mock function with given fields: ctx, email
+func (_m *MockUserRepository) FindByEmail(ctx context.Context, email domain.Email) (*domain.User, error) {
+	ret := _m.Called(ctx, email)
 
 	if len(ret) == 0 {
 		panic("no return value specified for FindByEmail")
@@ -181,19 +185,19 @@ func (_m *MockUserRepository) FindByEmail(email domain.Email) (*domain.User, err
 
 	var r0 *domain.User
 	var r1 error
-	if rf, ok := ret.Get(0).(func(domain.Email) (*domain.User, error)); ok {
-		return rf(email)
+	if rf, ok := ret.Get(0).(func(context.Context, domain.Email) (*domain.User, error)); ok {
+		return rf(ctx, email)
 	}
-	if rf, ok := ret.Get(0).(func(domain.Email) *domain.User); ok {
-		r0 = rf(email)
+	if rf, ok := ret.Get(0).(func(context.Context, domain.Email) *domain.User); ok {
+		r0 = rf(ctx, email)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*domain.User)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(domain.Email) error); ok {
-		r1 = rf(email)
+	if rf, ok := ret.Get(1).(func(context.Context, domain.Email) error); ok {
+		r1 = rf(ctx, email)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -207,14 +211,15 @@ type MockUserRepository_FindByEmail_Call struct {
 }
 
 // FindByEmail is a helper method to define mock.On call
+//   - ctx context.Context
 //   - email domain.Email
-func (_e *MockUserRepository_Expecter) FindByEmail(email interface{}) *MockUserRepository_FindByEmail_Call {
-	return &MockUserRepository_FindByEmail_Call{Call: _e.mock.On("FindByEmail", email)}
+func (_e *MockUserRepository_Expecter) FindByEmail(ctx interface{}, email interface{}) *MockUserRepository_FindByEmail_Call {
+	return &MockUserRepository_FindByEmail_Call{Call: _e.mock.On("FindByEmail", ctx, email)}
 }
 
-func (_c *MockUserRepository_FindByEmail_Call) Run(run func(email domain.Email)) *MockUserRepository_FindByEmail_Call {
+func (_c *MockUserRepository_FindByEmail_Call) Run(run func(ctx context.Context, email domain.Email)) *MockUserRepository_FindByEmail_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(domain.Email))
+		run(args[0].(context.Context), args[1].(domain.Email))
 	})
 	return _c
 }
@@ -224,14 +229,14 @@ func (_c *MockUserRepository_FindByEmail_Call) Return(_a0 *domain.User, _a1 erro
 	return _c
 }
 
-func (_c *MockUserRepository_FindByEmail_Call) RunAndReturn(run func(domain.Email) (*domain.User, error)) *MockUserRepository_FindByEmail_Call {
+func (_c *MockUserRepository_FindByEmail_Call) RunAndReturn(run func(context.Context, domain.Email) (*domain.User, error)) *MockUserRepository_FindByEmail_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// FindById provides a mock function with given fields: id
-func (_m *MockUserRepository) FindById(id int) (*domain.User, error) {
-	ret := _m.Called(id)
+// FindById provides a mock function with given fields: ctx, id
+func (_m *MockUserRepository) FindById(ctx context.Context, id int) (*domain.User, error) {
+	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
 		panic("no return value specified for FindById")
@@ -239,19 +244,19 @@ func (_m *MockUserRepository) FindById(id int) (*domain.User, error) {
 
 	var r0 *domain.User
 	var r1 error
-	if rf, ok := ret.Get(0).(func(int) (*domain.User, error)); ok {
-		return rf(id)
+	if rf, ok := ret.Get(0).(func(context.Context, int) (*domain.User, error)); ok {
+		return rf(ctx, id)
 	}
-	if rf, ok := ret.Get(0).(func(int) *domain.User); ok {
-		r0 = rf(id)
+	if rf, ok := ret.Get(0).(func(context.Context, int) *domain.User); ok {
+		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*domain.User)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(int) error); ok {
-		r1 = rf(id)
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, id)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -265,14 +270,15 @@ type MockUserRepository_FindById_Call struct {
 }
 
 // FindById is a helper method to define mock.On call
+//   - ctx context.Context
 //   - id int
-func (_e *MockUserRepository_Expecter) FindById(id interface{}) *MockUserRepository_FindById_Call {
-	return &MockUserRepository_FindById_Call{Call: _e.mock.On("FindById", id)}
+func (_e *MockUserRepository_Expecter) FindById(ctx interface{}, id interface{}) *MockUserRepository_FindById_Call {
+	return &MockUserRepository_FindById_Call{Call: _e.mock.On("FindById", ctx, id)}
 }
 
-func (_c *MockUserRepository_FindById_Call) Run(run func(id int)) *MockUserRepository_FindById_Call {
+func (_c *MockUserRepository_FindById_Call) Run(run func(ctx context.Context, id int)) *MockUserRepository_FindById_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(int))
+		run(args[0].(context.Context), args[1].(int))
 	})
 	return _c
 }
@@ -282,14 +288,14 @@ func (_c *MockUserRepository_FindById_Call) Return(_a0 *domain.User, _a1 error) 
 	return _c
 }
 
-func (_c *MockUserRepository_FindById_Call) RunAndReturn(run func(int) (*domain.User, error)) *MockUserRepository_FindById_Call {
+func (_c *MockUserRepository_FindById_Call) RunAndReturn(run func(context.Context, int) (*domain.User, error)) *MockUserRepository_FindById_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// FindByPhone provides a mock function with given fields: phone
-func (_m *MockUserRepository) FindByPhone(phone domain.Phone) (*domain.User, error) {
-	ret := _m.Called(phone)
+// FindByPhone provides a mock function with given fields: ctx, phone
+func (_m *MockUserRepository) FindByPhone(ctx context.Context, phone domain.Phone) (*domain.User, error) {
+	ret := _m.Called(ctx, phone)
 
 	if len(ret) == 0 {
 		panic("no return value specified for FindByPhone")
@@ -297,19 +303,19 @@ func (_m *MockUserRepository) FindByPhone(phone domain.Phone) (*domain.User, err
 
 	var r0 *domain.User
 	var r1 error
-	if rf, ok := ret.Get(0).(func(domain.Phone) (*domain.User, error)); ok {
-		return rf(phone)
+	if rf, ok := ret.Get(0).(func(context.Context, domain.Phone) (*domain.User, error)); ok {
+		return rf(ctx, phone)
 	}
-	if rf, ok := ret.Get(0).(func(domain.Phone) *domain.User); ok {
-		r0 = rf(phone)
+	if rf, ok := ret.Get(0).(func(context.Context, domain.Phone) *domain.User); ok {
+		r0 = rf(ctx, phone)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*domain.User)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(domain.Phone) error); ok {
-		r1 = rf(phone)
+	if rf, ok := ret.Get(1).(func(context.Context, domain.Phone) error); ok {
+		r1 = rf(ctx, phone)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -323,14 +329,15 @@ type MockUserRepository_FindByPhone_Call struct {
 }
 
 // FindByPhone is a helper method to define mock.On call
+//   - ctx context.Context
 //   - phone domain.Phone
-func (_e *MockUserRepository_Expecter) FindByPhone(phone interface{}) *MockUserRepository_FindByPhone_Call {
-	return &MockUserRepository_FindByPhone_Call{Call: _e.mock.On("FindByPhone", phone)}
+func (_e *MockUserRepository_Expecter) FindByPhone(ctx interface{}, phone interface{}) *MockUserRepository_FindByPhone_Call {
+	return &MockUserRepository_FindByPhone_Call{Call: _e.mock.On("FindByPhone", ctx, phone)}
 }
 
-func (_c *MockUserRepository_FindByPhone_Call) Run(run func(phone domain.Phone)) *MockUserRepository_FindByPhone_Call {
+func (_c *MockUserRepository_FindByPhone_Call) Run(run func(ctx context.Context, phone domain.Phone)) *MockUserRepository_FindByPhone_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(domain.Phone))
+		run(args[0].(context.Context), args[1].(domain.Phone))
 	})
 	return _c
 }
@@ -340,22 +347,22 @@ func (_c *MockUserRepository_FindByPhone_Call) Return(_a0 *domain.User, _a1 erro
 	return _c
 }
 
-func (_c *MockUserRepository_FindByPhone_Call) RunAndReturn(run func(domain.Phone) (*domain.User, error)) *MockUserRepository_FindByPhone_Call {
+func (_c *MockUserRepository_FindByPhone_Call) RunAndReturn(run func(context.Context, domain.Phone) (*domain.User, error)) *MockUserRepository_FindByPhone_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// Update provides a mock function with given fields: user
-func (_m *MockUserRepository) Update(user *domain.User) error {
-	ret := _m.Called(user)
+// Update provides a mock function with given fields: ctx, user
+func (_m *MockUserRepository) Update(ctx context.Context, user *domain.User) error {
+	ret := _m.Called(ctx, user)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Update")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*domain.User) error); ok {
-		r0 = rf(user)
+	if rf, ok := ret.Get(0).(func(context.Context, *domain.User) error); ok {
+		r0 = rf(ctx, user)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -369,14 +376,15 @@ type MockUserRepository_Update_Call struct {
 }
 
 // Update is a helper method to define mock.On call
+//   - ctx context.Context
 //   - user *domain.User
-func (_e *MockUserRepository_Expecter) Update(user interface{}) *MockUserRepository_Update_Call {
-	return &MockUserRepository_Update_Call{Call: _e.mock.On("Update", user)}
+func (_e *MockUserRepository_Expecter) Update(ctx interface{}, user interface{}) *MockUserRepository_Update_Call {
+	return &MockUserRepository_Update_Call{Call: _e.mock.On("Update", ctx, user)}
 }
 
-func (_c *MockUserRepository_Update_Call) Run(run func(user *domain.User)) *MockUserRepository_Update_Call {
+func (_c *MockUserRepository_Update_Call) Run(run func(ctx context.Context, user *domain.User)) *MockUserRepository_Update_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(*domain.User))
+		run(args[0].(context.Context), args[1].(*domain.User))
 	})
 	return _c
 }
@@ -386,7 +394,7 @@ func (_c *MockUserRepository_Update_Call) Return(_a0 error) *MockUserRepository_
 	return _c
 }
 
-func (_c *MockUserRepository_Update_Call) RunAndReturn(run func(*domain.User) error) *MockUserRepository_Update_Call {
+func (_c *MockUserRepository_Update_Call) RunAndReturn(run func(context.Context, *domain.User) error) *MockUserRepository_Update_Call {
 	_c.Call.Return(run)
 	return _c
 }

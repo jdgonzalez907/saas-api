@@ -3,6 +3,7 @@
 package application
 
 import (
+	context "context"
 	domain "jdgonzalez907/users-api/internal/domain"
 
 	mock "github.com/stretchr/testify/mock"
@@ -21,9 +22,9 @@ func (_m *MockFindUserByIdUseCase) EXPECT() *MockFindUserByIdUseCase_Expecter {
 	return &MockFindUserByIdUseCase_Expecter{mock: &_m.Mock}
 }
 
-// Execute provides a mock function with given fields: id
-func (_m *MockFindUserByIdUseCase) Execute(id int) (*domain.User, error) {
-	ret := _m.Called(id)
+// Execute provides a mock function with given fields: ctx, id
+func (_m *MockFindUserByIdUseCase) Execute(ctx context.Context, id int) (*domain.User, error) {
+	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Execute")
@@ -31,19 +32,19 @@ func (_m *MockFindUserByIdUseCase) Execute(id int) (*domain.User, error) {
 
 	var r0 *domain.User
 	var r1 error
-	if rf, ok := ret.Get(0).(func(int) (*domain.User, error)); ok {
-		return rf(id)
+	if rf, ok := ret.Get(0).(func(context.Context, int) (*domain.User, error)); ok {
+		return rf(ctx, id)
 	}
-	if rf, ok := ret.Get(0).(func(int) *domain.User); ok {
-		r0 = rf(id)
+	if rf, ok := ret.Get(0).(func(context.Context, int) *domain.User); ok {
+		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*domain.User)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(int) error); ok {
-		r1 = rf(id)
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, id)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -57,14 +58,15 @@ type MockFindUserByIdUseCase_Execute_Call struct {
 }
 
 // Execute is a helper method to define mock.On call
+//   - ctx context.Context
 //   - id int
-func (_e *MockFindUserByIdUseCase_Expecter) Execute(id interface{}) *MockFindUserByIdUseCase_Execute_Call {
-	return &MockFindUserByIdUseCase_Execute_Call{Call: _e.mock.On("Execute", id)}
+func (_e *MockFindUserByIdUseCase_Expecter) Execute(ctx interface{}, id interface{}) *MockFindUserByIdUseCase_Execute_Call {
+	return &MockFindUserByIdUseCase_Execute_Call{Call: _e.mock.On("Execute", ctx, id)}
 }
 
-func (_c *MockFindUserByIdUseCase_Execute_Call) Run(run func(id int)) *MockFindUserByIdUseCase_Execute_Call {
+func (_c *MockFindUserByIdUseCase_Execute_Call) Run(run func(ctx context.Context, id int)) *MockFindUserByIdUseCase_Execute_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(int))
+		run(args[0].(context.Context), args[1].(int))
 	})
 	return _c
 }
@@ -74,7 +76,7 @@ func (_c *MockFindUserByIdUseCase_Execute_Call) Return(_a0 *domain.User, _a1 err
 	return _c
 }
 
-func (_c *MockFindUserByIdUseCase_Execute_Call) RunAndReturn(run func(int) (*domain.User, error)) *MockFindUserByIdUseCase_Execute_Call {
+func (_c *MockFindUserByIdUseCase_Execute_Call) RunAndReturn(run func(context.Context, int) (*domain.User, error)) *MockFindUserByIdUseCase_Execute_Call {
 	_c.Call.Return(run)
 	return _c
 }

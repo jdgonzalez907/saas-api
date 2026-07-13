@@ -57,11 +57,11 @@ func TestCreateUserController_Handle(t *testing.T) {
 			testName:    "success - user created",
 			requestBody: validBody,
 			setupMock: func(m *mockApp.MockCreateUserUseCase) {
-				m.EXPECT().Execute(mock.MatchedBy(func(u *domain.User) bool {
+				m.EXPECT().Execute(mock.Anything, mock.MatchedBy(func(u *domain.User) bool {
 					return u.FirstName() == "John" &&
 						u.LastName() == "Doe" &&
-						u.Phone().ToDTO().Number == "3112223344" &&
-						u.Phone().ToDTO().CountryCode == "57"
+						u.Phone().Number() == "3112223344" &&
+						u.Phone().CountryCode() == "57"
 				})).Return(nil)
 			},
 			expectedStatus: http.StatusCreated,
@@ -169,7 +169,7 @@ func TestCreateUserController_Handle(t *testing.T) {
 			testName:    "fail - user with phone already exists (conflict)",
 			requestBody: validBody,
 			setupMock: func(m *mockApp.MockCreateUserUseCase) {
-				m.EXPECT().Execute(mock.Anything).Return(domain.ErrUserPhoneAlreadyExists)
+				m.EXPECT().Execute(mock.Anything, mock.Anything).Return(domain.ErrUserPhoneAlreadyExists)
 			},
 			expectedStatus: http.StatusConflict,
 			expectedBody:   domain.ErrUserPhoneAlreadyExists.Error(),
@@ -178,7 +178,7 @@ func TestCreateUserController_Handle(t *testing.T) {
 			testName:    "fail - internal server error during creation",
 			requestBody: validBody,
 			setupMock: func(m *mockApp.MockCreateUserUseCase) {
-				m.EXPECT().Execute(mock.Anything).Return(errors.New("db insert failed"))
+				m.EXPECT().Execute(mock.Anything, mock.Anything).Return(errors.New("db insert failed"))
 			},
 			expectedStatus: http.StatusInternalServerError,
 			expectedBody:   "internal server error",

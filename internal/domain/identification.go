@@ -42,3 +42,11 @@ func (id Identification) ToDTO() IdentificationDTO {
 		Number: id.number,
 	}
 }
+
+func (id Identification) Type() IdentificationType {
+	return id.idType
+}
+
+func (id Identification) Number() string {
+	return id.number
+}

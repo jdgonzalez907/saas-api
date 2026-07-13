@@ -1,6 +1,7 @@
 package application_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
@@ -53,8 +54,8 @@ func TestUpdateUserEmailUseCase(t *testing.T) {
 			inputID:    userID,
 			inputEmail: &email,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", userID).Return(existingUser, nil)
-				m.On("Update", mock.Anything).Return(nil)
+				m.On("FindById", mock.Anything, userID).Return(existingUser, nil)
+				m.On("Update", mock.Anything, mock.Anything).Return(nil)
 			},
 			expectedError: nil,
 		},
@@ -63,9 +64,9 @@ func TestUpdateUserEmailUseCase(t *testing.T) {
 			inputID:    userID,
 			inputEmail: &otherEmail,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", userID).Return(existingUser, nil)
-				m.On("FindByEmail", otherEmail).Return(nil, nil)
-				m.On("Update", mock.Anything).Return(nil)
+				m.On("FindById", mock.Anything, userID).Return(existingUser, nil)
+				m.On("FindByEmail", mock.Anything, otherEmail).Return(nil, nil)
+				m.On("Update", mock.Anything, mock.Anything).Return(nil)
 			},
 			expectedError: nil,
 		},
@@ -74,8 +75,8 @@ func TestUpdateUserEmailUseCase(t *testing.T) {
 			inputID:    userID,
 			inputEmail: nil,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", userID).Return(existingUser, nil)
-				m.On("Update", mock.Anything).Return(nil)
+				m.On("FindById", mock.Anything, userID).Return(existingUser, nil)
+				m.On("Update", mock.Anything, mock.Anything).Return(nil)
 			},
 			expectedError: nil,
 		},
@@ -84,8 +85,8 @@ func TestUpdateUserEmailUseCase(t *testing.T) {
 			inputID:    userID,
 			inputEmail: &otherEmail,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", userID).Return(existingUser, nil)
-				m.On("FindByEmail", otherEmail).Return(existingUser, nil)
+				m.On("FindById", mock.Anything, userID).Return(existingUser, nil)
+				m.On("FindByEmail", mock.Anything, otherEmail).Return(existingUser, nil)
 			},
 			expectedError: domain.ErrUserEmailAlreadyExists,
 		},
@@ -94,7 +95,7 @@ func TestUpdateUserEmailUseCase(t *testing.T) {
 			inputID:    userID,
 			inputEmail: &email,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", userID).Return(nil, nil)
+				m.On("FindById", mock.Anything, userID).Return(nil, nil)
 			},
 			expectedError: domain.ErrUserNotFound,
 		},
@@ -103,7 +104,7 @@ func TestUpdateUserEmailUseCase(t *testing.T) {
 			inputID:    userID,
 			inputEmail: &email,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", userID).Return(nil, dbErr)
+				m.On("FindById", mock.Anything, userID).Return(nil, dbErr)
 			},
 			expectedError: domain.ErrUpdatingUserEmail,
 		},
@@ -112,8 +113,8 @@ func TestUpdateUserEmailUseCase(t *testing.T) {
 			inputID:    userID,
 			inputEmail: &otherEmail,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", userID).Return(existingUser, nil)
-				m.On("FindByEmail", otherEmail).Return(nil, dbErr)
+				m.On("FindById", mock.Anything, userID).Return(existingUser, nil)
+				m.On("FindByEmail", mock.Anything, otherEmail).Return(nil, dbErr)
 			},
 			expectedError: domain.ErrUpdatingUserEmail,
 		},
@@ -122,8 +123,8 @@ func TestUpdateUserEmailUseCase(t *testing.T) {
 			inputID:    userID,
 			inputEmail: &email,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", userID).Return(existingUser, nil)
-				m.On("Update", mock.Anything).Return(dbErr)
+				m.On("FindById", mock.Anything, userID).Return(existingUser, nil)
+				m.On("Update", mock.Anything, mock.Anything).Return(dbErr)
 			},
 			expectedError: domain.ErrUpdatingUserEmail,
 		},
@@ -135,7 +136,7 @@ func TestUpdateUserEmailUseCase(t *testing.T) {
 			tc.mockExpectations(mockUserRepository)
 
 			useCase := application.NewUpdateUserEmailUseCase(mockUserRepository)
-			err := useCase.Execute(tc.inputID, tc.inputEmail)
+			err := useCase.Execute(context.Background(), tc.inputID, tc.inputEmail)
 
 			if tc.expectedError != nil {
 				if err == nil {

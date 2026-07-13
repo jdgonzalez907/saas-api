@@ -1,6 +1,7 @@
 package application_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
@@ -53,8 +54,8 @@ func TestUpdateUserPhoneUseCase(t *testing.T) {
 			inputID:    userID,
 			inputPhone: phone,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", userID).Return(existingUser, nil)
-				m.On("Update", mock.Anything).Return(nil)
+				m.On("FindById", mock.Anything, userID).Return(existingUser, nil)
+				m.On("Update", mock.Anything, mock.Anything).Return(nil)
 			},
 			expectedError: nil,
 		},
@@ -63,9 +64,9 @@ func TestUpdateUserPhoneUseCase(t *testing.T) {
 			inputID:    userID,
 			inputPhone: otherPhone,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", userID).Return(existingUser, nil)
-				m.On("FindByPhone", otherPhone).Return(nil, nil)
-				m.On("Update", mock.Anything).Return(nil)
+				m.On("FindById", mock.Anything, userID).Return(existingUser, nil)
+				m.On("FindByPhone", mock.Anything, otherPhone).Return(nil, nil)
+				m.On("Update", mock.Anything, mock.Anything).Return(nil)
 			},
 			expectedError: nil,
 		},
@@ -74,8 +75,8 @@ func TestUpdateUserPhoneUseCase(t *testing.T) {
 			inputID:    userID,
 			inputPhone: otherPhone,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", userID).Return(existingUser, nil)
-				m.On("FindByPhone", otherPhone).Return(existingUser, nil)
+				m.On("FindById", mock.Anything, userID).Return(existingUser, nil)
+				m.On("FindByPhone", mock.Anything, otherPhone).Return(existingUser, nil)
 			},
 			expectedError: domain.ErrUserPhoneAlreadyExists,
 		},
@@ -84,7 +85,7 @@ func TestUpdateUserPhoneUseCase(t *testing.T) {
 			inputID:    userID,
 			inputPhone: phone,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", userID).Return(nil, nil)
+				m.On("FindById", mock.Anything, userID).Return(nil, nil)
 			},
 			expectedError: domain.ErrUserNotFound,
 		},
@@ -93,7 +94,7 @@ func TestUpdateUserPhoneUseCase(t *testing.T) {
 			inputID:    userID,
 			inputPhone: phone,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", userID).Return(nil, dbErr)
+				m.On("FindById", mock.Anything, userID).Return(nil, dbErr)
 			},
 			expectedError: domain.ErrUpdatingUserPhone,
 		},
@@ -102,8 +103,8 @@ func TestUpdateUserPhoneUseCase(t *testing.T) {
 			inputID:    userID,
 			inputPhone: otherPhone,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", userID).Return(existingUser, nil)
-				m.On("FindByPhone", otherPhone).Return(nil, dbErr)
+				m.On("FindById", mock.Anything, userID).Return(existingUser, nil)
+				m.On("FindByPhone", mock.Anything, otherPhone).Return(nil, dbErr)
 			},
 			expectedError: domain.ErrUpdatingUserPhone,
 		},
@@ -112,8 +113,8 @@ func TestUpdateUserPhoneUseCase(t *testing.T) {
 			inputID:    userID,
 			inputPhone: phone,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", userID).Return(existingUser, nil)
-				m.On("Update", mock.Anything).Return(dbErr)
+				m.On("FindById", mock.Anything, userID).Return(existingUser, nil)
+				m.On("Update", mock.Anything, mock.Anything).Return(dbErr)
 			},
 			expectedError: domain.ErrUpdatingUserPhone,
 		},
@@ -125,7 +126,7 @@ func TestUpdateUserPhoneUseCase(t *testing.T) {
 			tc.mockExpectations(mockUserRepository)
 
 			useCase := application.NewUpdateUserPhoneUseCase(mockUserRepository)
-			err := useCase.Execute(tc.inputID, tc.inputPhone)
+			err := useCase.Execute(context.Background(), tc.inputID, tc.inputPhone)
 
 			if tc.expectedError != nil {
 				if err == nil {

@@ -29,3 +29,7 @@ type EmailDTO string
 func (e Email) ToDTO() EmailDTO {
 	return EmailDTO(e.value)
 }
+
+func (e Email) Value() string {
+	return e.value
+}
