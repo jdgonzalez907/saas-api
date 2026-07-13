@@ -260,7 +260,7 @@ func mapToDomain(
 		PersonalInformation: personalInfo,
 		Phone:               phone,
 		Email:               emailVO,
-		CreatedAt:           createdAt.Time,
-		UpdatedAt:           updatedAt.Time,
+		CreatedAt:           createdAt.Time.UTC(),
+		UpdatedAt:           updatedAt.Time.UTC(),
 	})
 }
