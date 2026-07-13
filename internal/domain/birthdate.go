@@ -5,7 +5,10 @@ import (
 	"time"
 )
 
-var ErrInvalidBirthDate = errors.New("invalid birth date")
+var (
+	ErrUserUnderage           = errors.New("user must be at least 18 years old")
+	ErrInvalidBirthDateFormat = errors.New("invalid birth date format")
+)
 
 const (
 	MinAge = 18
@@ -15,26 +18,27 @@ type BirthDate struct {
 	value time.Time
 }
 
-func NewBirthDate(value time.Time) (BirthDate, error) {
-	now := time.Now()
-	age := now.Year() - value.Year()
+func NewBirthDate(value string) (BirthDate, error) {
+	t, err := time.Parse("2006-01-02", value)
+	if err != nil {
+		return BirthDate{}, ErrInvalidBirthDateFormat
+	}
 
-	if now.YearDay() < value.YearDay() {
+	now := time.Now()
+	age := now.Year() - t.Year()
+
+	if now.YearDay() < t.YearDay() {
 		age--
 	}
 	if age < MinAge {
-		return BirthDate{}, ErrInvalidBirthDate
+		return BirthDate{}, ErrUserUnderage
 	}
 
-	return BirthDate{value: value}, nil
+	return BirthDate{value: t}, nil
 }
 
-type BirthDateDTO struct {
-	Value time.Time `json:"value"`
-}
+type BirthDateDTO string
 
 func (b BirthDate) ToDTO() BirthDateDTO {
-	return BirthDateDTO{
-		Value: b.value,
-	}
+	return BirthDateDTO(b.value.Format("2006-01-02"))
 }

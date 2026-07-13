@@ -42,9 +42,9 @@ type UserParams struct {
 }
 
 type UserDTO struct {
-	ID                     int `json:"id"`
-	PersonalInformationDTO     // Embedded
-	Phone                  PhoneDTO `json:"phone"`
+	ID                     int       `json:"id"`
+	PersonalInformationDTO           // Embedded
+	Phone                  PhoneDTO  `json:"phone"`
 	Email                  *EmailDTO `json:"email"`
 	CreatedAt              time.Time `json:"created_at"`
 	UpdatedAt              time.Time `json:"updated_at"`
@@ -174,7 +174,7 @@ func UserFromDTO(dto *UserDTO) (*User, error) {
 
 	var birthDate *BirthDate
 	if dto.BirthDate != nil {
-		b, err := NewBirthDate(dto.BirthDate.Value)
+		b, err := NewBirthDate(string(*dto.BirthDate))
 		if err != nil {
 			return nil, err
 		}

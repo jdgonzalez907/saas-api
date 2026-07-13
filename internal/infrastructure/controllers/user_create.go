@@ -65,7 +65,7 @@ func (c *CreateUserController) Handle(w http.ResponseWriter, r *http.Request) {
 
 	var birthDate *domain.BirthDate
 	if body.BirthDate != nil {
-		bd, err := domain.NewBirthDate(body.BirthDate.Value)
+		bd, err := domain.NewBirthDate(string(*body.BirthDate))
 		if err != nil {
 			RespondWithDomainError(w, err)
 			return
