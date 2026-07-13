@@ -1,16 +1,25 @@
-# Binaries and templates
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
 
-# Test coverage
 coverage.out
+coverage_*.out
 
-# Dependency directories (only if you check them in)
 vendor/
 
-# Mocks or temporary files
+.env
+.env.*
+!.env.example
+
+.vscode/
+.idea/
+*.swp
+*.swo
+
+.DS_Store
+Thumbs.db
+
 tmp_backup/
 setup_git.sh
