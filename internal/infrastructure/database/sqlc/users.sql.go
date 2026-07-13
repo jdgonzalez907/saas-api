@@ -210,23 +210,23 @@ func (q *Queries) FindUserByPhone(ctx context.Context, arg FindUserByPhoneParams
 	return i, err
 }
 
-const findUsersPaginated = `-- name: FindUsersPaginated :many
+const findUsersPaginatedWithCursor = `-- name: FindUsersPaginatedWithCursor :many
 SELECT 
     id, identification_type, identification_number, first_name, last_name, 
     birth_date, address, phone_country_code, phone_number, email, 
     created_at, updated_at 
 FROM users 
-WHERE ($2::bigint IS NULL OR id > $2::bigint) AND deleted_at IS NULL 
+WHERE id > $1 AND deleted_at IS NULL 
 ORDER BY id ASC 
-LIMIT $1
+LIMIT $2
 `
 
-type FindUsersPaginatedParams struct {
-	Limit  int32
-	LastID pgtype.Int8
+type FindUsersPaginatedWithCursorParams struct {
+	ID    int64
+	Limit int32
 }
 
-type FindUsersPaginatedRow struct {
+type FindUsersPaginatedWithCursorRow struct {
 	ID                   int64
 	IdentificationType   string
 	IdentificationNumber string
@@ -241,15 +241,74 @@ type FindUsersPaginatedRow struct {
 	UpdatedAt            pgtype.Timestamptz
 }
 
-func (q *Queries) FindUsersPaginated(ctx context.Context, arg FindUsersPaginatedParams) ([]FindUsersPaginatedRow, error) {
-	rows, err := q.db.Query(ctx, findUsersPaginated, arg.Limit, arg.LastID)
+func (q *Queries) FindUsersPaginatedWithCursor(ctx context.Context, arg FindUsersPaginatedWithCursorParams) ([]FindUsersPaginatedWithCursorRow, error) {
+	rows, err := q.db.Query(ctx, findUsersPaginatedWithCursor, arg.ID, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []FindUsersPaginatedRow
+	var items []FindUsersPaginatedWithCursorRow
 	for rows.Next() {
-		var i FindUsersPaginatedRow
+		var i FindUsersPaginatedWithCursorRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.IdentificationType,
+			&i.IdentificationNumber,
+			&i.FirstName,
+			&i.LastName,
+			&i.BirthDate,
+			&i.Address,
+			&i.PhoneCountryCode,
+			&i.PhoneNumber,
+			&i.Email,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const findUsersPaginatedWithoutCursor = `-- name: FindUsersPaginatedWithoutCursor :many
+SELECT 
+    id, identification_type, identification_number, first_name, last_name, 
+    birth_date, address, phone_country_code, phone_number, email, 
+    created_at, updated_at 
+FROM users 
+WHERE deleted_at IS NULL 
+ORDER BY id ASC 
+LIMIT $1
+`
+
+type FindUsersPaginatedWithoutCursorRow struct {
+	ID                   int64
+	IdentificationType   string
+	IdentificationNumber string
+	FirstName            string
+	LastName             string
+	BirthDate            pgtype.Date
+	Address              []byte
+	PhoneCountryCode     string
+	PhoneNumber          string
+	Email                pgtype.Text
+	CreatedAt            pgtype.Timestamptz
+	UpdatedAt            pgtype.Timestamptz
+}
+
+func (q *Queries) FindUsersPaginatedWithoutCursor(ctx context.Context, limit int32) ([]FindUsersPaginatedWithoutCursorRow, error) {
+	rows, err := q.db.Query(ctx, findUsersPaginatedWithoutCursor, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []FindUsersPaginatedWithoutCursorRow
+	for rows.Next() {
+		var i FindUsersPaginatedWithoutCursorRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.IdentificationType,
