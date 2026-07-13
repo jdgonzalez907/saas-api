@@ -7,21 +7,21 @@ import (
 	"jdgonzalez907/users-api/internal/domain"
 )
 
-type FindUserByIdUseCase interface {
+type FindUserByIDUseCase interface {
 	Execute(ctx context.Context, id int) (*domain.User, error)
 }
 
-type findUserByIdUseCase struct {
+type findUserByIDUseCase struct {
 	userRepository domain.UserRepository
 }
 
-func NewFindUserByIdUseCase(userRepository domain.UserRepository) FindUserByIdUseCase {
-	return &findUserByIdUseCase{
+func NewFindUserByIDUseCase(userRepository domain.UserRepository) FindUserByIDUseCase {
+	return &findUserByIDUseCase{
 		userRepository: userRepository,
 	}
 }
 
-func (u *findUserByIdUseCase) Execute(ctx context.Context, id int) (*domain.User, error) {
+func (u *findUserByIDUseCase) Execute(ctx context.Context, id int) (*domain.User, error) {
 	if id <= 0 {
 		return nil, domain.ErrInvalidUserID
 	}

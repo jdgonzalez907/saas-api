@@ -55,7 +55,7 @@ func NewUserWithoutId(
 	phone Phone,
 	email *Email,
 ) (*User, error) {
-	now := time.Now()
+	now := time.Now().UTC()
 	return NewUser(UserParams{
 		ID:                  0,
 		PersonalInformation: personalInformation,
@@ -228,7 +228,7 @@ func (u *User) WithPersonalInformation(info PersonalInformation) *User {
 		phone:               u.phone,
 		email:               u.email,
 		createdAt:           u.createdAt,
-		updatedAt:           time.Now(),
+		updatedAt:           time.Now().UTC(),
 	}
 }
 
@@ -239,7 +239,7 @@ func (u *User) WithPhone(phone Phone) *User {
 		phone:               phone,
 		email:               u.email,
 		createdAt:           u.createdAt,
-		updatedAt:           time.Now(),
+		updatedAt:           time.Now().UTC(),
 	}
 }
 
@@ -250,6 +250,6 @@ func (u *User) WithEmail(email *Email) *User {
 		phone:               u.phone,
 		email:               email,
 		createdAt:           u.createdAt,
-		updatedAt:           time.Now(),
+		updatedAt:           time.Now().UTC(),
 	}
 }

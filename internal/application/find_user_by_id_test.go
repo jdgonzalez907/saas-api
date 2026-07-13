@@ -57,8 +57,8 @@ func TestFindUserByIdUseCase(t *testing.T) {
 			expectedError:  nil,
 		},
 		{
-			testName:         "fail - invalid user id (<= 0)",
-			inputID:          0,
+			testName: "fail - invalid user id (<= 0)",
+			inputID:  0,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				// No expectations
 			},
@@ -90,7 +90,7 @@ func TestFindUserByIdUseCase(t *testing.T) {
 			mockUserRepository := new(domainMocks.MockUserRepository)
 			tc.mockExpectations(mockUserRepository)
 
-			useCase := application.NewFindUserByIdUseCase(mockUserRepository)
+			useCase := application.NewFindUserByIDUseCase(mockUserRepository)
 			result, err := useCase.Execute(context.Background(), tc.inputID)
 
 			if tc.expectedError != nil {
