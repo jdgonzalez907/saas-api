@@ -26,7 +26,7 @@ services:
       postgres:
         condition: service_healthy
     volumes:
-      - ./db/migrations:/migrations:ro
+      - ./db/migrations:/migrations:ro,z
     command:
       - "-path=/migrations"
       - "-database=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=${POSTGRES_SSLMODE}"
