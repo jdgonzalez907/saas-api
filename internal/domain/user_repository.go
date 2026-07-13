@@ -1,11 +1,13 @@
 package domain
 
+import "context"
+
 type UserRepository interface {
-	FindById(id int) (*User, error)
-	FindByPhone(phone Phone) (*User, error)
-	FindByEmail(email Email) (*User, error)
-	FindAll(pagination Pagination) ([]*User, error)
-	Create(user *User) error
-	Update(user *User) error
-	Delete(id int) error
+	FindById(ctx context.Context, id int) (*User, error)
+	FindByPhone(ctx context.Context, phone Phone) (*User, error)
+	FindByEmail(ctx context.Context, email Email) (*User, error)
+	FindAll(ctx context.Context, pagination Pagination) ([]*User, error)
+	Create(ctx context.Context, user *User) error
+	Update(ctx context.Context, user *User) error
+	Delete(ctx context.Context, id int) error
 }

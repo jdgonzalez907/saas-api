@@ -119,6 +119,22 @@ func TestNewUserWithoutId(t *testing.T) {
 	}
 }
 
+func TestAssignID(t *testing.T) {
+	user, err := domain.NewUserWithoutId(personalInfo, phone, &email)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if user.ID() != 0 {
+		t.Fatalf("expected initial ID to be 0, got %d", user.ID())
+	}
+
+	user.AssignID(42)
+
+	if user.ID() != 42 {
+		t.Errorf("expected ID to be 42 after AssignID, got %d", user.ID())
+	}
+}
+
 func TestUserDTOAndFromDTO(t *testing.T) {
 	now := time.Now()
 

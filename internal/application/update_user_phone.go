@@ -1,13 +1,14 @@
 package application
 
 import (
+	"context"
 	"fmt"
 
 	"jdgonzalez907/users-api/internal/domain"
 )
 
 type UpdateUserPhoneUseCase interface {
-	Execute(id int, phone domain.Phone) error
+	Execute(ctx context.Context, id int, phone domain.Phone) error
 }
 
 type updateUserPhoneUseCase struct {
@@ -18,8 +19,8 @@ func NewUpdateUserPhoneUseCase(userRepository domain.UserRepository) UpdateUserP
 	return &updateUserPhoneUseCase{userRepository: userRepository}
 }
 
-func (u *updateUserPhoneUseCase) Execute(id int, phone domain.Phone) error {
-	userFound, err := u.userRepository.FindById(id)
+func (u *updateUserPhoneUseCase) Execute(ctx context.Context, id int, phone domain.Phone) error {
+	userFound, err := u.userRepository.FindById(ctx, id)
 	if err != nil {
 		return fmt.Errorf("%v: %w", domain.ErrUpdatingUserPhone, err)
 	}
@@ -29,7 +30,7 @@ func (u *updateUserPhoneUseCase) Execute(id int, phone domain.Phone) error {
 	}
 
 	if phone != userFound.Phone() {
-		foundPhone, err := u.userRepository.FindByPhone(phone)
+		foundPhone, err := u.userRepository.FindByPhone(ctx, phone)
 		if err != nil {
 			return fmt.Errorf("%v: %w", domain.ErrUpdatingUserPhone, err)
 		}
@@ -40,7 +41,7 @@ func (u *updateUserPhoneUseCase) Execute(id int, phone domain.Phone) error {
 
 	updatedUser := userFound.WithPhone(phone)
 
-	err = u.userRepository.Update(updatedUser)
+	err = u.userRepository.Update(ctx, updatedUser)
 	if err != nil {
 		return fmt.Errorf("%v: %w", domain.ErrUpdatingUserPhone, err)
 	}

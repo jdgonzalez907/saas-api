@@ -52,7 +52,7 @@ func TestUpdateUserPersonalInformationController_Handle(t *testing.T) {
 			routeParamID: "1",
 			requestBody:  validBody,
 			setupMock: func(m *mockApp.MockUpdateUserPersonalInformationUseCase) {
-				m.EXPECT().Execute(1, mock.MatchedBy(func(u domain.PersonalInformation) bool {
+				m.EXPECT().Execute(mock.Anything, 1, mock.MatchedBy(func(u domain.PersonalInformation) bool {
 					dto := u.ToDTO()
 					return dto.FirstName == "Jane" &&
 						dto.LastName == "Smith" &&
@@ -185,7 +185,7 @@ func TestUpdateUserPersonalInformationController_Handle(t *testing.T) {
 			routeParamID: "1",
 			requestBody:  validBody,
 			setupMock: func(m *mockApp.MockUpdateUserPersonalInformationUseCase) {
-				m.EXPECT().Execute(1, mock.Anything).Return(domain.ErrUserNotFound)
+				m.EXPECT().Execute(mock.Anything, 1, mock.Anything).Return(domain.ErrUserNotFound)
 			},
 			expectedStatus: http.StatusNotFound,
 			expectedBody:   domain.ErrUserNotFound.Error(),
@@ -195,7 +195,7 @@ func TestUpdateUserPersonalInformationController_Handle(t *testing.T) {
 			routeParamID: "1",
 			requestBody:  validBody,
 			setupMock: func(m *mockApp.MockUpdateUserPersonalInformationUseCase) {
-				m.EXPECT().Execute(1, mock.Anything).Return(errors.New("db update failed"))
+				m.EXPECT().Execute(mock.Anything, 1, mock.Anything).Return(errors.New("db update failed"))
 			},
 			expectedStatus: http.StatusInternalServerError,
 			expectedBody:   "internal server error",

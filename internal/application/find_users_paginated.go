@@ -1,13 +1,14 @@
 package application
 
 import (
+	"context"
 	"fmt"
 
 	"jdgonzalez907/users-api/internal/domain"
 )
 
 type FindUsersPaginatedUseCase interface {
-	Execute(pagination domain.Pagination) (domain.PaginatedUsers, error)
+	Execute(ctx context.Context, pagination domain.Pagination) (domain.PaginatedUsers, error)
 }
 
 type findUsersPaginatedUseCase struct {
@@ -20,15 +21,15 @@ func NewFindUsersPaginatedUseCase(userRepository domain.UserRepository) FindUser
 	}
 }
 
-func (u *findUsersPaginatedUseCase) Execute(pagination domain.Pagination) (domain.PaginatedUsers, error) {
-	users, err := u.userRepository.FindAll(pagination)
+func (u *findUsersPaginatedUseCase) Execute(ctx context.Context, pagination domain.Pagination) (domain.PaginatedUsers, error) {
+	users, err := u.userRepository.FindAll(ctx, pagination)
 	if err != nil {
 		return domain.PaginatedUsers{}, fmt.Errorf("%v: %w", domain.ErrFindingUsers, err)
 	}
 
 	var nextCursor *int
 	if len(users) > 0 {
-		nextCursorVal := users[len(users)-1].ToDTO().ID
+		nextCursorVal := users[len(users)-1].ID()
 		nextCursor = &nextCursorVal
 	}
 

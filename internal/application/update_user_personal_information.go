@@ -1,13 +1,14 @@
 package application
 
 import (
+	"context"
 	"fmt"
 
 	"jdgonzalez907/users-api/internal/domain"
 )
 
 type UpdateUserPersonalInformationUseCase interface {
-	Execute(id int, info domain.PersonalInformation) error
+	Execute(ctx context.Context, id int, info domain.PersonalInformation) error
 }
 
 type updateUserPersonalInformationUseCase struct {
@@ -18,8 +19,8 @@ func NewUpdateUserPersonalInformationUseCase(userRepository domain.UserRepositor
 	return &updateUserPersonalInformationUseCase{userRepository: userRepository}
 }
 
-func (u *updateUserPersonalInformationUseCase) Execute(id int, info domain.PersonalInformation) error {
-	userFound, err := u.userRepository.FindById(id)
+func (u *updateUserPersonalInformationUseCase) Execute(ctx context.Context, id int, info domain.PersonalInformation) error {
+	userFound, err := u.userRepository.FindById(ctx, id)
 	if err != nil {
 		return fmt.Errorf("%v: %w", domain.ErrUpdatingUserPersonalInformation, err)
 	}
@@ -30,7 +31,7 @@ func (u *updateUserPersonalInformationUseCase) Execute(id int, info domain.Perso
 
 	updatedUser := userFound.WithPersonalInformation(info)
 
-	err = u.userRepository.Update(updatedUser)
+	err = u.userRepository.Update(ctx, updatedUser)
 	if err != nil {
 		return fmt.Errorf("%v: %w", domain.ErrUpdatingUserPersonalInformation, err)
 	}

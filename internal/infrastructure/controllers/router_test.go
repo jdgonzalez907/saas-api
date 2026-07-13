@@ -9,6 +9,7 @@ import (
 	mockApp "jdgonzalez907/users-api/mocks/application"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestRouterAndMiddleware(t *testing.T) {
@@ -42,7 +43,7 @@ func TestRouterAndMiddleware(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/users/1", nil)
 		rec := httptest.NewRecorder()
 
-		mockFindUseCase.EXPECT().Execute(1).Return(nil, http.ErrNoLocation).Once()
+		mockFindUseCase.EXPECT().Execute(mock.Anything, 1).Return(nil, http.ErrNoLocation).Once()
 
 		router.ServeHTTP(rec, req)
 

@@ -34,8 +34,8 @@ func TestUpdateUserEmailController_Handle(t *testing.T) {
 			routeParamID: "1",
 			requestBody:  validBody,
 			setupMock: func(m *mockApp.MockUpdateUserEmailUseCase) {
-				m.EXPECT().Execute(1, mock.MatchedBy(func(e *domain.Email) bool {
-					return e != nil && e.ToDTO() == "new@example.com"
+				m.EXPECT().Execute(mock.Anything, 1, mock.MatchedBy(func(e *domain.Email) bool {
+					return e != nil && e.Value() == "new@example.com"
 				})).Return(nil)
 			},
 			expectedStatus: http.StatusOK,
@@ -45,7 +45,7 @@ func TestUpdateUserEmailController_Handle(t *testing.T) {
 			routeParamID: "1",
 			requestBody:  domain.EmailDTO(""),
 			setupMock: func(m *mockApp.MockUpdateUserEmailUseCase) {
-				m.EXPECT().Execute(1, (*domain.Email)(nil)).Return(nil)
+				m.EXPECT().Execute(mock.Anything, 1, (*domain.Email)(nil)).Return(nil)
 			},
 			expectedStatus: http.StatusOK,
 		},
@@ -86,7 +86,7 @@ func TestUpdateUserEmailController_Handle(t *testing.T) {
 			routeParamID: "1",
 			requestBody:  validBody,
 			setupMock: func(m *mockApp.MockUpdateUserEmailUseCase) {
-				m.EXPECT().Execute(1, mock.Anything).Return(domain.ErrUserNotFound)
+				m.EXPECT().Execute(mock.Anything, 1, mock.Anything).Return(domain.ErrUserNotFound)
 			},
 			expectedStatus: http.StatusNotFound,
 			expectedBody:   domain.ErrUserNotFound.Error(),
@@ -96,7 +96,7 @@ func TestUpdateUserEmailController_Handle(t *testing.T) {
 			routeParamID: "1",
 			requestBody:  validBody,
 			setupMock: func(m *mockApp.MockUpdateUserEmailUseCase) {
-				m.EXPECT().Execute(1, mock.Anything).Return(domain.ErrUserEmailAlreadyExists)
+				m.EXPECT().Execute(mock.Anything, 1, mock.Anything).Return(domain.ErrUserEmailAlreadyExists)
 			},
 			expectedStatus: http.StatusConflict,
 			expectedBody:   domain.ErrUserEmailAlreadyExists.Error(),
@@ -106,7 +106,7 @@ func TestUpdateUserEmailController_Handle(t *testing.T) {
 			routeParamID: "1",
 			requestBody:  validBody,
 			setupMock: func(m *mockApp.MockUpdateUserEmailUseCase) {
-				m.EXPECT().Execute(1, mock.Anything).Return(errors.New("db failed"))
+				m.EXPECT().Execute(mock.Anything, 1, mock.Anything).Return(errors.New("db failed"))
 			},
 			expectedStatus: http.StatusInternalServerError,
 			expectedBody:   "internal server error",

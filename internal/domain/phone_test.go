@@ -52,6 +52,12 @@ func TestNewPhone(t *testing.T) {
 				if dto.Number != tc.expectedNumber {
 					t.Errorf("expected DTO Number: %s, got: %s", tc.expectedNumber, dto.Number)
 				}
+				if phone.CountryCode() != tc.expectedCountryCode {
+					t.Errorf("expected CountryCode(): %s, got: %s", tc.expectedCountryCode, phone.CountryCode())
+				}
+				if phone.Number() != tc.expectedNumber {
+					t.Errorf("expected Number(): %s, got: %s", tc.expectedNumber, phone.Number())
+				}
 			}
 		})
 	}

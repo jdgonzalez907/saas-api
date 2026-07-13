@@ -23,7 +23,7 @@ func (c *DeleteUserController) Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := c.useCase.Execute(id); err != nil {
+	if err := c.useCase.Execute(r.Context(), id); err != nil {
 		RespondWithDomainError(w, err)
 		return
 	}

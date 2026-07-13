@@ -1,13 +1,14 @@
 package application
 
 import (
+	"context"
 	"fmt"
 
 	"jdgonzalez907/users-api/internal/domain"
 )
 
 type UpdateUserEmailUseCase interface {
-	Execute(id int, email *domain.Email) error
+	Execute(ctx context.Context, id int, email *domain.Email) error
 }
 
 type updateUserEmailUseCase struct {
@@ -18,8 +19,8 @@ func NewUpdateUserEmailUseCase(userRepository domain.UserRepository) UpdateUserE
 	return &updateUserEmailUseCase{userRepository: userRepository}
 }
 
-func (u *updateUserEmailUseCase) Execute(id int, email *domain.Email) error {
-	userFound, err := u.userRepository.FindById(id)
+func (u *updateUserEmailUseCase) Execute(ctx context.Context, id int, email *domain.Email) error {
+	userFound, err := u.userRepository.FindById(ctx, id)
 	if err != nil {
 		return fmt.Errorf("%v: %w", domain.ErrUpdatingUserEmail, err)
 	}
@@ -31,7 +32,7 @@ func (u *updateUserEmailUseCase) Execute(id int, email *domain.Email) error {
 	if email != nil {
 		emailChanged := userFound.Email() == nil || *userFound.Email() != *email
 		if emailChanged {
-			foundEmail, err := u.userRepository.FindByEmail(*email)
+			foundEmail, err := u.userRepository.FindByEmail(ctx, *email)
 			if err != nil {
 				return fmt.Errorf("%v: %w", domain.ErrUpdatingUserEmail, err)
 			}
@@ -43,7 +44,7 @@ func (u *updateUserEmailUseCase) Execute(id int, email *domain.Email) error {
 
 	updatedUser := userFound.WithEmail(email)
 
-	err = u.userRepository.Update(updatedUser)
+	err = u.userRepository.Update(ctx, updatedUser)
 	if err != nil {
 		return fmt.Errorf("%v: %w", domain.ErrUpdatingUserEmail, err)
 	}
