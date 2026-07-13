@@ -13,23 +13,27 @@ import (
 func TestDeleteUserUseCase(t *testing.T) {
 	userID := 1
 	identification, _ := domain.NewIdentification(domain.IdType_CC, "1111")
-	phone, _ := domain.NewPhone("123456789")
+	phone, _ := domain.NewPhone("57", "123456789")
 	email, _ := domain.NewEmail("john.doe@example.com")
 	address, _ := domain.NewAddress("123 Main St", "City", "State", "Country", nil, nil)
 	birthDate, _ := domain.NewBirthDate(time.Now().AddDate(-18, 0, -1))
 	now := time.Now()
 
+	personalInfo, _ := domain.NewPersonalInformation(
+		identification,
+		"John",
+		"Doe",
+		&address,
+		&birthDate,
+	)
+
 	existingUser, _ := domain.NewUser(domain.UserParams{
-		ID:             userID,
-		Identification: identification,
-		FirstName:      "John",
-		LastName:       "Doe",
-		Phone:          phone,
-		Email:          &email,
-		Address:        &address,
-		BirthDate:      &birthDate,
-		CreatedAt:      now,
-		UpdatedAt:      now,
+		ID:                  userID,
+		PersonalInformation: personalInfo,
+		Phone:               phone,
+		Email:               &email,
+		CreatedAt:           now,
+		UpdatedAt:           now,
 	})
 
 	dbErr := errors.New("database connection error")
@@ -76,23 +80,23 @@ func TestDeleteUserUseCase(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range testCases {
-		t.Run(testCase.testName, func(t *testing.T) {
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
 			mockUserRepository := new(domainMocks.MockUserRepository)
-			testCase.mockExpectations(mockUserRepository)
+			tc.mockExpectations(mockUserRepository)
 
 			deleteUserUseCase := application.NewDeleteUserUseCase(mockUserRepository)
-			err := deleteUserUseCase.Execute(testCase.inputID)
+			err := deleteUserUseCase.Execute(tc.inputID)
 
-			if testCase.expectedError != nil {
+			if tc.expectedError != nil {
 				if err == nil {
-					t.Fatalf("expected error: %v, got nil", testCase.expectedError)
+					t.Fatalf("expected error: %v, got nil", tc.expectedError)
 				}
-				if !errors.Is(err, testCase.expectedError) {
-					if testCase.expectedError == domain.ErrDeletingUser && errors.Unwrap(err) != nil {
+				if !errors.Is(err, tc.expectedError) {
+					if tc.expectedError == domain.ErrDeletingUser && errors.Unwrap(err) != nil {
 						// Success: wrapped infra error
 					} else {
-						t.Errorf("expected error: %v, got %v", testCase.expectedError, err)
+						t.Errorf("expected error: %v, got %v", tc.expectedError, err)
 					}
 				}
 			} else {

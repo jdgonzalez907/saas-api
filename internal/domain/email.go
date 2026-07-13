@@ -24,12 +24,8 @@ func NewEmail(email string) (Email, error) {
 	return Email{value: email}, nil
 }
 
-type EmailDTO struct {
-	Value string `json:"value"`
-}
+type EmailDTO string
 
 func (e Email) ToDTO() EmailDTO {
-	return EmailDTO{
-		Value: e.value,
-	}
+	return EmailDTO(e.value)
 }

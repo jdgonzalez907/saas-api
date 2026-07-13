@@ -1,0 +1,158 @@
+package controllers_test
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"errors"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"jdgonzalez907/users-api/internal/domain"
+	"jdgonzalez907/users-api/internal/infrastructure/controllers"
+	mockApp "jdgonzalez907/users-api/mocks/application"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+)
+
+func TestUpdateUserPhoneController_Handle(t *testing.T) {
+	validBody := domain.PhoneDTO{CountryCode: "57", Number: "987654321"}
+
+	testCases := []struct {
+		testName       string
+		routeParamID   string
+		requestBody    any
+		setupMock      func(m *mockApp.MockUpdateUserPhoneUseCase)
+		expectedStatus int
+		expectedBody   string
+	}{
+		{
+			testName:     "success - phone updated",
+			routeParamID: "1",
+			requestBody:  validBody,
+			setupMock: func(m *mockApp.MockUpdateUserPhoneUseCase) {
+				m.EXPECT().Execute(1, mock.MatchedBy(func(p domain.Phone) bool {
+					dto := p.ToDTO()
+					return dto.CountryCode == "57" && dto.Number == "987654321"
+				})).Return(nil)
+			},
+			expectedStatus: http.StatusOK,
+		},
+		{
+			testName:       "fail - route parameter is not an integer",
+			routeParamID:   "abc",
+			requestBody:    validBody,
+			setupMock:      func(m *mockApp.MockUpdateUserPhoneUseCase) {},
+			expectedStatus: http.StatusBadRequest,
+			expectedBody:   "parameter id must be a positive integer",
+		},
+		{
+			testName:       "fail - invalid json body",
+			routeParamID:   "1",
+			requestBody:    "{invalid json}",
+			setupMock:      func(m *mockApp.MockUpdateUserPhoneUseCase) {},
+			expectedStatus: http.StatusBadRequest,
+			expectedBody:   controllers.ErrInvalidRequestBody.Error(),
+		},
+		{
+			testName:       "fail - nil request body",
+			routeParamID:   "1",
+			requestBody:    nil,
+			setupMock:      func(m *mockApp.MockUpdateUserPhoneUseCase) {},
+			expectedStatus: http.StatusBadRequest,
+			expectedBody:   controllers.ErrInvalidRequestBody.Error(),
+		},
+		{
+			testName:     "fail - invalid phone country code",
+			routeParamID: "1",
+			requestBody: domain.PhoneDTO{
+				CountryCode: "", Number: "987654321",
+			},
+			setupMock:      func(m *mockApp.MockUpdateUserPhoneUseCase) {},
+			expectedStatus: http.StatusBadRequest,
+			expectedBody:   domain.ErrInvalidPhone.Error(),
+		},
+		{
+			testName:     "fail - invalid phone number",
+			routeParamID: "1",
+			requestBody: domain.PhoneDTO{
+				CountryCode: "57", Number: "",
+			},
+			setupMock:      func(m *mockApp.MockUpdateUserPhoneUseCase) {},
+			expectedStatus: http.StatusBadRequest,
+			expectedBody:   domain.ErrInvalidPhone.Error(),
+		},
+		{
+			testName:     "fail - user not found",
+			routeParamID: "1",
+			requestBody:  validBody,
+			setupMock: func(m *mockApp.MockUpdateUserPhoneUseCase) {
+				m.EXPECT().Execute(1, mock.Anything).Return(domain.ErrUserNotFound)
+			},
+			expectedStatus: http.StatusNotFound,
+			expectedBody:   domain.ErrUserNotFound.Error(),
+		},
+		{
+			testName:     "fail - phone already exists",
+			routeParamID: "1",
+			requestBody:  validBody,
+			setupMock: func(m *mockApp.MockUpdateUserPhoneUseCase) {
+				m.EXPECT().Execute(1, mock.Anything).Return(domain.ErrUserPhoneAlreadyExists)
+			},
+			expectedStatus: http.StatusConflict,
+			expectedBody:   domain.ErrUserPhoneAlreadyExists.Error(),
+		},
+		{
+			testName:     "fail - internal server error from usecase",
+			routeParamID: "1",
+			requestBody:  validBody,
+			setupMock: func(m *mockApp.MockUpdateUserPhoneUseCase) {
+				m.EXPECT().Execute(1, mock.Anything).Return(errors.New("db failed"))
+			},
+			expectedStatus: http.StatusInternalServerError,
+			expectedBody:   "internal server error",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			mockUseCase := mockApp.NewMockUpdateUserPhoneUseCase(t)
+			tc.setupMock(mockUseCase)
+
+			controller := controllers.NewUpdateUserPhoneController(mockUseCase)
+
+			var req *http.Request
+			if tc.requestBody == nil {
+				req = httptest.NewRequest(http.MethodPut, "/users/phone", nil)
+				req.Body = nil
+			} else {
+				var buf bytes.Buffer
+				if s, ok := tc.requestBody.(string); ok {
+					buf.WriteString(s)
+				} else {
+					err := json.NewEncoder(&buf).Encode(tc.requestBody)
+					assert.NoError(t, err)
+				}
+				req = httptest.NewRequest(http.MethodPut, "/users/phone", &buf)
+			}
+
+			rctx := chi.NewRouteContext()
+			rctx.URLParams.Add("id", tc.routeParamID)
+			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+			rec := httptest.NewRecorder()
+			controller.Handle(rec, req)
+
+			assert.Equal(t, tc.expectedStatus, rec.Code)
+			if tc.expectedBody != "" {
+				var jsonResponse map[string]string
+				err := json.Unmarshal(rec.Body.Bytes(), &jsonResponse)
+				assert.NoError(t, err)
+				assert.Contains(t, jsonResponse["message"], tc.expectedBody)
+			}
+		})
+	}
+}

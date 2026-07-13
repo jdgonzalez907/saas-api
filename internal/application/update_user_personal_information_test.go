@@ -2,10 +2,8 @@ package application_test
 
 import (
 	"errors"
-	"reflect"
 	"testing"
 	"time"
-	"unsafe"
 
 	"jdgonzalez907/users-api/internal/application"
 	"jdgonzalez907/users-api/internal/domain"
@@ -17,66 +15,51 @@ import (
 func TestUpdateUserPersonalInformationUseCase(t *testing.T) {
 	userID := 1
 	identification, _ := domain.NewIdentification(domain.IdType_CC, "1111")
-	phone, _ := domain.NewPhone("123456789")
+	phone, _ := domain.NewPhone("57", "123456789")
 	email, _ := domain.NewEmail("john.doe@example.com")
 	address, _ := domain.NewAddress("123 Main St", "City", "State", "Country", nil, nil)
 	birthDate, _ := domain.NewBirthDate(time.Now().AddDate(-18, 0, -1))
 	now := time.Now()
 
+	existingPersonalInfo, _ := domain.NewPersonalInformation(
+		identification,
+		"John",
+		"Doe",
+		&address,
+		&birthDate,
+	)
+
 	existingUser, _ := domain.NewUser(domain.UserParams{
-		ID:             userID,
-		Identification: identification,
-		FirstName:      "John",
-		LastName:       "Doe",
-		Phone:          phone,
-		Email:          &email,
-		Address:        &address,
-		BirthDate:      &birthDate,
-		CreatedAt:      now,
-		UpdatedAt:      now,
+		ID:                  userID,
+		PersonalInformation: existingPersonalInfo,
+		Phone:               phone,
+		Email:               &email,
+		CreatedAt:           now,
+		UpdatedAt:           now,
 	})
 
 	otherIdentification, _ := domain.NewIdentification(domain.IdType_CC, "2222")
-	userWithNewPersonalInformation, _ := domain.NewUser(domain.UserParams{
-		ID:             userID,
-		Identification: otherIdentification,
-		FirstName:      "Jane",
-		LastName:       "Smith",
-		Phone:          phone,
-		Email:          &email,
-		Address:        &address,
-		BirthDate:      &birthDate,
-		CreatedAt:      now,
-		UpdatedAt:      now,
-	})
-
-	// User that will fail validation in WithPersonalInformation method (e.g. empty firstName)
-	invalidUser, _ := domain.NewUser(domain.UserParams{
-		ID:             userID,
-		Identification: identification,
-		FirstName:      "John",
-		LastName:       "Doe",
-		Phone:          phone,
-		Email:          &email,
-		Address:        &address,
-		BirthDate:      &birthDate,
-		CreatedAt:      now,
-		UpdatedAt:      now,
-	})
-	rf := reflect.ValueOf(invalidUser).Elem().FieldByName("firstName")
-	reflect.NewAt(rf.Type(), unsafe.Pointer(rf.UnsafeAddr())).Elem().SetString("")
+	personalInfo, _ := domain.NewPersonalInformation(
+		otherIdentification,
+		"Jane",
+		"Smith",
+		&address,
+		&birthDate,
+	)
 
 	dbErr := errors.New("database connection error")
 
 	testCases := []struct {
 		testName         string
-		input            domain.User
+		id               int
+		info             domain.PersonalInformation
 		mockExpectations func(*domainMocks.MockUserRepository)
 		expectedError    error
 	}{
 		{
 			testName: "success - update personal info",
-			input:    *userWithNewPersonalInformation,
+			id:       userID,
+			info:     personalInfo,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindById", userID).Return(existingUser, nil)
 				m.On("Update", mock.Anything).Return(nil)
@@ -85,7 +68,8 @@ func TestUpdateUserPersonalInformationUseCase(t *testing.T) {
 		},
 		{
 			testName: "fail - user not found",
-			input:    *existingUser,
+			id:       userID,
+			info:     personalInfo,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindById", userID).Return(nil, nil)
 			},
@@ -93,7 +77,8 @@ func TestUpdateUserPersonalInformationUseCase(t *testing.T) {
 		},
 		{
 			testName: "fail - infra error on FindById",
-			input:    *existingUser,
+			id:       userID,
+			info:     personalInfo,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindById", userID).Return(nil, dbErr)
 			},
@@ -101,40 +86,33 @@ func TestUpdateUserPersonalInformationUseCase(t *testing.T) {
 		},
 		{
 			testName: "fail - repo update error",
-			input:    *existingUser,
+			id:       userID,
+			info:     personalInfo,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindById", userID).Return(existingUser, nil)
 				m.On("Update", mock.Anything).Return(dbErr)
 			},
 			expectedError: domain.ErrUpdatingUserPersonalInformation,
 		},
-		{
-			testName: "fail - invalid firstName",
-			input:    *invalidUser,
-			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", userID).Return(existingUser, nil)
-			},
-			expectedError: domain.ErrUpdatingUserPersonalInformation,
-		},
 	}
 
-	for _, testCase := range testCases {
-		t.Run(testCase.testName, func(t *testing.T) {
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
 			mockUserRepository := new(domainMocks.MockUserRepository)
-			testCase.mockExpectations(mockUserRepository)
+			tc.mockExpectations(mockUserRepository)
 
 			useCase := application.NewUpdateUserPersonalInformationUseCase(mockUserRepository)
-			err := useCase.Execute(&testCase.input)
+			err := useCase.Execute(tc.id, tc.info)
 
-			if testCase.expectedError != nil {
+			if tc.expectedError != nil {
 				if err == nil {
-					t.Fatalf("expected error: %v, got nil", testCase.expectedError)
+					t.Fatalf("expected error: %v, got nil", tc.expectedError)
 				}
-				if !errors.Is(err, testCase.expectedError) {
-					if testCase.expectedError == domain.ErrUpdatingUserPersonalInformation && errors.Unwrap(err) != nil {
+				if !errors.Is(err, tc.expectedError) {
+					if tc.expectedError == domain.ErrUpdatingUserPersonalInformation && errors.Unwrap(err) != nil {
 						// Success: wrapped infra error
 					} else {
-						t.Errorf("expected error: %v, got %v", testCase.expectedError, err)
+						t.Errorf("expected error: %v, got %v", tc.expectedError, err)
 					}
 				}
 			} else {

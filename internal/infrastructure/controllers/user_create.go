@@ -30,7 +30,7 @@ func (c *CreateUserController) Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	phone, err := domain.NewPhone(body.Phone.Value)
+	phone, err := domain.NewPhone(body.Phone.CountryCode, body.Phone.Number)
 	if err != nil {
 		RespondWithDomainError(w, err)
 		return
@@ -38,7 +38,7 @@ func (c *CreateUserController) Handle(w http.ResponseWriter, r *http.Request) {
 
 	var email *domain.Email
 	if body.Email != nil {
-		e, err := domain.NewEmail(body.Email.Value)
+		e, err := domain.NewEmail(string(*body.Email))
 		if err != nil {
 			RespondWithDomainError(w, err)
 			return
@@ -73,11 +73,13 @@ func (c *CreateUserController) Handle(w http.ResponseWriter, r *http.Request) {
 		birthDate = &bd
 	}
 
-	user, err := domain.NewUserWithoutId(identification, body.FirstName, body.LastName, phone, email, address, birthDate)
+	personalInfo, err := domain.NewPersonalInformation(identification, body.FirstName, body.LastName, address, birthDate)
 	if err != nil {
 		RespondWithDomainError(w, err)
 		return
 	}
+
+	user, _ := domain.NewUserWithoutId(personalInfo, phone, email)
 
 	if err := c.useCase.Execute(user); err != nil {
 		RespondWithDomainError(w, err)

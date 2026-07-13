@@ -15,15 +15,27 @@ func TestRouterAndMiddleware(t *testing.T) {
 	mockFindUseCase := mockApp.NewMockFindUserByIdUseCase(t)
 	mockCreateUseCase := mockApp.NewMockCreateUserUseCase(t)
 	mockDeleteUseCase := mockApp.NewMockDeleteUserUseCase(t)
+	mockUpdatePIUseCase := mockApp.NewMockUpdateUserPersonalInformationUseCase(t)
+	mockFindPaginatedUseCase := mockApp.NewMockFindUsersPaginatedUseCase(t)
+	mockUpdateEmailUseCase := mockApp.NewMockUpdateUserEmailUseCase(t)
+	mockUpdatePhoneUseCase := mockApp.NewMockUpdateUserPhoneUseCase(t)
 
 	findController := controllers.NewFindUserByIDController(mockFindUseCase)
 	createController := controllers.NewCreateUserController(mockCreateUseCase)
 	deleteController := controllers.NewDeleteUserController(mockDeleteUseCase)
+	updatePIController := controllers.NewUpdateUserPersonalInformationController(mockUpdatePIUseCase)
+	findPaginatedController := controllers.NewFindUsersPaginatedController(mockFindPaginatedUseCase)
+	updateEmailController := controllers.NewUpdateUserEmailController(mockUpdateEmailUseCase)
+	updatePhoneController := controllers.NewUpdateUserPhoneController(mockUpdatePhoneUseCase)
 
 	router := controllers.NewRouter(controllers.RouterParams{
-		FindUserByID: findController,
-		CreateUser:   createController,
-		DeleteUser:   deleteController,
+		FindUserByID:              findController,
+		CreateUser:                createController,
+		DeleteUser:                deleteController,
+		UpdatePersonalInformation: updatePIController,
+		FindUsersPaginated:        findPaginatedController,
+		UpdateEmail:               updateEmailController,
+		UpdatePhone:               updatePhoneController,
 	})
 
 	t.Run("JSONContentTypeMiddleware sets header", func(t *testing.T) {

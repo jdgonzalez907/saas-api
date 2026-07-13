@@ -19,22 +19,26 @@ import (
 
 func TestFindUserByIDController_Handle(t *testing.T) {
 	identification, _ := domain.NewIdentification(domain.IdType_CC, "123456789")
-	phone, _ := domain.NewPhone("3112223344")
+	phone, _ := domain.NewPhone("57", "3112223344")
 	email, _ := domain.NewEmail("test@example.com")
 	address, _ := domain.NewAddress("Street 1", "City", "State", "Country", nil, nil)
 	birthDate, _ := domain.NewBirthDate(time.Now().AddDate(-20, 0, 0))
 
+	personalInfo, _ := domain.NewPersonalInformation(
+		identification,
+		"John",
+		"Doe",
+		&address,
+		&birthDate,
+	)
+
 	validUser, err := domain.NewUser(domain.UserParams{
-		ID:             1,
-		Identification: identification,
-		FirstName:      "John",
-		LastName:       "Doe",
-		Phone:          phone,
-		Email:          &email,
-		Address:        &address,
-		BirthDate:      &birthDate,
-		CreatedAt:      time.Now(),
-		UpdatedAt:      time.Now(),
+		ID:                  1,
+		PersonalInformation: personalInfo,
+		Phone:               phone,
+		Email:               &email,
+		CreatedAt:           time.Now(),
+		UpdatedAt:           time.Now(),
 	})
 	assert.NoError(t, err)
 

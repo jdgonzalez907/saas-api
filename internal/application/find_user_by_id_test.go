@@ -13,22 +13,26 @@ import (
 func TestFindUserByIdUseCase(t *testing.T) {
 	now := time.Now()
 	identification, _ := domain.NewIdentification(domain.IdType_CC, "1111")
-	phone, _ := domain.NewPhone("123456789")
+	phone, _ := domain.NewPhone("57", "123456789")
 	email, _ := domain.NewEmail("john.doe@example.com")
 	address, _ := domain.NewAddress("123 Main St", "City", "State", "Country", nil, nil)
 	birthDate, _ := domain.NewBirthDate(now.AddDate(-18, 0, -1))
 
+	personalInfo, _ := domain.NewPersonalInformation(
+		identification,
+		"John",
+		"Doe",
+		&address,
+		&birthDate,
+	)
+
 	user, _ := domain.NewUser(domain.UserParams{
-		ID:             1,
-		Identification: identification,
-		FirstName:      "John",
-		LastName:       "Doe",
-		Phone:          phone,
-		Email:          &email,
-		Address:        &address,
-		BirthDate:      &birthDate,
-		CreatedAt:      now,
-		UpdatedAt:      now,
+		ID:                  1,
+		PersonalInformation: personalInfo,
+		Phone:               phone,
+		Email:               &email,
+		CreatedAt:           now,
+		UpdatedAt:           now,
 	})
 
 	dbErr := errors.New("db query error")

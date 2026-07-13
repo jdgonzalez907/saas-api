@@ -12,49 +12,49 @@ import (
 
 func TestCreateUserUseCase(t *testing.T) {
 	identification, _ := domain.NewIdentification(domain.IdType_CC, "1111")
-	phone, _ := domain.NewPhone("123456789")
+	phone, _ := domain.NewPhone("57", "123456789")
 	email, _ := domain.NewEmail("john.doe@example.com")
 	address, _ := domain.NewAddress("123 Main St", "City", "State", "Country", nil, nil)
 	birthDate, _ := domain.NewBirthDate(time.Now().AddDate(-18, 0, -1))
 	now := time.Now()
 
+	personalInfo, _ := domain.NewPersonalInformation(
+		identification,
+		"John",
+		"Doe",
+		&address,
+		&birthDate,
+	)
+
 	user, _ := domain.NewUser(domain.UserParams{
-		ID:             1,
-		Identification: identification,
-		FirstName:      "John",
-		LastName:       "Doe",
-		Phone:          phone,
-		Email:          &email,
-		Address:        &address,
-		BirthDate:      &birthDate,
-		CreatedAt:      now,
-		UpdatedAt:      now,
+		ID:                  1,
+		PersonalInformation: personalInfo,
+		Phone:               phone,
+		Email:               &email,
+		CreatedAt:           now,
+		UpdatedAt:           now,
 	})
 
 	userWithNilEmail, _ := domain.NewUser(domain.UserParams{
-		ID:             2,
-		Identification: identification,
-		FirstName:      "John",
-		LastName:       "Doe",
-		Phone:          phone,
-		Email:          nil,
-		Address:        &address,
-		BirthDate:      &birthDate,
-		CreatedAt:      now,
-		UpdatedAt:      now,
+		ID:                  2,
+		PersonalInformation: personalInfo,
+		Phone:               phone,
+		Email:               nil,
+		CreatedAt:           now,
+		UpdatedAt:           now,
 	})
 
 	dbErr := errors.New("database connection error")
 
 	testCases := []struct {
-		testName         string
+		name             string
 		input            domain.User
 		mockExpectations func(*domainMocks.MockUserRepository)
 		expectedError    error
 	}{
 		{
-			testName: "success - create user",
-			input:    *user,
+			name:  "success - create user",
+			input: *user,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindById", user.ToDTO().ID).Return(nil, nil)
 				m.On("FindByPhone", phone).Return(nil, nil)
@@ -64,16 +64,16 @@ func TestCreateUserUseCase(t *testing.T) {
 			expectedError: nil,
 		},
 		{
-			testName: "fail - id already exists",
-			input:    *user,
+			name:  "fail - id already exists",
+			input: *user,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindById", user.ToDTO().ID).Return(user, nil)
 			},
 			expectedError: domain.ErrUserIDAlreadyExists,
 		},
 		{
-			testName: "fail - phone already exists",
-			input:    *user,
+			name:  "fail - phone already exists",
+			input: *user,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindById", user.ToDTO().ID).Return(nil, nil)
 				m.On("FindByPhone", phone).Return(user, nil)
@@ -81,8 +81,8 @@ func TestCreateUserUseCase(t *testing.T) {
 			expectedError: domain.ErrUserPhoneAlreadyExists,
 		},
 		{
-			testName: "fail - email already exists",
-			input:    *user,
+			name:  "fail - email already exists",
+			input: *user,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindById", user.ToDTO().ID).Return(nil, nil)
 				m.On("FindByPhone", phone).Return(nil, nil)
@@ -91,16 +91,16 @@ func TestCreateUserUseCase(t *testing.T) {
 			expectedError: domain.ErrUserEmailAlreadyExists,
 		},
 		{
-			testName: "fail - infra error on FindById",
-			input:    *user,
+			name:  "fail - infra error on FindById",
+			input: *user,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindById", user.ToDTO().ID).Return(nil, dbErr)
 			},
 			expectedError: domain.ErrCreatingUser,
 		},
 		{
-			testName: "fail - infra error on FindByPhone",
-			input:    *user,
+			name:  "fail - infra error on FindByPhone",
+			input: *user,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindById", user.ToDTO().ID).Return(nil, nil)
 				m.On("FindByPhone", phone).Return(nil, dbErr)
@@ -108,8 +108,8 @@ func TestCreateUserUseCase(t *testing.T) {
 			expectedError: domain.ErrCreatingUser,
 		},
 		{
-			testName: "fail - infra error on FindByEmail",
-			input:    *user,
+			name:  "fail - infra error on FindByEmail",
+			input: *user,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindById", user.ToDTO().ID).Return(nil, nil)
 				m.On("FindByPhone", phone).Return(nil, nil)
@@ -118,8 +118,8 @@ func TestCreateUserUseCase(t *testing.T) {
 			expectedError: domain.ErrCreatingUser,
 		},
 		{
-			testName: "fail - repo create error",
-			input:    *user,
+			name:  "fail - repo create error",
+			input: *user,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindById", user.ToDTO().ID).Return(nil, nil)
 				m.On("FindByPhone", phone).Return(nil, nil)
@@ -129,8 +129,8 @@ func TestCreateUserUseCase(t *testing.T) {
 			expectedError: domain.ErrCreatingUser,
 		},
 		{
-			testName: "success - nil email",
-			input:    *userWithNilEmail,
+			name:  "success - nil email",
+			input: *userWithNilEmail,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindById", userWithNilEmail.ToDTO().ID).Return(nil, nil)
 				m.On("FindByPhone", phone).Return(nil, nil)
@@ -140,23 +140,23 @@ func TestCreateUserUseCase(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range testCases {
-		t.Run(testCase.testName, func(t *testing.T) {
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
 			mockUserRepository := new(domainMocks.MockUserRepository)
-			testCase.mockExpectations(mockUserRepository)
+			tc.mockExpectations(mockUserRepository)
 
 			createUserUseCase := application.NewCreateUserUseCase(mockUserRepository)
-			err := createUserUseCase.Execute(&testCase.input)
+			err := createUserUseCase.Execute(&tc.input)
 
-			if testCase.expectedError != nil {
+			if tc.expectedError != nil {
 				if err == nil {
-					t.Fatalf("expected error: %v, got nil", testCase.expectedError)
+					t.Fatalf("expected error: %v, got nil", tc.expectedError)
 				}
-				if !errors.Is(err, testCase.expectedError) {
-					if testCase.expectedError == domain.ErrCreatingUser && errors.Unwrap(err) != nil {
+				if !errors.Is(err, tc.expectedError) {
+					if tc.expectedError == domain.ErrCreatingUser && errors.Unwrap(err) != nil {
 						// Success: wrapped infra error
 					} else {
-						t.Errorf("expected error: %v, got %v", testCase.expectedError, err)
+						t.Errorf("expected error: %v, got %v", tc.expectedError, err)
 					}
 				}
 			} else {
