@@ -211,7 +211,13 @@ func TestCreateUserController_Handle(t *testing.T) {
 			controller.Handle(rec, req)
 
 			assert.Equal(t, tc.expectedStatus, rec.Code)
-			if tc.expectedBody != "" {
+			if tc.expectedStatus == http.StatusCreated {
+				var res domain.UserDTO
+				err := json.Unmarshal(rec.Body.Bytes(), &res)
+				assert.NoError(t, err)
+				assert.Equal(t, "John", res.FirstName)
+				assert.Equal(t, "Doe", res.LastName)
+			} else if tc.expectedBody != "" {
 				var jsonResponse map[string]string
 				err := json.Unmarshal(rec.Body.Bytes(), &jsonResponse)
 				assert.NoError(t, err)

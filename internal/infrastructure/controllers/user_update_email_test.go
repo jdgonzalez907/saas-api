@@ -19,7 +19,13 @@ import (
 )
 
 func TestUpdateUserEmailController_Handle(t *testing.T) {
-	validBody := domain.EmailDTO("new@example.com")
+	newEmail := "new@example.com"
+	emptyEmail := ""
+	invalidEmail := "invalid-email"
+
+	validBody := controllers.UpdateEmailRequest{
+		Email: &newEmail,
+	}
 
 	testCases := []struct {
 		testName       string
@@ -38,16 +44,18 @@ func TestUpdateUserEmailController_Handle(t *testing.T) {
 					return e != nil && e.Value() == "new@example.com"
 				})).Return(nil)
 			},
-			expectedStatus: http.StatusOK,
+			expectedStatus: http.StatusNoContent,
 		},
 		{
 			testName:     "success - email set to nil",
 			routeParamID: "1",
-			requestBody:  domain.EmailDTO(""),
+			requestBody: controllers.UpdateEmailRequest{
+				Email: &emptyEmail,
+			},
 			setupMock: func(m *mockApp.MockUpdateUserEmailUseCase) {
 				m.EXPECT().Execute(mock.Anything, 1, (*domain.Email)(nil)).Return(nil)
 			},
-			expectedStatus: http.StatusOK,
+			expectedStatus: http.StatusNoContent,
 		},
 		{
 			testName:       "fail - route parameter is not an integer",
@@ -76,7 +84,9 @@ func TestUpdateUserEmailController_Handle(t *testing.T) {
 		{
 			testName:       "fail - invalid email format",
 			routeParamID:   "1",
-			requestBody:    domain.EmailDTO("invalid-email"),
+			requestBody: controllers.UpdateEmailRequest{
+				Email: &invalidEmail,
+			},
 			setupMock:      func(m *mockApp.MockUpdateUserEmailUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   domain.ErrInvalidEmail.Error(),
