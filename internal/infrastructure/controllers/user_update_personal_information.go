@@ -82,5 +82,5 @@ func (c *UpdateUserPersonalInformationController) Handle(w http.ResponseWriter, 
 		return
 	}
 
-	RespondWithJSON(w, http.StatusOK, nil)
+	RespondWithJSON(w, http.StatusNoContent, nil)
 }
