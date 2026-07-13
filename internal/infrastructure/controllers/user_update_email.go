@@ -17,6 +17,10 @@ func NewUpdateUserEmailController(useCase application.UpdateUserEmailUseCase) *U
 	}
 }
 
+type UpdateEmailRequest struct {
+	Email *string `json:"email"`
+}
+
 func (c *UpdateUserEmailController) Handle(w http.ResponseWriter, r *http.Request) {
 	id, err := ParseRouteIntParam(r, "id")
 	if err != nil {
@@ -24,15 +28,15 @@ func (c *UpdateUserEmailController) Handle(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	var body domain.EmailDTO
+	var body UpdateEmailRequest
 	if err := ParseJSONBody(r, &body); err != nil {
 		RespondWithError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	var emailPtr *domain.Email
-	if body != "" {
-		email, err := domain.NewEmail(string(body))
+	if body.Email != nil && *body.Email != "" {
+		email, err := domain.NewEmail(*body.Email)
 		if err != nil {
 			RespondWithDomainError(w, err)
 			return
@@ -46,5 +50,5 @@ func (c *UpdateUserEmailController) Handle(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	RespondWithJSON(w, http.StatusOK, nil)
+	RespondWithJSON(w, http.StatusNoContent, nil)
 }

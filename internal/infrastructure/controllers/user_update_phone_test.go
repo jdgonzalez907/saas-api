@@ -38,7 +38,7 @@ func TestUpdateUserPhoneController_Handle(t *testing.T) {
 					return p.CountryCode() == "57" && p.Number() == "987654321"
 				})).Return(nil)
 			},
-			expectedStatus: http.StatusOK,
+			expectedStatus: http.StatusNoContent,
 		},
 		{
 			testName:       "fail - route parameter is not an integer",
