@@ -85,6 +85,11 @@ func (u *User) ID() int {
 	return u.id
 }
 
+func (u *User) AssignID(id int) {
+	u.id = id
+}
+
+
 func (u *User) Identification() Identification {
 	return u.personalInformation.identification
 }
