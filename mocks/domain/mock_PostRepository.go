@@ -69,17 +69,17 @@ func (_c *MockPostRepository_Create_Call) RunAndReturn(run func(context.Context,
 	return _c
 }
 
-// Delete provides a mock function with given fields: ctx, id
-func (_m *MockPostRepository) Delete(ctx context.Context, id int64) error {
-	ret := _m.Called(ctx, id)
+// Delete provides a mock function with given fields: ctx, id, deletedByID
+func (_m *MockPostRepository) Delete(ctx context.Context, id int64, deletedByID int64) error {
+	ret := _m.Called(ctx, id, deletedByID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Delete")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64) error); ok {
-		r0 = rf(ctx, id)
+	if rf, ok := ret.Get(0).(func(context.Context, int64, int64) error); ok {
+		r0 = rf(ctx, id, deletedByID)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -95,13 +95,14 @@ type MockPostRepository_Delete_Call struct {
 // Delete is a helper method to define mock.On call
 //   - ctx context.Context
 //   - id int64
-func (_e *MockPostRepository_Expecter) Delete(ctx interface{}, id interface{}) *MockPostRepository_Delete_Call {
-	return &MockPostRepository_Delete_Call{Call: _e.mock.On("Delete", ctx, id)}
+//   - deletedByID int64
+func (_e *MockPostRepository_Expecter) Delete(ctx interface{}, id interface{}, deletedByID interface{}) *MockPostRepository_Delete_Call {
+	return &MockPostRepository_Delete_Call{Call: _e.mock.On("Delete", ctx, id, deletedByID)}
 }
 
-func (_c *MockPostRepository_Delete_Call) Run(run func(ctx context.Context, id int64)) *MockPostRepository_Delete_Call {
+func (_c *MockPostRepository_Delete_Call) Run(run func(ctx context.Context, id int64, deletedByID int64)) *MockPostRepository_Delete_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(int64))
+		run(args[0].(context.Context), args[1].(int64), args[2].(int64))
 	})
 	return _c
 }
@@ -111,7 +112,7 @@ func (_c *MockPostRepository_Delete_Call) Return(_a0 error) *MockPostRepository_
 	return _c
 }
 
-func (_c *MockPostRepository_Delete_Call) RunAndReturn(run func(context.Context, int64) error) *MockPostRepository_Delete_Call {
+func (_c *MockPostRepository_Delete_Call) RunAndReturn(run func(context.Context, int64, int64) error) *MockPostRepository_Delete_Call {
 	_c.Call.Return(run)
 	return _c
 }

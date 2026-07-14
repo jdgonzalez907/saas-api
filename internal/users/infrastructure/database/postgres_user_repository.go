@@ -10,7 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"jdgonzalez907/saas-api/internal/postgres"
+	"jdgonzalez907/saas-api/internal/shared/postgres"
 	"jdgonzalez907/saas-api/internal/users/domain"
 )
 

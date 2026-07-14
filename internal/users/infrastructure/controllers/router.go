@@ -3,6 +3,8 @@ package controllers
 import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+
+	sharedHttp "jdgonzalez907/saas-api/internal/shared/http"
 )
 
 type RouterParams struct {
@@ -20,9 +22,9 @@ func NewRouter(params RouterParams) *chi.Mux {
 
 	r.Use(middleware.RequestID)
 	r.Use(middleware.Logger)
-	r.Use(ErrorLoggerMiddleware)
+	r.Use(sharedHttp.ErrorLoggerMiddleware)
 	r.Use(middleware.Recoverer)
-	r.Use(JSONContentTypeMiddleware)
+	r.Use(sharedHttp.JSONContentTypeMiddleware)
 
 	if params.FindUserByID != nil {
 		r.Get("/users/{id}", params.FindUserByID.Handle)
