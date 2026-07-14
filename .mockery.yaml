@@ -13,3 +13,9 @@ packages:
   jdgonzalez907/saas-api/internal/users/application:
     config:
       all: true
+  jdgonzalez907/saas-api/internal/posts/domain:
+    config:
+      all: true
+  jdgonzalez907/saas-api/internal/posts/application:
+    config:
+      all: true
