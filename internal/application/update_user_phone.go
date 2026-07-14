@@ -29,14 +29,16 @@ func (u *updateUserPhoneUseCase) Execute(ctx context.Context, id int, phone doma
 		return domain.ErrUserNotFound
 	}
 
-	if phone != userFound.Phone() {
-		foundPhone, err := u.userRepository.FindByPhone(ctx, phone)
-		if err != nil {
-			return fmt.Errorf("%v: %w", domain.ErrUpdatingUserPhone, err)
-		}
-		if foundPhone != nil {
-			return domain.ErrUserPhoneAlreadyExists
-		}
+	if phone.Equals(userFound.Phone()) {
+		return nil
+	}
+
+	foundPhone, err := u.userRepository.FindByPhone(ctx, phone)
+	if err != nil {
+		return fmt.Errorf("%v: %w", domain.ErrUpdatingUserPhone, err)
+	}
+	if foundPhone != nil {
+		return domain.ErrUserPhoneAlreadyExists
 	}
 
 	updatedUser := userFound.WithPhone(phone)

@@ -25,6 +25,10 @@ type PhoneDTO struct {
 	Number      string `json:"number"`
 }
 
+func (p Phone) Equals(other Phone) bool {
+	return p.countryCode == other.countryCode && p.number == other.number
+}
+
 func (p Phone) ToDTO() PhoneDTO {
 	return PhoneDTO{
 		CountryCode: p.countryCode,
