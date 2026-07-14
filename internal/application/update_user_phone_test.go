@@ -80,6 +80,15 @@ func TestUpdateUserPhoneUseCase(t *testing.T) {
 			expectedError: domain.ErrUserPhoneAlreadyExists,
 		},
 		{
+			testName:   "fail - invalid user id",
+			inputID:    0,
+			inputPhone: phone,
+			mockExpectations: func(m *domainMocks.MockUserRepository) {
+				// No expectations
+			},
+			expectedError: domain.ErrInvalidUserID,
+		},
+		{
 			testName:   "fail - user not found",
 			inputID:    userID,
 			inputPhone: phone,

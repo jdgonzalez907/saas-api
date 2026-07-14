@@ -26,13 +26,13 @@ func (c *CreateUserController) Handle(w http.ResponseWriter, r *http.Request) {
 
 	identification, err := domain.NewIdentification(body.Identification.Type, body.Identification.Number)
 	if err != nil {
-		RespondWithDomainError(w, err)
+		RespondWithDomainError(w, r, err)
 		return
 	}
 
 	phone, err := domain.NewPhone(body.Phone.CountryCode, body.Phone.Number)
 	if err != nil {
-		RespondWithDomainError(w, err)
+		RespondWithDomainError(w, r, err)
 		return
 	}
 
@@ -40,7 +40,7 @@ func (c *CreateUserController) Handle(w http.ResponseWriter, r *http.Request) {
 	if body.Email != nil {
 		e, err := domain.NewEmail(string(*body.Email))
 		if err != nil {
-			RespondWithDomainError(w, err)
+			RespondWithDomainError(w, r, err)
 			return
 		}
 		email = &e
@@ -57,7 +57,7 @@ func (c *CreateUserController) Handle(w http.ResponseWriter, r *http.Request) {
 			body.Address.Description,
 		)
 		if err != nil {
-			RespondWithDomainError(w, err)
+			RespondWithDomainError(w, r, err)
 			return
 		}
 		address = &a
@@ -67,7 +67,7 @@ func (c *CreateUserController) Handle(w http.ResponseWriter, r *http.Request) {
 	if body.BirthDate != nil {
 		bd, err := domain.NewBirthDate(string(*body.BirthDate))
 		if err != nil {
-			RespondWithDomainError(w, err)
+			RespondWithDomainError(w, r, err)
 			return
 		}
 		birthDate = &bd
@@ -75,14 +75,14 @@ func (c *CreateUserController) Handle(w http.ResponseWriter, r *http.Request) {
 
 	personalInfo, err := domain.NewPersonalInformation(identification, body.FirstName, body.LastName, address, birthDate)
 	if err != nil {
-		RespondWithDomainError(w, err)
+		RespondWithDomainError(w, r, err)
 		return
 	}
 
 	user, _ := domain.NewUserWithoutId(personalInfo, phone, email)
 
 	if err := c.useCase.Execute(r.Context(), user); err != nil {
-		RespondWithDomainError(w, err)
+		RespondWithDomainError(w, r, err)
 		return
 	}
 

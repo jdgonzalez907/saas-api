@@ -8,7 +8,7 @@ import (
 )
 
 func TestNewBirthDate(t *testing.T) {
-	today := time.Now()
+	today := time.Now().UTC()
 	date18yearsAgoStr := today.AddDate(-18, 0, -1).Format("2006-01-02")
 	date17yearsAgoStr := today.AddDate(-18, 0, 1).Format("2006-01-02")
 
@@ -89,6 +89,18 @@ func TestBirthDate_Equals(t *testing.T) {
 				t.Errorf("expected %v, got %v", tc.expected, result)
 			}
 		})
+	}
+}
+
+func TestNewBirthDate_ExactAge(t *testing.T) {
+	today := time.Now().UTC()
+	birthdateStr := today.AddDate(-18, 0, 0).Format("2006-01-02")
+	bd, err := domain.NewBirthDate(birthdateStr)
+	if err != nil {
+		t.Fatalf("expected no error for exactly 18 years ago, got %v", err)
+	}
+	if bd.Formatted() != birthdateStr {
+		t.Errorf("expected %s, got %s", birthdateStr, bd.Formatted())
 	}
 }
 

@@ -34,7 +34,7 @@ func (c *UpdateUserPersonalInformationController) Handle(w http.ResponseWriter, 
 
 	identification, err := domain.NewIdentification(body.Identification.Type, body.Identification.Number)
 	if err != nil {
-		RespondWithDomainError(w, err)
+		RespondWithDomainError(w, r, err)
 		return
 	}
 
@@ -49,7 +49,7 @@ func (c *UpdateUserPersonalInformationController) Handle(w http.ResponseWriter, 
 			body.Address.Description,
 		)
 		if err != nil {
-			RespondWithDomainError(w, err)
+			RespondWithDomainError(w, r, err)
 			return
 		}
 		address = &a
@@ -59,7 +59,7 @@ func (c *UpdateUserPersonalInformationController) Handle(w http.ResponseWriter, 
 	if body.BirthDate != nil {
 		bd, err := domain.NewBirthDate(string(*body.BirthDate))
 		if err != nil {
-			RespondWithDomainError(w, err)
+			RespondWithDomainError(w, r, err)
 			return
 		}
 		birthDate = &bd
@@ -73,12 +73,12 @@ func (c *UpdateUserPersonalInformationController) Handle(w http.ResponseWriter, 
 		birthDate,
 	)
 	if err != nil {
-		RespondWithDomainError(w, err)
+		RespondWithDomainError(w, r, err)
 		return
 	}
 
 	if err := c.useCase.Execute(r.Context(), id, personalInfo); err != nil {
-		RespondWithDomainError(w, err)
+		RespondWithDomainError(w, r, err)
 		return
 	}
 

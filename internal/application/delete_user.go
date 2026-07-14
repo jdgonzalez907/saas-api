@@ -19,6 +19,10 @@ func NewDeleteUserUseCase(userRepository domain.UserRepository) DeleteUserUseCas
 }
 
 func (d *deleteUserUseCase) Execute(ctx context.Context, id int) error {
+	if err := domain.ValidateAssignedUserID(id); err != nil {
+		return err
+	}
+
 	userFound, err := d.userRepository.FindById(ctx, id)
 	if err != nil {
 		return fmt.Errorf("%v: %w", domain.ErrDeletingUser, err)

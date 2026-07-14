@@ -11,7 +11,8 @@ var (
 )
 
 const (
-	MinAge = 18
+	MinAge          = 18
+	BirthDateFormat = "2006-01-02"
 )
 
 type BirthDate struct {
@@ -20,7 +21,7 @@ type BirthDate struct {
 }
 
 func NewBirthDate(value string) (BirthDate, error) {
-	t, err := time.Parse("2006-01-02", value)
+	t, err := time.Parse(BirthDateFormat, value)
 	if err != nil {
 		return BirthDate{}, ErrInvalidBirthDateFormat
 	}
@@ -28,7 +29,7 @@ func NewBirthDate(value string) (BirthDate, error) {
 	now := time.Now().UTC()
 	age := now.Year() - t.Year()
 
-	if now.YearDay() < t.YearDay() {
+	if now.Month() < t.Month() || (now.Month() == t.Month() && now.Day() < t.Day()) {
 		age--
 	}
 	if age < MinAge {
@@ -37,7 +38,7 @@ func NewBirthDate(value string) (BirthDate, error) {
 
 	return BirthDate{
 		value:     t,
-		formatted: t.Format("2006-01-02"),
+		formatted: t.Format(BirthDateFormat),
 	}, nil
 }
 

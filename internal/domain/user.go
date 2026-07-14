@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+const UnassignedUserID = 0
+
 var (
 	ErrInvalidUserID    = errors.New("invalid user id")
 	ErrInvalidFirstName = errors.New("invalid first name")
@@ -56,19 +58,26 @@ func NewUserWithoutId(
 	email *Email,
 ) (*User, error) {
 	now := time.Now().UTC()
-	return NewUser(UserParams{
-		ID:                  0,
-		PersonalInformation: personalInformation,
-		Phone:               phone,
-		Email:               email,
-		CreatedAt:           now,
-		UpdatedAt:           now,
-	})
+	return &User{
+		id:                  UnassignedUserID,
+		personalInformation: personalInformation,
+		phone:               phone,
+		email:               email,
+		createdAt:           now,
+		updatedAt:           now,
+	}, nil
+}
+
+func ValidateAssignedUserID(id int) error {
+	if id <= UnassignedUserID {
+		return ErrInvalidUserID
+	}
+	return nil
 }
 
 func NewUser(params UserParams) (*User, error) {
-	if params.ID < 0 {
-		return nil, ErrInvalidUserID
+	if err := ValidateAssignedUserID(params.ID); err != nil {
+		return nil, err
 	}
 
 	return &User{
@@ -88,7 +97,6 @@ func (u *User) ID() int {
 func (u *User) AssignID(id int) {
 	u.id = id
 }
-
 
 func (u *User) Identification() Identification {
 	return u.personalInformation.identification
