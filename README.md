@@ -143,6 +143,9 @@ docker compose logs migrate
 - `golang-migrate` CLI
 - `sqlc` CLI
 - `mockery` CLI
+- `golangci-lint` CLI
+- `gci` CLI
+
 
 ### Configurar variables de entorno
 
@@ -240,7 +243,7 @@ migrate -path db/migrations -database "$DATABASE_URL" up
 
 ### sqlc
 
-`sqlc` genera el código Go del paquete `internal/infrastructure/database/sqlc/` a partir de los archivos en `db/queries/` y el schema en `db/migrations/`.
+`sqlc` genera el código Go del paquete `internal/postgres/` a partir de los archivos en `db/queries/` y el schema en `db/migrations/`.
 
 **Cuándo correrlo**: Al agregar, modificar o eliminar cualquier query en `db/queries/users.sql`.
 
@@ -248,11 +251,11 @@ migrate -path db/migrations -database "$DATABASE_URL" up
 $(go env GOPATH)/bin/sqlc generate
 ```
 
-Los archivos en `internal/infrastructure/database/sqlc/` son generados — **no editarlos manualmente**.
+Los archivos en `internal/postgres/` son generados — **no editarlos manualmente**.
 
 ### mockery
 
-`mockery` genera los mocks en `mocks/` a partir de las interfaces definidas en `internal/domain/` e `internal/application/`.
+`mockery` genera los mocks en `mocks/` a partir de las interfaces definidas en `internal/users/domain/` e `internal/users/application/`.
 
 **Cuándo correrlo**: Al agregar, renombrar o cambiar la firma de cualquier método en una interfaz trackeada.
 
@@ -265,6 +268,30 @@ Después de regenerar:
 - Actualizar los archivos de test que referencien el nombre anterior del mock.
 
 Los archivos en `mocks/` son generados — **no editarlos manualmente**.
+
+---
+
+## Calidad de Código y Linters
+
+Para mantener un estándar de calidad alto y consistente en la industria, utilizamos:
+- **`golangci-lint`**: Ejecuta múltiples analizadores estáticos esenciales (`govet`, `errcheck`, `staticcheck`, `revive`, `unused`, etc.).
+- **`gci`**: Organiza los imports de forma determinista dividiéndolos en tres bloques: estándar, terceros y local (`jdgonzalez907/saas-api`).
+- **`goimports`**: Aplica el formateo estándar de Go compatible con la estructuración de imports.
+
+### Comandos de Linter
+
+```bash
+# Ejecutar el linter localmente
+golangci-lint run
+
+# Organizar imports manualmente en un archivo
+gci write --section Standard --section Default --section "Prefix(jdgonzalez907/saas-api)" internal/users/domain/user.go
+```
+
+### Integración en VS Code / Cursor
+
+Al abrir el repositorio en VS Code o Cursor, se aplicarán automáticamente el formateo y la organización de imports al guardar cualquier archivo `.go` gracias a la configuración en `.vscode/settings.json`.
+
 
 ---
 
@@ -319,11 +346,13 @@ git branch -d hotfix/nombre-del-problema
 ### Qué verificar antes de cada merge
 
 1. `go build ./...` sin errores.
-2. `go test ./...` todos en verde.
-3. Cobertura 100% en paquetes `internal/`.
-4. Si se cambió una interfaz: mocks regenerados con `mockery` y tests actualizados.
-5. Si se modificó un query SQL: código regenerado con `sqlc generate`.
-6. Si se agregó una migración: probada localmente antes del merge.
+2. `golangci-lint run` limpio y sin advertencias/errores.
+3. `go test ./...` todos en verde.
+4. Cobertura 100% en paquetes `internal/`.
+5. Si se cambió una interfaz: mocks regenerados con `mockery` y tests actualizados.
+6. Si se modificó un query SQL: código regenerado con `sqlc generate`.
+7. Si se agregó una migración: probada localmente antes del merge.
+
 
 ---
 
