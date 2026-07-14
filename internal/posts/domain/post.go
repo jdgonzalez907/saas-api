@@ -145,6 +145,10 @@ func (p *Post) ID() int64 {
 	return p.id
 }
 
+func (p *Post) AssignID(id int64) {
+	p.id = id
+}
+
 func (p *Post) ContentInformation() ContentInformation {
 	return p.contentInformation
 }
