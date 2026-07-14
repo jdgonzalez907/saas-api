@@ -30,7 +30,7 @@ func TestFindUserByIdUseCase(t *testing.T) {
 	)
 
 	user, _ := domain.NewUser(domain.UserParams{
-		ID:                  1,
+		ID:                  int64(1),
 		PersonalInformation: personalInfo,
 		Phone:               phone,
 		Email:               &email,
@@ -42,23 +42,23 @@ func TestFindUserByIdUseCase(t *testing.T) {
 
 	testCases := []struct {
 		testName         string
-		inputID          int
+		inputID          int64
 		mockExpectations func(*domainMocks.MockUserRepository)
 		expectedResult   *domain.User
 		expectedError    error
 	}{
 		{
 			testName: "success - user found",
-			inputID:  1,
+			inputID:  int64(1),
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", mock.Anything, 1).Return(user, nil)
+				m.On("FindById", mock.Anything, int64(1)).Return(user, nil)
 			},
 			expectedResult: user,
 			expectedError:  nil,
 		},
 		{
 			testName: "fail - invalid user id (<= 0)",
-			inputID:  0,
+			inputID:  int64(0),
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				// No expectations
 			},
@@ -67,18 +67,18 @@ func TestFindUserByIdUseCase(t *testing.T) {
 		},
 		{
 			testName: "fail - user not found",
-			inputID:  99,
+			inputID:  int64(99),
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", mock.Anything, 99).Return(nil, nil)
+				m.On("FindById", mock.Anything, int64(99)).Return(nil, nil)
 			},
 			expectedResult: nil,
 			expectedError:  domain.ErrUserNotFound,
 		},
 		{
 			testName: "fail - repository error",
-			inputID:  1,
+			inputID:  int64(1),
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", mock.Anything, 1).Return(nil, dbErr)
+				m.On("FindById", mock.Anything, int64(1)).Return(nil, dbErr)
 			},
 			expectedResult: nil,
 			expectedError:  domain.ErrFindingUserByID,

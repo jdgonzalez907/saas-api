@@ -29,7 +29,7 @@ func TestNewUser(t *testing.T) {
 
 	testCases := []struct {
 		testName      string
-		id            int
+		id            int64
 		info          domain.PersonalInformation
 		expectedError error
 	}{
@@ -505,7 +505,7 @@ func TestUserGetters(t *testing.T) {
 func TestValidateAssignedUserID(t *testing.T) {
 	testCases := []struct {
 		name          string
-		id            int
+		id            int64
 		expectedError error
 	}{
 		{
