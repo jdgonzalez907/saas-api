@@ -30,7 +30,7 @@ func TestFindUsersPaginatedController_Handle(t *testing.T) {
 	)
 
 	userParams := domain.UserParams{
-		ID:                  1,
+		ID:                  int64(1),
 		PersonalInformation: personalInfo,
 		Phone:               phone,
 		Email:               &email,
@@ -40,7 +40,7 @@ func TestFindUsersPaginatedController_Handle(t *testing.T) {
 	u, err := domain.NewUser(userParams)
 	assert.NoError(t, err)
 
-	nextCursor := 1
+	nextCursor := int64(1)
 	paginatedUsers := domain.NewPaginatedUsers([]*domain.User{u}, &nextCursor)
 
 	testCases := []struct {

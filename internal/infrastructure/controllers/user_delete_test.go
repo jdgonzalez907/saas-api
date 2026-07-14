@@ -29,7 +29,7 @@ func TestDeleteUserController_Handle(t *testing.T) {
 			testName:     "success - user deleted",
 			routeParamID: "1",
 			setupMock: func(m *mockApp.MockDeleteUserUseCase) {
-				m.EXPECT().Execute(mock.Anything, 1).Return(nil)
+				m.EXPECT().Execute(mock.Anything, int64(1)).Return(nil)
 			},
 			expectedStatus: http.StatusNoContent,
 		},
@@ -58,7 +58,7 @@ func TestDeleteUserController_Handle(t *testing.T) {
 			testName:     "fail - user not found",
 			routeParamID: "1",
 			setupMock: func(m *mockApp.MockDeleteUserUseCase) {
-				m.EXPECT().Execute(mock.Anything, 1).Return(domain.ErrUserNotFound)
+				m.EXPECT().Execute(mock.Anything, int64(1)).Return(domain.ErrUserNotFound)
 			},
 			expectedStatus: http.StatusNotFound,
 			expectedBody:   domain.ErrUserNotFound.Error(),
@@ -67,7 +67,7 @@ func TestDeleteUserController_Handle(t *testing.T) {
 			testName:     "fail - internal server error from usecase",
 			routeParamID: "1",
 			setupMock: func(m *mockApp.MockDeleteUserUseCase) {
-				m.EXPECT().Execute(mock.Anything, 1).Return(errors.New("db delete failure"))
+				m.EXPECT().Execute(mock.Anything, int64(1)).Return(errors.New("db delete failure"))
 			},
 			expectedStatus: http.StatusInternalServerError,
 			expectedBody:   "internal server error",

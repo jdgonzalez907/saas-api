@@ -8,7 +8,7 @@ import (
 )
 
 type UpdateUserPhoneUseCase interface {
-	Execute(ctx context.Context, id int, phone domain.Phone) error
+	Execute(ctx context.Context, id int64, phone domain.Phone) error
 }
 
 type updateUserPhoneUseCase struct {
@@ -19,7 +19,7 @@ func NewUpdateUserPhoneUseCase(userRepository domain.UserRepository) UpdateUserP
 	return &updateUserPhoneUseCase{userRepository: userRepository}
 }
 
-func (u *updateUserPhoneUseCase) Execute(ctx context.Context, id int, phone domain.Phone) error {
+func (u *updateUserPhoneUseCase) Execute(ctx context.Context, id int64, phone domain.Phone) error {
 	if err := domain.ValidateAssignedUserID(id); err != nil {
 		return err
 	}

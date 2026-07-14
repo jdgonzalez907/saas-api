@@ -23,7 +23,7 @@ func (_m *MockFindUserByIDUseCase) EXPECT() *MockFindUserByIDUseCase_Expecter {
 }
 
 // Execute provides a mock function with given fields: ctx, id
-func (_m *MockFindUserByIDUseCase) Execute(ctx context.Context, id int) (*domain.User, error) {
+func (_m *MockFindUserByIDUseCase) Execute(ctx context.Context, id int64) (*domain.User, error) {
 	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
@@ -32,10 +32,10 @@ func (_m *MockFindUserByIDUseCase) Execute(ctx context.Context, id int) (*domain
 
 	var r0 *domain.User
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, int) (*domain.User, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int64) (*domain.User, error)); ok {
 		return rf(ctx, id)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, int) *domain.User); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int64) *domain.User); ok {
 		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
@@ -43,7 +43,7 @@ func (_m *MockFindUserByIDUseCase) Execute(ctx context.Context, id int) (*domain
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, int64) error); ok {
 		r1 = rf(ctx, id)
 	} else {
 		r1 = ret.Error(1)
@@ -59,14 +59,14 @@ type MockFindUserByIDUseCase_Execute_Call struct {
 
 // Execute is a helper method to define mock.On call
 //   - ctx context.Context
-//   - id int
+//   - id int64
 func (_e *MockFindUserByIDUseCase_Expecter) Execute(ctx interface{}, id interface{}) *MockFindUserByIDUseCase_Execute_Call {
 	return &MockFindUserByIDUseCase_Execute_Call{Call: _e.mock.On("Execute", ctx, id)}
 }
 
-func (_c *MockFindUserByIDUseCase_Execute_Call) Run(run func(ctx context.Context, id int)) *MockFindUserByIDUseCase_Execute_Call {
+func (_c *MockFindUserByIDUseCase_Execute_Call) Run(run func(ctx context.Context, id int64)) *MockFindUserByIDUseCase_Execute_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(int))
+		run(args[0].(context.Context), args[1].(int64))
 	})
 	return _c
 }
@@ -76,7 +76,7 @@ func (_c *MockFindUserByIDUseCase_Execute_Call) Return(_a0 *domain.User, _a1 err
 	return _c
 }
 
-func (_c *MockFindUserByIDUseCase_Execute_Call) RunAndReturn(run func(context.Context, int) (*domain.User, error)) *MockFindUserByIDUseCase_Execute_Call {
+func (_c *MockFindUserByIDUseCase_Execute_Call) RunAndReturn(run func(context.Context, int64) (*domain.User, error)) *MockFindUserByIDUseCase_Execute_Call {
 	_c.Call.Return(run)
 	return _c
 }
