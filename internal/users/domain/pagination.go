@@ -3,8 +3,8 @@ package domain
 import "errors"
 
 var (
-	ErrInvalidPaginationLimit  = errors.New("invalid pagination limit")
-	ErrInvalidPaginationCursor = errors.New("invalid pagination cursor")
+	ErrInvalidPaginationLimit  = errors.New("invalid pagination page size limit")
+	ErrInvalidPaginationCursor = errors.New("invalid pagination cursor format or parameters")
 )
 
 const (
