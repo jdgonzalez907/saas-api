@@ -5,8 +5,8 @@ import (
 )
 
 var (
-	ErrEmptyPostTitle = errors.New("post title cannot be empty")
-	ErrOrphanBlock    = errors.New("block cannot exist without a valid parent")
+	ErrEmptyPostTitle = errors.New("post must have a title")
+	ErrOrphanBlock    = errors.New("formatted text or list items cannot exist at the root level")
 )
 
 type ContentInformation struct {
