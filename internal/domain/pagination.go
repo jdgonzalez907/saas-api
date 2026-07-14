@@ -8,24 +8,24 @@ var (
 )
 
 const (
-	Limit10      = 10
-	Limit25      = 25
-	Limit50      = 50
-	DefaultLimit = Limit10
+	Limit10      int32 = 10
+	Limit25      int32 = 25
+	Limit50      int32 = 50
+	DefaultLimit int32 = Limit10
 )
 
-var AllowedLimits = map[int]bool{
+var AllowedLimits = map[int32]bool{
 	Limit10: true,
 	Limit25: true,
 	Limit50: true,
 }
 
 type Pagination struct {
-	lastID *int
-	limit  int
+	lastID *int64
+	limit  int32
 }
 
-func NewPagination(lastID *int, limitVal *int) (Pagination, error) {
+func NewPagination(lastID *int64, limitVal *int32) (Pagination, error) {
 	limit := DefaultLimit
 	if limitVal != nil {
 		if !AllowedLimits[*limitVal] {
@@ -44,10 +44,10 @@ func NewPagination(lastID *int, limitVal *int) (Pagination, error) {
 	}, nil
 }
 
-func (p Pagination) LastID() *int {
+func (p Pagination) LastID() *int64 {
 	return p.lastID
 }
 
-func (p Pagination) Limit() int {
+func (p Pagination) Limit() int32 {
 	return p.limit
 }

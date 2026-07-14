@@ -16,13 +16,13 @@ var (
 	ErrInvalidRequestBody = errors.New("invalid request body")
 )
 
-func ParseRouteIntParam(r *http.Request, paramName string) (int, error) {
+func ParseRouteInt64Param(r *http.Request, paramName string) (int64, error) {
 	valStr := chi.URLParam(r, paramName)
 	if valStr == "" {
 		return 0, fmt.Errorf("%w: parameter %s is missing", ErrInvalidRouteParam, paramName)
 	}
 
-	val, err := strconv.Atoi(valStr)
+	val, err := strconv.ParseInt(valStr, 10, 64)
 	if err != nil || val <= 0 {
 		return 0, fmt.Errorf("%w: parameter %s must be a positive integer", ErrInvalidRouteParam, paramName)
 	}
@@ -30,18 +30,33 @@ func ParseRouteIntParam(r *http.Request, paramName string) (int, error) {
 	return val, nil
 }
 
-func ParseQueryIntParam(r *http.Request, paramName string) (*int, error) {
+func ParseQueryInt64Param(r *http.Request, paramName string) (*int64, error) {
 	valStr := r.URL.Query().Get(paramName)
 	if valStr == "" {
 		return nil, nil
 	}
 
-	val, err := strconv.Atoi(valStr)
+	val, err := strconv.ParseInt(valStr, 10, 64)
 	if err != nil || val <= 0 {
 		return nil, fmt.Errorf("%w: parameter %s must be a positive integer", ErrInvalidQueryParam, paramName)
 	}
 
 	return &val, nil
+}
+
+func ParseQueryInt32Param(r *http.Request, paramName string) (*int32, error) {
+	valStr := r.URL.Query().Get(paramName)
+	if valStr == "" {
+		return nil, nil
+	}
+
+	val, err := strconv.ParseInt(valStr, 10, 32)
+	if err != nil || val <= 0 {
+		return nil, fmt.Errorf("%w: parameter %s must be a positive integer", ErrInvalidQueryParam, paramName)
+	}
+
+	val32 := int32(val)
+	return &val32, nil
 }
 
 func ParseJSONBody(r *http.Request, dst any) error {
