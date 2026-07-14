@@ -8,21 +8,21 @@ import (
 const UnassignedUserID int64 = 0
 
 var (
-	ErrInvalidUserID    = errors.New("invalid user id")
-	ErrInvalidFirstName = errors.New("invalid first name")
-	ErrInvalidLastName  = errors.New("invalid last name")
+	ErrInvalidUserID    = errors.New("invalid user identification")
+	ErrInvalidFirstName = errors.New("first name cannot be empty or contain invalid characters")
+	ErrInvalidLastName  = errors.New("last name cannot be empty or contain invalid characters")
 
-	ErrUserIDAlreadyExists             = errors.New("user with id already exists")
-	ErrUserPhoneAlreadyExists          = errors.New("user with phone already exists")
-	ErrUserEmailAlreadyExists          = errors.New("user with email already exists")
-	ErrUserNotFound                    = errors.New("user not found")
-	ErrCreatingUser                    = errors.New("error creating user")
-	ErrUpdatingUserPersonalInformation = errors.New("error updating user personal information")
-	ErrUpdatingUserPhone               = errors.New("error updating user phone")
-	ErrUpdatingUserEmail               = errors.New("error updating user email")
-	ErrDeletingUser                    = errors.New("error deleting user")
-	ErrFindingUsers                    = errors.New("error finding users")
-	ErrFindingUserByID                 = errors.New("error finding user by id")
+	ErrUserIDAlreadyExists             = errors.New("a user with this identification already exists")
+	ErrUserPhoneAlreadyExists          = errors.New("a user with this phone number already exists")
+	ErrUserEmailAlreadyExists          = errors.New("a user with this email address already exists")
+	ErrUserNotFound                    = errors.New("the requested user was not found")
+	ErrCreatingUser                    = errors.New("could not complete user registration")
+	ErrUpdatingUserPersonalInformation = errors.New("could not update user personal details")
+	ErrUpdatingUserPhone               = errors.New("could not update user contact phone number")
+	ErrUpdatingUserEmail               = errors.New("could not update user contact email address")
+	ErrDeletingUser                    = errors.New("could not complete user deletion process")
+	ErrFindingUsers                    = errors.New("could not retrieve the users listing")
+	ErrFindingUserByID                 = errors.New("could not retrieve user by identification")
 )
 
 type User struct {

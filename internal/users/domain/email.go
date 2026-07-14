@@ -5,7 +5,7 @@ import (
 	"net/mail"
 )
 
-var ErrInvalidEmail = errors.New("invalid email")
+var ErrInvalidEmail = errors.New("email address must follow a valid format example@domain.com")
 
 type Email struct {
 	value string

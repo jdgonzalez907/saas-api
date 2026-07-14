@@ -3,12 +3,12 @@ package domain
 import "errors"
 
 var (
-	ErrInvalidStreet      = errors.New("invalid street")
-	ErrInvalidPostalCode  = errors.New("invalid postal code")
-	ErrInvalidCity        = errors.New("invalid city")
-	ErrInvalidState       = errors.New("invalid state")
-	ErrInvalidCountry     = errors.New("invalid country")
-	ErrInvalidDescription = errors.New("invalid description")
+	ErrInvalidStreet      = errors.New("street address cannot be empty")
+	ErrInvalidPostalCode  = errors.New("postal code cannot be empty")
+	ErrInvalidCity        = errors.New("city name cannot be empty")
+	ErrInvalidState       = errors.New("state name cannot be empty")
+	ErrInvalidCountry     = errors.New("country name cannot be empty")
+	ErrInvalidDescription = errors.New("address description cannot be empty")
 )
 
 type Address struct {

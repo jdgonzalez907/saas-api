@@ -7,7 +7,7 @@ import (
 
 var (
 	ErrUserUnderage           = errors.New("user must be at least 18 years old")
-	ErrInvalidBirthDateFormat = errors.New("invalid birth date format")
+	ErrInvalidBirthDateFormat = errors.New("birth date must comply with YYYY-MM-DD format")
 )
 
 const (
