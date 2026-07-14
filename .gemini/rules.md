@@ -143,3 +143,19 @@ Cada controller HTTP debe seguir una estructura estricta y limpia:
 Solo se permiten comentarios que expliquen comportamiento genuinamente no obvio para un desarrollador con contexto del proyecto. Están prohibidos:
 - Comentarios de agrupación que replican lo que dice el nombre de la variable (`// Repositories`, `// Controllers`).
 - Comentarios que describen lo que hace la siguiente línea de código (`// Parse the ID`, `// Return error`).
+
+---
+
+## 11. Calidad de Código, Formateo y Linters (`golangci-lint`)
+
+- **Linters Obligatorios**:
+  - `golangci-lint` es la herramienta de análisis estático obligatoria del proyecto. Ningún cambio puede ser merged a `develop` si reporta advertencias o errores.
+  - La configuración vive en `.golangci.yml` y excluye explícitamente el código generado (`internal/postgres/` y `mocks/`).
+- **Formateo e Imports**:
+  - Se debe utilizar `goimports` para el formateo estándar del código y `gci` para la organización y ordenación determinista de imports.
+  - Los imports deben estar agrupados exactamente en 3 bloques separados por una línea en blanco:
+    1. Biblioteca estándar de Go.
+    2. Librerías y dependencias externas de terceros.
+    3. Importaciones locales del módulo (`jdgonzalez907/saas-api`).
+- **Integración con Editor**:
+  - El editor (VS Code / Cursor) debe estar configurado con `.vscode/settings.json` para formatear y organizar los imports de forma automática al guardar.
