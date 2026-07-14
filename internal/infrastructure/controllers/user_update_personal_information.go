@@ -20,7 +20,7 @@ func NewUpdateUserPersonalInformationController(
 }
 
 func (c *UpdateUserPersonalInformationController) Handle(w http.ResponseWriter, r *http.Request) {
-	id, err := ParseRouteIntParam(r, "id")
+	id, err := ParseRouteInt64Param(r, "id")
 	if err != nil {
 		RespondWithError(w, http.StatusBadRequest, err.Error())
 		return

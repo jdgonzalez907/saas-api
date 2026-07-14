@@ -35,12 +35,12 @@ func TestPaginatedUsersVO(t *testing.T) {
 		UpdatedAt:           now,
 	})
 
-	nextCursor := 2
+	nextCursor := int64(2)
 
 	testCases := []struct {
 		testName           string
 		users              []*domain.User
-		nextCursor         *int
+		nextCursor         *int64
 		expectedUsersCount int
 	}{
 		{

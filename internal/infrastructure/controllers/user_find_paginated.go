@@ -18,13 +18,13 @@ func NewFindUsersPaginatedController(useCase application.FindUsersPaginatedUseCa
 }
 
 func (c *FindUsersPaginatedController) Handle(w http.ResponseWriter, r *http.Request) {
-	limitPtr, err := ParseQueryIntParam(r, "limit")
+	limitPtr, err := ParseQueryInt32Param(r, "limit")
 	if err != nil {
 		RespondWithError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	cursorPtr, err := ParseQueryIntParam(r, "cursor")
+	cursorPtr, err := ParseQueryInt64Param(r, "cursor")
 	if err != nil {
 		RespondWithError(w, http.StatusBadRequest, err.Error())
 		return

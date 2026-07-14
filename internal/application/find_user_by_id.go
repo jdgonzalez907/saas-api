@@ -8,7 +8,7 @@ import (
 )
 
 type FindUserByIDUseCase interface {
-	Execute(ctx context.Context, id int) (*domain.User, error)
+	Execute(ctx context.Context, id int64) (*domain.User, error)
 }
 
 type findUserByIDUseCase struct {
@@ -21,7 +21,7 @@ func NewFindUserByIDUseCase(userRepository domain.UserRepository) FindUserByIDUs
 	}
 }
 
-func (u *findUserByIDUseCase) Execute(ctx context.Context, id int) (*domain.User, error) {
+func (u *findUserByIDUseCase) Execute(ctx context.Context, id int64) (*domain.User, error) {
 	if err := domain.ValidateAssignedUserID(id); err != nil {
 		return nil, err
 	}

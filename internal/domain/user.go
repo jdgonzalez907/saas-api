@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-const UnassignedUserID = 0
+const UnassignedUserID int64 = 0
 
 var (
 	ErrInvalidUserID    = errors.New("invalid user id")
@@ -26,7 +26,7 @@ var (
 )
 
 type User struct {
-	id                  int
+	id                  int64
 	personalInformation PersonalInformation
 	phone               Phone
 	email               *Email
@@ -35,7 +35,7 @@ type User struct {
 }
 
 type UserParams struct {
-	ID                  int
+	ID                  int64
 	PersonalInformation PersonalInformation
 	Phone               Phone
 	Email               *Email
@@ -44,7 +44,7 @@ type UserParams struct {
 }
 
 type UserDTO struct {
-	ID                     int       `json:"id"`
+	ID                     int64     `json:"id"`
 	PersonalInformationDTO           // Embedded
 	Phone                  PhoneDTO  `json:"phone"`
 	Email                  *EmailDTO `json:"email"`
@@ -68,7 +68,7 @@ func NewUserWithoutId(
 	}, nil
 }
 
-func ValidateAssignedUserID(id int) error {
+func ValidateAssignedUserID(id int64) error {
 	if id <= UnassignedUserID {
 		return ErrInvalidUserID
 	}
@@ -90,11 +90,11 @@ func NewUser(params UserParams) (*User, error) {
 	}, nil
 }
 
-func (u *User) ID() int {
+func (u *User) ID() int64 {
 	return u.id
 }
 
-func (u *User) AssignID(id int) {
+func (u *User) AssignID(id int64) {
 	u.id = id
 }
 

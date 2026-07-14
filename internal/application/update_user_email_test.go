@@ -14,7 +14,7 @@ import (
 )
 
 func TestUpdateUserEmailUseCase(t *testing.T) {
-	userID := 1
+	userID := int64(1)
 	identification, _ := domain.NewIdentification(domain.IdType_CC, "1111")
 	phone, _ := domain.NewPhone("57", "123456789")
 	email, _ := domain.NewEmail("john.doe@example.com")
@@ -53,7 +53,7 @@ func TestUpdateUserEmailUseCase(t *testing.T) {
 
 	testCases := []struct {
 		testName         string
-		inputID          int
+		inputID          int64
 		inputEmail       *domain.Email
 		mockExpectations func(*domainMocks.MockUserRepository)
 		expectedError    error
@@ -109,7 +109,7 @@ func TestUpdateUserEmailUseCase(t *testing.T) {
 		},
 		{
 			testName:   "fail - invalid user id",
-			inputID:    0,
+			inputID:    int64(0),
 			inputEmail: &email,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				// No expectations

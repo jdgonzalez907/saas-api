@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func mustNewPagination(lastID *int, limitVal *int) domain.Pagination {
+func mustNewPagination(lastID *int64, limitVal *int32) domain.Pagination {
 	p, err := domain.NewPagination(lastID, limitVal)
 	if err != nil {
 		panic(err)
@@ -31,7 +31,7 @@ func TestFindUsersPaginatedUseCase(t *testing.T) {
 
 	firstPersonalInfo, _ := domain.NewPersonalInformation(identification, "John", "Doe", &address, &birthDate)
 	firstUser, _ := domain.NewUser(domain.UserParams{
-		ID:                  1,
+		ID:                  int64(1),
 		PersonalInformation: firstPersonalInfo,
 		Phone:               phone,
 		Email:               &email,
@@ -41,7 +41,7 @@ func TestFindUsersPaginatedUseCase(t *testing.T) {
 
 	secondPersonalInfo, _ := domain.NewPersonalInformation(identification, "Jane", "Smith", &address, &birthDate)
 	secondUser, _ := domain.NewUser(domain.UserParams{
-		ID:                  2,
+		ID:                  int64(2),
 		PersonalInformation: secondPersonalInfo,
 		Phone:               phone,
 		Email:               &email,
@@ -50,10 +50,10 @@ func TestFindUsersPaginatedUseCase(t *testing.T) {
 	})
 
 	dbErr := errors.New("db query error")
-	cursor := 1
-	limit10 := 10
-	limit25 := 25
-	limit50 := 50
+	cursor := int64(1)
+	limit10 := int32(10)
+	limit25 := int32(25)
+	limit50 := int32(50)
 
 	testCases := []struct {
 		testName         string
@@ -72,7 +72,7 @@ func TestFindUsersPaginatedUseCase(t *testing.T) {
 			},
 			expectedResult: domain.NewPaginatedUsers(
 				[]*domain.User{firstUser, secondUser},
-				func() *int { i := 2; return &i }(),
+				func() *int64 { i := int64(2); return &i }(),
 			),
 			expectedError: nil,
 		},

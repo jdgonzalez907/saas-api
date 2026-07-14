@@ -70,7 +70,7 @@ func (_c *MockUserRepository_Create_Call) RunAndReturn(run func(context.Context,
 }
 
 // Delete provides a mock function with given fields: ctx, id
-func (_m *MockUserRepository) Delete(ctx context.Context, id int) error {
+func (_m *MockUserRepository) Delete(ctx context.Context, id int64) error {
 	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
@@ -78,7 +78,7 @@ func (_m *MockUserRepository) Delete(ctx context.Context, id int) error {
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int64) error); ok {
 		r0 = rf(ctx, id)
 	} else {
 		r0 = ret.Error(0)
@@ -94,14 +94,14 @@ type MockUserRepository_Delete_Call struct {
 
 // Delete is a helper method to define mock.On call
 //   - ctx context.Context
-//   - id int
+//   - id int64
 func (_e *MockUserRepository_Expecter) Delete(ctx interface{}, id interface{}) *MockUserRepository_Delete_Call {
 	return &MockUserRepository_Delete_Call{Call: _e.mock.On("Delete", ctx, id)}
 }
 
-func (_c *MockUserRepository_Delete_Call) Run(run func(ctx context.Context, id int)) *MockUserRepository_Delete_Call {
+func (_c *MockUserRepository_Delete_Call) Run(run func(ctx context.Context, id int64)) *MockUserRepository_Delete_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(int))
+		run(args[0].(context.Context), args[1].(int64))
 	})
 	return _c
 }
@@ -111,7 +111,7 @@ func (_c *MockUserRepository_Delete_Call) Return(_a0 error) *MockUserRepository_
 	return _c
 }
 
-func (_c *MockUserRepository_Delete_Call) RunAndReturn(run func(context.Context, int) error) *MockUserRepository_Delete_Call {
+func (_c *MockUserRepository_Delete_Call) RunAndReturn(run func(context.Context, int64) error) *MockUserRepository_Delete_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -235,7 +235,7 @@ func (_c *MockUserRepository_FindByEmail_Call) RunAndReturn(run func(context.Con
 }
 
 // FindById provides a mock function with given fields: ctx, id
-func (_m *MockUserRepository) FindById(ctx context.Context, id int) (*domain.User, error) {
+func (_m *MockUserRepository) FindById(ctx context.Context, id int64) (*domain.User, error) {
 	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
@@ -244,10 +244,10 @@ func (_m *MockUserRepository) FindById(ctx context.Context, id int) (*domain.Use
 
 	var r0 *domain.User
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, int) (*domain.User, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int64) (*domain.User, error)); ok {
 		return rf(ctx, id)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, int) *domain.User); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int64) *domain.User); ok {
 		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
@@ -255,7 +255,7 @@ func (_m *MockUserRepository) FindById(ctx context.Context, id int) (*domain.Use
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, int64) error); ok {
 		r1 = rf(ctx, id)
 	} else {
 		r1 = ret.Error(1)
@@ -271,14 +271,14 @@ type MockUserRepository_FindById_Call struct {
 
 // FindById is a helper method to define mock.On call
 //   - ctx context.Context
-//   - id int
+//   - id int64
 func (_e *MockUserRepository_Expecter) FindById(ctx interface{}, id interface{}) *MockUserRepository_FindById_Call {
 	return &MockUserRepository_FindById_Call{Call: _e.mock.On("FindById", ctx, id)}
 }
 
-func (_c *MockUserRepository_FindById_Call) Run(run func(ctx context.Context, id int)) *MockUserRepository_FindById_Call {
+func (_c *MockUserRepository_FindById_Call) Run(run func(ctx context.Context, id int64)) *MockUserRepository_FindById_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(int))
+		run(args[0].(context.Context), args[1].(int64))
 	})
 	return _c
 }
@@ -288,7 +288,7 @@ func (_c *MockUserRepository_FindById_Call) Return(_a0 *domain.User, _a1 error) 
 	return _c
 }
 
-func (_c *MockUserRepository_FindById_Call) RunAndReturn(run func(context.Context, int) (*domain.User, error)) *MockUserRepository_FindById_Call {
+func (_c *MockUserRepository_FindById_Call) RunAndReturn(run func(context.Context, int64) (*domain.User, error)) *MockUserRepository_FindById_Call {
 	_c.Call.Return(run)
 	return _c
 }

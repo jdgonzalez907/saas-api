@@ -7,20 +7,20 @@ import (
 )
 
 func TestNewPagination(t *testing.T) {
-	lastID := 42
-	lastIDZero := 0
-	lastIDNeg := -10
-	limitVal10 := 10
-	limitVal25 := 25
-	limitVal50 := 50
-	limitVal15 := 15
-	limitValNeg5 := -5
+	lastID := int64(42)
+	lastIDZero := int64(0)
+	lastIDNeg := int64(-10)
+	limitVal10 := int32(10)
+	limitVal25 := int32(25)
+	limitVal50 := int32(50)
+	limitVal15 := int32(15)
+	limitValNeg5 := int32(-5)
 
 	testCases := []struct {
 		testName      string
-		inputLastID   *int
-		inputLimit    *int
-		expectedLimit int
+		inputLastID   *int64
+		inputLimit    *int32
+		expectedLimit int32
 		expectedError error
 	}{
 		{
