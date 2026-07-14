@@ -25,6 +25,12 @@ func TestNewIdentification(t *testing.T) {
 			number:        "123456789",
 			expectedError: domain.ErrInvalidIdentificationType,
 		},
+		{
+			testName:      "fail - empty number",
+			idType:        domain.IdType_CC,
+			number:        "",
+			expectedError: domain.ErrInvalidIdentificationNumber,
+		},
 	}
 
 	for _, tc := range testCases {

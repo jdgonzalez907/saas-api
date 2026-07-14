@@ -22,8 +22,8 @@ func NewFindUserByIDUseCase(userRepository domain.UserRepository) FindUserByIDUs
 }
 
 func (u *findUserByIDUseCase) Execute(ctx context.Context, id int) (*domain.User, error) {
-	if id <= 0 {
-		return nil, domain.ErrInvalidUserID
+	if err := domain.ValidateAssignedUserID(id); err != nil {
+		return nil, err
 	}
 
 	userFound, err := u.userRepository.FindById(ctx, id)

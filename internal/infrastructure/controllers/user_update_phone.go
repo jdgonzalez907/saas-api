@@ -32,13 +32,13 @@ func (c *UpdateUserPhoneController) Handle(w http.ResponseWriter, r *http.Reques
 
 	phone, err := domain.NewPhone(body.CountryCode, body.Number)
 	if err != nil {
-		RespondWithDomainError(w, err)
+		RespondWithDomainError(w, r, err)
 		return
 	}
 
 	err = c.useCase.Execute(r.Context(), id, phone)
 	if err != nil {
-		RespondWithDomainError(w, err)
+		RespondWithDomainError(w, r, err)
 		return
 	}
 

@@ -20,6 +20,10 @@ func NewUpdateUserEmailUseCase(userRepository domain.UserRepository) UpdateUserE
 }
 
 func (u *updateUserEmailUseCase) Execute(ctx context.Context, id int, email *domain.Email) error {
+	if err := domain.ValidateAssignedUserID(id); err != nil {
+		return err
+	}
+
 	userFound, err := u.userRepository.FindById(ctx, id)
 	if err != nil {
 		return fmt.Errorf("%v: %w", domain.ErrUpdatingUserEmail, err)

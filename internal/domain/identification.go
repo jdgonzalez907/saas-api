@@ -2,7 +2,10 @@ package domain
 
 import "errors"
 
-var ErrInvalidIdentificationType = errors.New("invalid identification type")
+var (
+	ErrInvalidIdentificationType   = errors.New("invalid identification type")
+	ErrInvalidIdentificationNumber = errors.New("invalid identification number")
+)
 
 type IdentificationType string
 
@@ -20,6 +23,9 @@ type Identification struct {
 }
 
 func NewIdentification(idType IdentificationType, number string) (Identification, error) {
+	if number == "" {
+		return Identification{}, ErrInvalidIdentificationNumber
+	}
 	switch idType {
 	case IdType_CC, IdType_CE, IdType_PASSPORT, IdType_NIT, IdType_IC:
 		return Identification{

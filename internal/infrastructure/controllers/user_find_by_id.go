@@ -25,7 +25,7 @@ func (c *FindUserByIDController) Handle(w http.ResponseWriter, r *http.Request) 
 
 	user, err := c.useCase.Execute(r.Context(), id)
 	if err != nil {
-		RespondWithDomainError(w, err)
+		RespondWithDomainError(w, r, err)
 		return
 	}
 

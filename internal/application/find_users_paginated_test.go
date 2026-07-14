@@ -13,6 +13,14 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+func mustNewPagination(lastID *int, limitVal *int) domain.Pagination {
+	p, err := domain.NewPagination(lastID, limitVal)
+	if err != nil {
+		panic(err)
+	}
+	return p
+}
+
 func TestFindUsersPaginatedUseCase(t *testing.T) {
 	now := time.Now()
 	identification, _ := domain.NewIdentification(domain.IdType_CC, "1111")
@@ -43,6 +51,9 @@ func TestFindUsersPaginatedUseCase(t *testing.T) {
 
 	dbErr := errors.New("db query error")
 	cursor := 1
+	limit10 := 10
+	limit25 := 25
+	limit50 := 50
 
 	testCases := []struct {
 		testName         string
@@ -53,7 +64,7 @@ func TestFindUsersPaginatedUseCase(t *testing.T) {
 	}{
 		{
 			testName:   "success - page with users",
-			pagination: domain.NewPagination(&cursor, 10),
+			pagination: mustNewPagination(&cursor, &limit10),
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindAll", mock.Anything, mock.MatchedBy(func(p domain.Pagination) bool {
 					return p.Limit() == 10 && p.LastID() != nil && *p.LastID() == cursor
@@ -67,7 +78,7 @@ func TestFindUsersPaginatedUseCase(t *testing.T) {
 		},
 		{
 			testName:   "success - empty page",
-			pagination: domain.NewPagination(nil, 25),
+			pagination: mustNewPagination(nil, &limit25),
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindAll", mock.Anything, mock.MatchedBy(func(p domain.Pagination) bool {
 					return p.Limit() == 25 && p.LastID() == nil
@@ -81,7 +92,7 @@ func TestFindUsersPaginatedUseCase(t *testing.T) {
 		},
 		{
 			testName:   "fail - repository error",
-			pagination: domain.NewPagination(nil, 50),
+			pagination: mustNewPagination(nil, &limit50),
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindAll", mock.Anything, mock.MatchedBy(func(p domain.Pagination) bool {
 					return p.Limit() == 50 && p.LastID() == nil

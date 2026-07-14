@@ -38,7 +38,7 @@ func (c *UpdateUserEmailController) Handle(w http.ResponseWriter, r *http.Reques
 	if body.Email != nil && *body.Email != "" {
 		email, err := domain.NewEmail(*body.Email)
 		if err != nil {
-			RespondWithDomainError(w, err)
+			RespondWithDomainError(w, r, err)
 			return
 		}
 		emailPtr = &email
@@ -46,7 +46,7 @@ func (c *UpdateUserEmailController) Handle(w http.ResponseWriter, r *http.Reques
 
 	err = c.useCase.Execute(r.Context(), id, emailPtr)
 	if err != nil {
-		RespondWithDomainError(w, err)
+		RespondWithDomainError(w, r, err)
 		return
 	}
 

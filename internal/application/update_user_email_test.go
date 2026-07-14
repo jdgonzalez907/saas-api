@@ -108,6 +108,15 @@ func TestUpdateUserEmailUseCase(t *testing.T) {
 			expectedError: domain.ErrUserEmailAlreadyExists,
 		},
 		{
+			testName:   "fail - invalid user id",
+			inputID:    0,
+			inputEmail: &email,
+			mockExpectations: func(m *domainMocks.MockUserRepository) {
+				// No expectations
+			},
+			expectedError: domain.ErrInvalidUserID,
+		},
+		{
 			testName:   "fail - user not found",
 			inputID:    userID,
 			inputEmail: &email,
