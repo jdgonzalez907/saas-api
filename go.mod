@@ -1,4 +1,4 @@
-module jdgonzalez907/users-api
+module jdgonzalez907/saas-api
 
 go 1.26.5
 
