@@ -2,7 +2,7 @@ package domain
 
 import "errors"
 
-var ErrInvalidPhone = errors.New("invalid phone")
+var ErrInvalidPhone = errors.New("phone number must comply with international format E.164")
 
 type Phone struct {
 	countryCode string

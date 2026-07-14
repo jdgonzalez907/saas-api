@@ -3,8 +3,8 @@ package domain
 import "errors"
 
 var (
-	ErrInvalidIdentificationType   = errors.New("invalid identification type")
-	ErrInvalidIdentificationNumber = errors.New("invalid identification number")
+	ErrInvalidIdentificationType   = errors.New("identification type must be a standard type")
+	ErrInvalidIdentificationNumber = errors.New("identification number cannot be empty")
 )
 
 type IdentificationType string
