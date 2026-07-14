@@ -101,6 +101,13 @@ func TestFindUsersPaginatedController_Handle(t *testing.T) {
 			expectedBody:   "parameter limit must be a positive integer",
 		},
 		{
+			testName:       "fail - invalid limit value not allowed",
+			urlQuery:       "?limit=12",
+			setupMock:      func(_ *mockApp.MockFindUsersPaginatedUseCase) {},
+			expectedStatus: http.StatusBadRequest,
+			expectedBody:   domain.ErrInvalidPaginationLimit.Error(),
+		},
+		{
 			testName: "fail - usecase execution error",
 			urlQuery: "",
 			setupMock: func(m *mockApp.MockFindUsersPaginatedUseCase) {

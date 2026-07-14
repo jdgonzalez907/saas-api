@@ -771,7 +771,6 @@ func TestPostFromDTO_Validation(t *testing.T) {
 		})
 	}
 }
-
 func TestPost_EnsureInvariants_Private(t *testing.T) {
 	t.Run("ensureInvariants - negative ID", func(t *testing.T) {
 		p := &Post{
@@ -783,3 +782,19 @@ func TestPost_EnsureInvariants_Private(t *testing.T) {
 		}
 	})
 }
+
+func TestPost_AssignID(t *testing.T) {
+	titleBlock, _ := NewTitleBlock("Title")
+	contentInfo, _ := NewContentInformation("Post Title", []Block{titleBlock})
+	post, _ := NewPostWithoutID(contentInfo, StatusDraft, 10)
+
+	if post.ID() != UnassignedPostID {
+		t.Errorf("expected ID to be unassigned (0), got %d", post.ID())
+	}
+
+	post.AssignID(42)
+	if post.ID() != 42 {
+		t.Errorf("expected ID to be 42 after AssignID, got %d", post.ID())
+	}
+}
+

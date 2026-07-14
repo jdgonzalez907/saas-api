@@ -14,6 +14,7 @@ import (
 
 	"jdgonzalez907/saas-api/internal/users/domain"
 	"jdgonzalez907/saas-api/internal/users/infrastructure/controllers"
+	sharedHttp "jdgonzalez907/saas-api/internal/shared/http"
 	mockApp "jdgonzalez907/saas-api/mocks/application"
 )
 
@@ -71,14 +72,14 @@ func TestCreateUserController_Handle(t *testing.T) {
 			requestBody:    "{invalid json}",
 			setupMock:      func(_ *mockApp.MockCreateUserUseCase) {},
 			expectedStatus: http.StatusBadRequest,
-			expectedBody:   controllers.ErrInvalidRequestBody.Error(),
+			expectedBody:   sharedHttp.ErrInvalidRequestBody.Error(),
 		},
 		{
 			testName:       "fail - nil/empty body",
 			requestBody:    nil,
 			setupMock:      func(_ *mockApp.MockCreateUserUseCase) {},
 			expectedStatus: http.StatusBadRequest,
-			expectedBody:   controllers.ErrInvalidRequestBody.Error(),
+			expectedBody:   sharedHttp.ErrInvalidRequestBody.Error(),
 		},
 		{
 			testName: "fail - invalid identification type",
