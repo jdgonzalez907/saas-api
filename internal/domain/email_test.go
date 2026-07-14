@@ -50,14 +50,36 @@ func TestNewEmail(t *testing.T) {
 }
 
 func TestEmail_Equals(t *testing.T) {
-	email1, _ := domain.NewEmail("test@example.com")
-	email2, _ := domain.NewEmail("test@example.com")
-	email3, _ := domain.NewEmail("other@example.com")
+	emailBase, _ := domain.NewEmail("test@example.com")
+	emailSame, _ := domain.NewEmail("test@example.com")
+	emailDiff, _ := domain.NewEmail("other@example.com")
 
-	if !email1.Equals(email2) {
-		t.Error("expected email1 to equal email2")
+	testCases := []struct {
+		testName string
+		email1   domain.Email
+		email2   domain.Email
+		expected bool
+	}{
+		{
+			testName: "success - identical emails",
+			email1:   emailBase,
+			email2:   emailSame,
+			expected: true,
+		},
+		{
+			testName: "fail - different email value",
+			email1:   emailBase,
+			email2:   emailDiff,
+			expected: false,
+		},
 	}
-	if email1.Equals(email3) {
-		t.Error("expected email1 not to equal email3")
+
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := tc.email1.Equals(tc.email2)
+			if result != tc.expected {
+				t.Errorf("expected %v, got %v", tc.expected, result)
+			}
+		})
 	}
 }

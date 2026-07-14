@@ -49,3 +49,45 @@ func TestNewIdentification(t *testing.T) {
 		})
 	}
 }
+
+func TestIdentification_Equals(t *testing.T) {
+	idBase, _ := domain.NewIdentification(domain.IdType_CC, "123456789")
+	idSame, _ := domain.NewIdentification(domain.IdType_CC, "123456789")
+	idDiffType, _ := domain.NewIdentification(domain.IdType_PASSPORT, "123456789")
+	idDiffNum, _ := domain.NewIdentification(domain.IdType_CC, "987654321")
+
+	testCases := []struct {
+		testName string
+		id1      domain.Identification
+		id2      domain.Identification
+		expected bool
+	}{
+		{
+			testName: "success - identical identifications",
+			id1:      idBase,
+			id2:      idSame,
+			expected: true,
+		},
+		{
+			testName: "fail - different type",
+			id1:      idBase,
+			id2:      idDiffType,
+			expected: false,
+		},
+		{
+			testName: "fail - different number",
+			id1:      idBase,
+			id2:      idDiffNum,
+			expected: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := tc.id1.Equals(tc.id2)
+			if result != tc.expected {
+				t.Errorf("expected %v, got %v", tc.expected, result)
+			}
+		})
+	}
+}
