@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:17-alpine
-    container_name: users_db
+    container_name: saas_db
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -21,7 +21,7 @@ services:
 
   migrate:
     image: migrate/migrate:v4.18.3
-    container_name: users_migrate
+    container_name: saas_migrate
     depends_on:
       postgres:
         condition: service_healthy
@@ -37,7 +37,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: users_api
+    container_name: saas_api
     restart: unless-stopped
     depends_on:
       migrate:
