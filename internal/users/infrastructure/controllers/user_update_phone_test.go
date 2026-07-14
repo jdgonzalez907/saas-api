@@ -7,6 +7,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 
 	"github.com/go-chi/chi/v5"
@@ -24,6 +25,7 @@ func TestUpdateUserPhoneController_Handle(t *testing.T) {
 
 	testCases := []struct {
 		testName       string
+		authUserID     any
 		routeParamID   string
 		requestBody    any
 		setupMock      func(m *mockApp.MockUpdateUserPhoneUseCase)
@@ -32,6 +34,7 @@ func TestUpdateUserPhoneController_Handle(t *testing.T) {
 	}{
 		{
 			testName:     "success - phone updated",
+			authUserID:   int64(1),
 			routeParamID: "1",
 			requestBody:  validBody,
 			setupMock: func(m *mockApp.MockUpdateUserPhoneUseCase) {
@@ -42,7 +45,17 @@ func TestUpdateUserPhoneController_Handle(t *testing.T) {
 			expectedStatus: http.StatusNoContent,
 		},
 		{
+			testName:       "fail - unauthenticated",
+			authUserID:     nil,
+			routeParamID:   "1",
+			requestBody:    validBody,
+			setupMock:      func(_ *mockApp.MockUpdateUserPhoneUseCase) {},
+			expectedStatus: http.StatusUnauthorized,
+			expectedBody:   sharedHttp.ErrUnauthenticated.Error(),
+		},
+		{
 			testName:       "fail - route parameter is not an integer",
+			authUserID:     int64(1),
 			routeParamID:   "abc",
 			requestBody:    validBody,
 			setupMock:      func(_ *mockApp.MockUpdateUserPhoneUseCase) {},
@@ -51,6 +64,7 @@ func TestUpdateUserPhoneController_Handle(t *testing.T) {
 		},
 		{
 			testName:       "fail - invalid json body",
+			authUserID:     int64(1),
 			routeParamID:   "1",
 			requestBody:    "{invalid json}",
 			setupMock:      func(_ *mockApp.MockUpdateUserPhoneUseCase) {},
@@ -59,6 +73,7 @@ func TestUpdateUserPhoneController_Handle(t *testing.T) {
 		},
 		{
 			testName:       "fail - nil request body",
+			authUserID:     int64(1),
 			routeParamID:   "1",
 			requestBody:    nil,
 			setupMock:      func(_ *mockApp.MockUpdateUserPhoneUseCase) {},
@@ -67,6 +82,7 @@ func TestUpdateUserPhoneController_Handle(t *testing.T) {
 		},
 		{
 			testName:     "fail - invalid phone country code",
+			authUserID:   int64(1),
 			routeParamID: "1",
 			requestBody: domain.PhoneDTO{
 				CountryCode: "", Number: "987654321",
@@ -77,6 +93,7 @@ func TestUpdateUserPhoneController_Handle(t *testing.T) {
 		},
 		{
 			testName:     "fail - invalid phone number",
+			authUserID:   int64(1),
 			routeParamID: "1",
 			requestBody: domain.PhoneDTO{
 				CountryCode: "57", Number: "",
@@ -87,6 +104,7 @@ func TestUpdateUserPhoneController_Handle(t *testing.T) {
 		},
 		{
 			testName:     "fail - user not found",
+			authUserID:   int64(1),
 			routeParamID: "1",
 			requestBody:  validBody,
 			setupMock: func(m *mockApp.MockUpdateUserPhoneUseCase) {
@@ -97,6 +115,7 @@ func TestUpdateUserPhoneController_Handle(t *testing.T) {
 		},
 		{
 			testName:     "fail - phone already exists",
+			authUserID:   int64(1),
 			routeParamID: "1",
 			requestBody:  validBody,
 			setupMock: func(m *mockApp.MockUpdateUserPhoneUseCase) {
@@ -107,6 +126,7 @@ func TestUpdateUserPhoneController_Handle(t *testing.T) {
 		},
 		{
 			testName:     "fail - internal server error from usecase",
+			authUserID:   int64(1),
 			routeParamID: "1",
 			requestBody:  validBody,
 			setupMock: func(m *mockApp.MockUpdateUserPhoneUseCase) {
@@ -139,12 +159,16 @@ func TestUpdateUserPhoneController_Handle(t *testing.T) {
 				req = httptest.NewRequest(http.MethodPut, "/users/phone", &buf)
 			}
 
+			if tc.authUserID != nil {
+				req.Header.Set("Authorization", strconv.FormatInt(tc.authUserID.(int64), 10))
+			}
 			rctx := chi.NewRouteContext()
 			rctx.URLParams.Add("id", tc.routeParamID)
 			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 
 			rec := httptest.NewRecorder()
-			controller.Handle(rec, req)
+			handler := sharedHttp.Protected(controller.Handle)
+			handler.ServeHTTP(rec, req)
 
 			assert.Equal(t, tc.expectedStatus, rec.Code)
 			if tc.expectedBody != "" {

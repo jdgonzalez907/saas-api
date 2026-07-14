@@ -25,19 +25,19 @@ func NewRouter(params RouterParams) *chi.Mux {
 	r.Use(sharedHttp.JSONContentTypeMiddleware)
 
 	if params.CreatePost != nil {
-		r.Post("/posts", params.CreatePost.Handle)
+		r.Post("/posts", sharedHttp.Protected(params.CreatePost.Handle))
 	}
 	if params.FindPostByID != nil {
-		r.Get("/posts/{id}", params.FindPostByID.Handle)
+		r.Get("/posts/{id}", sharedHttp.Protected(params.FindPostByID.Handle))
 	}
 	if params.UpdatePost != nil {
-		r.Put("/posts/{id}", params.UpdatePost.Handle)
+		r.Put("/posts/{id}", sharedHttp.Protected(params.UpdatePost.Handle))
 	}
 	if params.DeletePost != nil {
-		r.Delete("/posts/{id}", params.DeletePost.Handle)
+		r.Delete("/posts/{id}", sharedHttp.Protected(params.DeletePost.Handle))
 	}
 	if params.FindPostsPaginated != nil {
-		r.Get("/posts", params.FindPostsPaginated.Handle)
+		r.Get("/posts", sharedHttp.Protected(params.FindPostsPaginated.Handle))
 	}
 
 	return r

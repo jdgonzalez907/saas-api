@@ -18,7 +18,7 @@ func NewFindPostsPaginatedController(useCase application.FindPostsPaginatedUseCa
 	}
 }
 
-func (c *FindPostsPaginatedController) Handle(w http.ResponseWriter, r *http.Request) {
+func (c *FindPostsPaginatedController) Handle(w http.ResponseWriter, r *http.Request, _ int64) {
 	statusStr := r.URL.Query().Get("status")
 	status, err := domain.NewPostStatus(statusStr)
 	if err != nil {

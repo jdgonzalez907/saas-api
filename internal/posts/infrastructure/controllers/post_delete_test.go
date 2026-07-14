@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 
 	"github.com/go-chi/chi/v5"
@@ -82,7 +83,7 @@ func TestDeletePostController_Handle(t *testing.T) {
 
 			req := httptest.NewRequest(http.MethodDelete, "/posts", nil)
 			if tc.authUserID != nil {
-				req = req.WithContext(sharedHttp.WithUserID(req.Context(), tc.authUserID.(int64)))
+				req.Header.Set("Authorization", strconv.FormatInt(tc.authUserID.(int64), 10))
 			}
 
 			rctx := chi.NewRouteContext()
@@ -90,7 +91,8 @@ func TestDeletePostController_Handle(t *testing.T) {
 			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 
 			rec := httptest.NewRecorder()
-			controller.Handle(rec, req)
+			handler := sharedHttp.Protected(controller.Handle)
+			handler.ServeHTTP(rec, req)
 
 			assert.Equal(t, tc.expectedStatus, rec.Code)
 			if tc.expectedBody != "" {

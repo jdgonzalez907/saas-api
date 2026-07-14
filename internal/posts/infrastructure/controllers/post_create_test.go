@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -132,11 +133,12 @@ func TestCreatePostController_Handle(t *testing.T) {
 
 			req := httptest.NewRequest(http.MethodPost, "/posts", &buf)
 			if tc.authUserID != nil {
-				req = req.WithContext(sharedHttp.WithUserID(req.Context(), tc.authUserID.(int64)))
+				req.Header.Set("Authorization", strconv.FormatInt(tc.authUserID.(int64), 10))
 			}
 
 			rec := httptest.NewRecorder()
-			controller.Handle(rec, req)
+			handler := sharedHttp.Protected(controller.Handle)
+			handler.ServeHTTP(rec, req)
 
 			assert.Equal(t, tc.expectedStatus, rec.Code)
 			if tc.expectedBody != "" {

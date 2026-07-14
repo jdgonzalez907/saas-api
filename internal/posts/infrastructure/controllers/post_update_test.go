@@ -7,6 +7,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 	"time"
 
@@ -167,7 +168,7 @@ func TestUpdatePostController_Handle(t *testing.T) {
 
 			req := httptest.NewRequest(http.MethodPut, "/posts", &buf)
 			if tc.authUserID != nil {
-				req = req.WithContext(sharedHttp.WithUserID(req.Context(), tc.authUserID.(int64)))
+				req.Header.Set("Authorization", strconv.FormatInt(tc.authUserID.(int64), 10))
 			}
 
 			rctx := chi.NewRouteContext()
@@ -175,7 +176,8 @@ func TestUpdatePostController_Handle(t *testing.T) {
 			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 
 			rec := httptest.NewRecorder()
-			controller.Handle(rec, req)
+			handler := sharedHttp.Protected(controller.Handle)
+			handler.ServeHTTP(rec, req)
 
 			assert.Equal(t, tc.expectedStatus, rec.Code)
 			if tc.expectedBody != "" {
