@@ -29,16 +29,19 @@ func (u *updateUserEmailUseCase) Execute(ctx context.Context, id int, email *dom
 		return domain.ErrUserNotFound
 	}
 
+	currentEmail := userFound.Email()
+	emailsEqual := (currentEmail == nil && email == nil) || (currentEmail != nil && email != nil && currentEmail.Equals(*email))
+	if emailsEqual {
+		return nil
+	}
+
 	if email != nil {
-		emailChanged := userFound.Email() == nil || *userFound.Email() != *email
-		if emailChanged {
-			foundEmail, err := u.userRepository.FindByEmail(ctx, *email)
-			if err != nil {
-				return fmt.Errorf("%v: %w", domain.ErrUpdatingUserEmail, err)
-			}
-			if foundEmail != nil {
-				return domain.ErrUserEmailAlreadyExists
-			}
+		foundEmail, err := u.userRepository.FindByEmail(ctx, *email)
+		if err != nil {
+			return fmt.Errorf("%v: %w", domain.ErrUpdatingUserEmail, err)
+		}
+		if foundEmail != nil {
+			return domain.ErrUserEmailAlreadyExists
 		}
 	}
 
