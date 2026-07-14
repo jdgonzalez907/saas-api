@@ -43,6 +43,10 @@ func NewBirthDate(value string) (BirthDate, error) {
 
 type BirthDateDTO string
 
+func (b BirthDate) Equals(other BirthDate) bool {
+	return b.value.Equal(other.value) && b.formatted == other.formatted
+}
+
 func (b BirthDate) ToDTO() BirthDateDTO {
 	return BirthDateDTO(b.formatted)
 }

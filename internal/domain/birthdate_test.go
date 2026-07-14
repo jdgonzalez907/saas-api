@@ -57,3 +57,38 @@ func TestNewBirthDate(t *testing.T) {
 	}
 }
 
+func TestBirthDate_Equals(t *testing.T) {
+	bdBase, _ := domain.NewBirthDate("2000-01-01")
+	bdSame, _ := domain.NewBirthDate("2000-01-01")
+	bdDiff, _ := domain.NewBirthDate("1999-12-31")
+
+	testCases := []struct {
+		testName string
+		bd1      domain.BirthDate
+		bd2      domain.BirthDate
+		expected bool
+	}{
+		{
+			testName: "success - identical birthdates",
+			bd1:      bdBase,
+			bd2:      bdSame,
+			expected: true,
+		},
+		{
+			testName: "fail - different date",
+			bd1:      bdBase,
+			bd2:      bdDiff,
+			expected: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := tc.bd1.Equals(tc.bd2)
+			if result != tc.expected {
+				t.Errorf("expected %v, got %v", tc.expected, result)
+			}
+		})
+	}
+}
+
