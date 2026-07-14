@@ -26,6 +26,10 @@ func NewEmail(email string) (Email, error) {
 
 type EmailDTO string
 
+func (e Email) Equals(other Email) bool {
+	return e.value == other.value
+}
+
 func (e Email) ToDTO() EmailDTO {
 	return EmailDTO(e.value)
 }

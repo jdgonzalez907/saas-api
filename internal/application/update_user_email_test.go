@@ -39,6 +39,15 @@ func TestUpdateUserEmailUseCase(t *testing.T) {
 		UpdatedAt:           now,
 	})
 
+	existingUserWithNilEmail, _ := domain.NewUser(domain.UserParams{
+		ID:                  userID,
+		PersonalInformation: personalInfo,
+		Phone:               phone,
+		Email:               nil,
+		CreatedAt:           now,
+		UpdatedAt:           now,
+	})
+
 	otherEmail, _ := domain.NewEmail("other.email@example.com")
 	dbErr := errors.New("database connection error")
 
@@ -55,7 +64,15 @@ func TestUpdateUserEmailUseCase(t *testing.T) {
 			inputEmail: &email,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindById", mock.Anything, userID).Return(existingUser, nil)
-				m.On("Update", mock.Anything, mock.Anything).Return(nil)
+			},
+			expectedError: nil,
+		},
+		{
+			testName:   "success - no changes to email (both nil)",
+			inputID:    userID,
+			inputEmail: nil,
+			mockExpectations: func(m *domainMocks.MockUserRepository) {
+				m.On("FindById", mock.Anything, userID).Return(existingUserWithNilEmail, nil)
 			},
 			expectedError: nil,
 		},
@@ -121,9 +138,10 @@ func TestUpdateUserEmailUseCase(t *testing.T) {
 		{
 			testName:   "fail - repo update error",
 			inputID:    userID,
-			inputEmail: &email,
+			inputEmail: &otherEmail,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindById", mock.Anything, userID).Return(existingUser, nil)
+				m.On("FindByEmail", mock.Anything, otherEmail).Return(nil, nil)
 				m.On("Update", mock.Anything, mock.Anything).Return(dbErr)
 			},
 			expectedError: domain.ErrUpdatingUserEmail,

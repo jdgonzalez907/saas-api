@@ -62,3 +62,20 @@ func TestNewPhone(t *testing.T) {
 		})
 	}
 }
+
+func TestPhone_Equals(t *testing.T) {
+	phone1, _ := domain.NewPhone("57", "3001234567")
+	phone2, _ := domain.NewPhone("57", "3001234567")
+	phone3, _ := domain.NewPhone("1", "3001234567")
+	phone4, _ := domain.NewPhone("57", "3009999999")
+
+	if !phone1.Equals(phone2) {
+		t.Error("expected phone1 to equal phone2")
+	}
+	if phone1.Equals(phone3) {
+		t.Error("expected phone1 not to equal phone3")
+	}
+	if phone1.Equals(phone4) {
+		t.Error("expected phone1 not to equal phone4")
+	}
+}

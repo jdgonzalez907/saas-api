@@ -48,3 +48,16 @@ func TestNewEmail(t *testing.T) {
 		})
 	}
 }
+
+func TestEmail_Equals(t *testing.T) {
+	email1, _ := domain.NewEmail("test@example.com")
+	email2, _ := domain.NewEmail("test@example.com")
+	email3, _ := domain.NewEmail("other@example.com")
+
+	if !email1.Equals(email2) {
+		t.Error("expected email1 to equal email2")
+	}
+	if email1.Equals(email3) {
+		t.Error("expected email1 not to equal email3")
+	}
+}

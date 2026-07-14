@@ -55,7 +55,6 @@ func TestUpdateUserPhoneUseCase(t *testing.T) {
 			inputPhone: phone,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindById", mock.Anything, userID).Return(existingUser, nil)
-				m.On("Update", mock.Anything, mock.Anything).Return(nil)
 			},
 			expectedError: nil,
 		},
@@ -111,9 +110,10 @@ func TestUpdateUserPhoneUseCase(t *testing.T) {
 		{
 			testName:   "fail - repo update error",
 			inputID:    userID,
-			inputPhone: phone,
+			inputPhone: otherPhone,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindById", mock.Anything, userID).Return(existingUser, nil)
+				m.On("FindByPhone", mock.Anything, otherPhone).Return(nil, nil)
 				m.On("Update", mock.Anything, mock.Anything).Return(dbErr)
 			},
 			expectedError: domain.ErrUpdatingUserPhone,
