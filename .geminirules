@@ -1,6 +1,6 @@
 # Reglas de Desarrollo y Buenas Prácticas (AI Agent Guidelines)
 
-Este repositorio (`users-api`) sigue estrictos patrones de diseño, inmutabilidad y estándares de pruebas. Lee las reglas detalladas en el archivo:
+Este repositorio (`saas-api`) sigue estrictos patrones de diseño, inmutabilidad y estándares de pruebas. Lee las reglas detalladas en el archivo:
 [rules.md](file:///.gemini/rules.md)
 
 ## Resumen de Reglas Críticas:
