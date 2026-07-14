@@ -6,16 +6,16 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/mock"
+
 	"jdgonzalez907/saas-api/internal/users/application"
 	"jdgonzalez907/saas-api/internal/users/domain"
 	domainMocks "jdgonzalez907/saas-api/mocks/domain"
-
-	"github.com/stretchr/testify/mock"
 )
 
 func TestDeleteUserUseCase(t *testing.T) {
 	userID := int64(1)
-	identification, _ := domain.NewIdentification(domain.IdType_CC, "1111")
+	identification, _ := domain.NewIdentification(domain.IDTypeCC, "1111")
 	phone, _ := domain.NewPhone("57", "123456789")
 	email, _ := domain.NewEmail("john.doe@example.com")
 	address, _ := domain.NewAddress("123 Main St", "City", "State", "Country", nil, nil)
@@ -51,7 +51,7 @@ func TestDeleteUserUseCase(t *testing.T) {
 			testName: "success - delete user",
 			inputID:  userID,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", mock.Anything, userID).Return(existingUser, nil)
+				m.On("FindByID", mock.Anything, userID).Return(existingUser, nil)
 				m.On("Delete", mock.Anything, userID).Return(nil)
 			},
 			expectedError: nil,
@@ -59,7 +59,7 @@ func TestDeleteUserUseCase(t *testing.T) {
 		{
 			testName: "fail - invalid user id",
 			inputID:  int64(0),
-			mockExpectations: func(m *domainMocks.MockUserRepository) {
+			mockExpectations: func(_ *domainMocks.MockUserRepository) {
 				// No expectations
 			},
 			expectedError: domain.ErrInvalidUserID,
@@ -68,15 +68,15 @@ func TestDeleteUserUseCase(t *testing.T) {
 			testName: "fail - user not found",
 			inputID:  userID,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", mock.Anything, userID).Return(nil, nil)
+				m.On("FindByID", mock.Anything, userID).Return(nil, nil)
 			},
 			expectedError: domain.ErrUserNotFound,
 		},
 		{
-			testName: "fail - infra error on FindById",
+			testName: "fail - infra error on FindByID",
 			inputID:  userID,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", mock.Anything, userID).Return(nil, dbErr)
+				m.On("FindByID", mock.Anything, userID).Return(nil, dbErr)
 			},
 			expectedError: domain.ErrDeletingUser,
 		},
@@ -84,7 +84,7 @@ func TestDeleteUserUseCase(t *testing.T) {
 			testName: "fail - infra error on Delete",
 			inputID:  userID,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", mock.Anything, userID).Return(existingUser, nil)
+				m.On("FindByID", mock.Anything, userID).Return(existingUser, nil)
 				m.On("Delete", mock.Anything, userID).Return(dbErr)
 			},
 			expectedError: domain.ErrDeletingUser,
@@ -104,9 +104,7 @@ func TestDeleteUserUseCase(t *testing.T) {
 					t.Fatalf("expected error: %v, got nil", tc.expectedError)
 				}
 				if !errors.Is(err, tc.expectedError) {
-					if tc.expectedError == domain.ErrDeletingUser && errors.Unwrap(err) != nil {
-						// Success: wrapped infra error
-					} else {
+					if !(tc.expectedError == domain.ErrDeletingUser && errors.Unwrap(err) != nil) {
 						t.Errorf("expected error: %v, got %v", tc.expectedError, err)
 					}
 				}

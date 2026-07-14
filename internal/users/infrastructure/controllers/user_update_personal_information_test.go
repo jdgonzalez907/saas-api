@@ -10,13 +10,13 @@ import (
 	"testing"
 	"time"
 
-	"jdgonzalez907/saas-api/internal/users/domain"
-	"jdgonzalez907/saas-api/internal/users/infrastructure/controllers"
-	mockApp "jdgonzalez907/saas-api/mocks/application"
-
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	"jdgonzalez907/saas-api/internal/users/domain"
+	"jdgonzalez907/saas-api/internal/users/infrastructure/controllers"
+	mockApp "jdgonzalez907/saas-api/mocks/application"
 )
 
 func TestUpdateUserPersonalInformationController_Handle(t *testing.T) {
@@ -27,7 +27,7 @@ func TestUpdateUserPersonalInformationController_Handle(t *testing.T) {
 		FirstName: "Jane",
 		LastName:  "Smith",
 		Identification: domain.IdentificationDTO{
-			Type:   domain.IdType_CC,
+			Type:   domain.IDTypeCC,
 			Number: "987654321",
 		},
 		Address: &domain.AddressDTO{
@@ -65,7 +65,7 @@ func TestUpdateUserPersonalInformationController_Handle(t *testing.T) {
 			testName:       "fail - route parameter is not an integer",
 			routeParamID:   "abc",
 			requestBody:    validBody,
-			setupMock:      func(m *mockApp.MockUpdateUserPersonalInformationUseCase) {},
+			setupMock:      func(_ *mockApp.MockUpdateUserPersonalInformationUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   "parameter id must be a positive integer",
 		},
@@ -73,7 +73,7 @@ func TestUpdateUserPersonalInformationController_Handle(t *testing.T) {
 			testName:       "fail - route parameter is empty",
 			routeParamID:   "",
 			requestBody:    validBody,
-			setupMock:      func(m *mockApp.MockUpdateUserPersonalInformationUseCase) {},
+			setupMock:      func(_ *mockApp.MockUpdateUserPersonalInformationUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   "parameter id is missing",
 		},
@@ -81,7 +81,7 @@ func TestUpdateUserPersonalInformationController_Handle(t *testing.T) {
 			testName:       "fail - route parameter is negative",
 			routeParamID:   "-1",
 			requestBody:    validBody,
-			setupMock:      func(m *mockApp.MockUpdateUserPersonalInformationUseCase) {},
+			setupMock:      func(_ *mockApp.MockUpdateUserPersonalInformationUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   "parameter id must be a positive integer",
 		},
@@ -89,7 +89,7 @@ func TestUpdateUserPersonalInformationController_Handle(t *testing.T) {
 			testName:       "fail - invalid json body",
 			routeParamID:   "1",
 			requestBody:    "{invalid json}",
-			setupMock:      func(m *mockApp.MockUpdateUserPersonalInformationUseCase) {},
+			setupMock:      func(_ *mockApp.MockUpdateUserPersonalInformationUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   controllers.ErrInvalidRequestBody.Error(),
 		},
@@ -97,7 +97,7 @@ func TestUpdateUserPersonalInformationController_Handle(t *testing.T) {
 			testName:       "fail - nil request body",
 			routeParamID:   "1",
 			requestBody:    nil,
-			setupMock:      func(m *mockApp.MockUpdateUserPersonalInformationUseCase) {},
+			setupMock:      func(_ *mockApp.MockUpdateUserPersonalInformationUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   controllers.ErrInvalidRequestBody.Error(),
 		},
@@ -109,7 +109,7 @@ func TestUpdateUserPersonalInformationController_Handle(t *testing.T) {
 				b.Identification.Type = "INVALID"
 				return b
 			}(),
-			setupMock:      func(m *mockApp.MockUpdateUserPersonalInformationUseCase) {},
+			setupMock:      func(_ *mockApp.MockUpdateUserPersonalInformationUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   domain.ErrInvalidIdentificationType.Error(),
 		},
@@ -126,7 +126,7 @@ func TestUpdateUserPersonalInformationController_Handle(t *testing.T) {
 				}
 				return b
 			}(),
-			setupMock:      func(m *mockApp.MockUpdateUserPersonalInformationUseCase) {},
+			setupMock:      func(_ *mockApp.MockUpdateUserPersonalInformationUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   domain.ErrInvalidStreet.Error(),
 		},
@@ -139,7 +139,7 @@ func TestUpdateUserPersonalInformationController_Handle(t *testing.T) {
 				b.BirthDate = &bd
 				return b
 			}(),
-			setupMock:      func(m *mockApp.MockUpdateUserPersonalInformationUseCase) {},
+			setupMock:      func(_ *mockApp.MockUpdateUserPersonalInformationUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   domain.ErrUserUnderage.Error(),
 		},
@@ -152,7 +152,7 @@ func TestUpdateUserPersonalInformationController_Handle(t *testing.T) {
 				b.BirthDate = &bd
 				return b
 			}(),
-			setupMock:      func(m *mockApp.MockUpdateUserPersonalInformationUseCase) {},
+			setupMock:      func(_ *mockApp.MockUpdateUserPersonalInformationUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   domain.ErrInvalidBirthDateFormat.Error(),
 		},
@@ -164,7 +164,7 @@ func TestUpdateUserPersonalInformationController_Handle(t *testing.T) {
 				b.FirstName = ""
 				return b
 			}(),
-			setupMock:      func(m *mockApp.MockUpdateUserPersonalInformationUseCase) {},
+			setupMock:      func(_ *mockApp.MockUpdateUserPersonalInformationUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   domain.ErrInvalidFirstName.Error(),
 		},
@@ -176,7 +176,7 @@ func TestUpdateUserPersonalInformationController_Handle(t *testing.T) {
 				b.LastName = ""
 				return b
 			}(),
-			setupMock:      func(m *mockApp.MockUpdateUserPersonalInformationUseCase) {},
+			setupMock:      func(_ *mockApp.MockUpdateUserPersonalInformationUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   domain.ErrInvalidLastName.Error(),
 		},

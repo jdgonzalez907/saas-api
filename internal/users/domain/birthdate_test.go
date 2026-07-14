@@ -1,9 +1,10 @@
 package domain_test
 
 import (
-	"jdgonzalez907/saas-api/internal/users/domain"
 	"testing"
 	"time"
+
+	"jdgonzalez907/saas-api/internal/users/domain"
 )
 
 func TestNewBirthDate(t *testing.T) {

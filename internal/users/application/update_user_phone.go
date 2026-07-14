@@ -24,7 +24,7 @@ func (u *updateUserPhoneUseCase) Execute(ctx context.Context, id int64, phone do
 		return err
 	}
 
-	userFound, err := u.userRepository.FindById(ctx, id)
+	userFound, err := u.userRepository.FindByID(ctx, id)
 	if err != nil {
 		return fmt.Errorf("%v: %w", domain.ErrUpdatingUserPhone, err)
 	}

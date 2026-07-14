@@ -1,13 +1,14 @@
 package domain_test
 
 import (
-	"jdgonzalez907/saas-api/internal/users/domain"
 	"testing"
 	"time"
+
+	"jdgonzalez907/saas-api/internal/users/domain"
 )
 
 func TestPersonalInformation(t *testing.T) {
-	identification, _ := domain.NewIdentification(domain.IdType_CC, "123456")
+	identification, _ := domain.NewIdentification(domain.IDTypeCC, "123456")
 	address, _ := domain.NewAddress("St", "City", "State", "Country", nil, nil)
 	birthDate, _ := domain.NewBirthDate(time.Now().AddDate(-25, 0, 0).Format("2006-01-02"))
 
@@ -98,8 +99,8 @@ func TestPersonalInformation(t *testing.T) {
 }
 
 func TestPersonalInformation_Equals(t *testing.T) {
-	id1, _ := domain.NewIdentification(domain.IdType_CC, "123456")
-	id2, _ := domain.NewIdentification(domain.IdType_PASSPORT, "123456")
+	id1, _ := domain.NewIdentification(domain.IDTypeCC, "123456")
+	id2, _ := domain.NewIdentification(domain.IDTypePASSPORT, "123456")
 	addr1, _ := domain.NewAddress("St1", "City", "State", "Country", nil, nil)
 	addr2, _ := domain.NewAddress("St2", "City", "State", "Country", nil, nil)
 	bd1, _ := domain.NewBirthDate("2000-01-01")
@@ -108,7 +109,7 @@ func TestPersonalInformation_Equals(t *testing.T) {
 	piBase, _ := domain.NewPersonalInformation(id1, "John", "Doe", &addr1, &bd1)
 	piSame, _ := domain.NewPersonalInformation(id1, "John", "Doe", &addr1, &bd1)
 	piDiffName, _ := domain.NewPersonalInformation(id1, "Jane", "Doe", &addr1, &bd1)
-	piDiffId, _ := domain.NewPersonalInformation(id2, "John", "Doe", &addr1, &bd1)
+	piDiffID, _ := domain.NewPersonalInformation(id2, "John", "Doe", &addr1, &bd1)
 	piNilAddr, _ := domain.NewPersonalInformation(id1, "John", "Doe", nil, &bd1)
 	piDiffAddr, _ := domain.NewPersonalInformation(id1, "John", "Doe", &addr2, &bd1)
 	piNilBD, _ := domain.NewPersonalInformation(id1, "John", "Doe", &addr1, nil)
@@ -135,7 +136,7 @@ func TestPersonalInformation_Equals(t *testing.T) {
 		{
 			testName: "fail - different identification",
 			pi1:      piBase,
-			pi2:      piDiffId,
+			pi2:      piDiffID,
 			expected: false,
 		},
 		{

@@ -3,6 +3,7 @@ package application
 import (
 	"context"
 	"fmt"
+
 	"jdgonzalez907/saas-api/internal/users/domain"
 )
 
@@ -23,7 +24,7 @@ func (d *deleteUserUseCase) Execute(ctx context.Context, id int64) error {
 		return err
 	}
 
-	userFound, err := d.userRepository.FindById(ctx, id)
+	userFound, err := d.userRepository.FindByID(ctx, id)
 	if err != nil {
 		return fmt.Errorf("%v: %w", domain.ErrDeletingUser, err)
 	}

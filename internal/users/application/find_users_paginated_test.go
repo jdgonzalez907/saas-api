@@ -6,11 +6,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/mock"
+
 	"jdgonzalez907/saas-api/internal/users/application"
 	"jdgonzalez907/saas-api/internal/users/domain"
 	domainMocks "jdgonzalez907/saas-api/mocks/domain"
-
-	"github.com/stretchr/testify/mock"
 )
 
 func mustNewPagination(lastID *int64, limitVal *int32) domain.Pagination {
@@ -23,7 +23,7 @@ func mustNewPagination(lastID *int64, limitVal *int32) domain.Pagination {
 
 func TestFindUsersPaginatedUseCase(t *testing.T) {
 	now := time.Now()
-	identification, _ := domain.NewIdentification(domain.IdType_CC, "1111")
+	identification, _ := domain.NewIdentification(domain.IDTypeCC, "1111")
 	phone, _ := domain.NewPhone("57", "123456789")
 	email, _ := domain.NewEmail("john.doe@example.com")
 	address, _ := domain.NewAddress("123 Main St", "City", "State", "Country", nil, nil)
@@ -116,9 +116,7 @@ func TestFindUsersPaginatedUseCase(t *testing.T) {
 					t.Fatalf("expected error: %v, got nil", tc.expectedError)
 				}
 				if !errors.Is(err, tc.expectedError) {
-					if tc.expectedError == domain.ErrFindingUsers && errors.Unwrap(err) != nil {
-						// Success: wrapped infra error
-					} else {
+					if !(tc.expectedError == domain.ErrFindingUsers && errors.Unwrap(err) != nil) {
 						t.Errorf("expected error: %v, got %v", tc.expectedError, err)
 					}
 				}

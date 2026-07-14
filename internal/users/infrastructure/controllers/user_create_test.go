@@ -9,12 +9,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+
 	"jdgonzalez907/saas-api/internal/users/domain"
 	"jdgonzalez907/saas-api/internal/users/infrastructure/controllers"
 	mockApp "jdgonzalez907/saas-api/mocks/application"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
 
 func TestCreateUserController_Handle(t *testing.T) {
@@ -28,7 +28,7 @@ func TestCreateUserController_Handle(t *testing.T) {
 			FirstName: "John",
 			LastName:  "Doe",
 			Identification: domain.IdentificationDTO{
-				Type:   domain.IdType_CC,
+				Type:   domain.IDTypeCC,
 				Number: "123456789",
 			},
 			Address: &domain.AddressDTO{
@@ -69,14 +69,14 @@ func TestCreateUserController_Handle(t *testing.T) {
 		{
 			testName:       "fail - invalid json body",
 			requestBody:    "{invalid json}",
-			setupMock:      func(m *mockApp.MockCreateUserUseCase) {},
+			setupMock:      func(_ *mockApp.MockCreateUserUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   controllers.ErrInvalidRequestBody.Error(),
 		},
 		{
 			testName:       "fail - nil/empty body",
 			requestBody:    nil,
-			setupMock:      func(m *mockApp.MockCreateUserUseCase) {},
+			setupMock:      func(_ *mockApp.MockCreateUserUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   controllers.ErrInvalidRequestBody.Error(),
 		},
@@ -87,7 +87,7 @@ func TestCreateUserController_Handle(t *testing.T) {
 				b.Identification.Type = "INVALID"
 				return b
 			}(),
-			setupMock:      func(m *mockApp.MockCreateUserUseCase) {},
+			setupMock:      func(_ *mockApp.MockCreateUserUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   domain.ErrInvalidIdentificationType.Error(),
 		},
@@ -98,7 +98,7 @@ func TestCreateUserController_Handle(t *testing.T) {
 				b.Phone.Number = ""
 				return b
 			}(),
-			setupMock:      func(m *mockApp.MockCreateUserUseCase) {},
+			setupMock:      func(_ *mockApp.MockCreateUserUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   domain.ErrInvalidPhone.Error(),
 		},
@@ -110,7 +110,7 @@ func TestCreateUserController_Handle(t *testing.T) {
 				b.Email = &badEmail
 				return b
 			}(),
-			setupMock:      func(m *mockApp.MockCreateUserUseCase) {},
+			setupMock:      func(_ *mockApp.MockCreateUserUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   domain.ErrInvalidEmail.Error(),
 		},
@@ -126,7 +126,7 @@ func TestCreateUserController_Handle(t *testing.T) {
 				}
 				return b
 			}(),
-			setupMock:      func(m *mockApp.MockCreateUserUseCase) {},
+			setupMock:      func(_ *mockApp.MockCreateUserUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   domain.ErrInvalidStreet.Error(),
 		},
@@ -138,7 +138,7 @@ func TestCreateUserController_Handle(t *testing.T) {
 				b.BirthDate = &bd
 				return b
 			}(),
-			setupMock:      func(m *mockApp.MockCreateUserUseCase) {},
+			setupMock:      func(_ *mockApp.MockCreateUserUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   domain.ErrUserUnderage.Error(),
 		},
@@ -150,7 +150,7 @@ func TestCreateUserController_Handle(t *testing.T) {
 				b.BirthDate = &bd
 				return b
 			}(),
-			setupMock:      func(m *mockApp.MockCreateUserUseCase) {},
+			setupMock:      func(_ *mockApp.MockCreateUserUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   domain.ErrInvalidBirthDateFormat.Error(),
 		},
@@ -161,7 +161,7 @@ func TestCreateUserController_Handle(t *testing.T) {
 				b.FirstName = ""
 				return b
 			}(),
-			setupMock:      func(m *mockApp.MockCreateUserUseCase) {},
+			setupMock:      func(_ *mockApp.MockCreateUserUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   domain.ErrInvalidFirstName.Error(),
 		},
