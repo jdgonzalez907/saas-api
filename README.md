@@ -1,6 +1,6 @@
-# users-api
+# saas-api
 
-API REST de gestión de usuarios construida con Go, siguiendo principios de Clean Architecture y Domain-Driven Design (DDD).
+API REST multimodular de SaaS construida con Go, siguiendo principios de Clean Architecture y Domain-Driven Design (DDD).
 
 ## Tecnologías
 
@@ -22,7 +22,7 @@ API REST de gestión de usuarios construida con Go, siguiendo principios de Clea
 ## Arquitectura del Proyecto
 
 ```
-users-api/
+saas-api/
 ├── cmd/
 │   └── api/
 │       └── main.go                  # Punto de entrada

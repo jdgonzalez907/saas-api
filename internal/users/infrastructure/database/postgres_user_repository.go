@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	"jdgonzalez907/saas-api/internal/users/domain"
-	"jdgonzalez907/saas-api/internal/users/infrastructure/database/sqlc"
+	"jdgonzalez907/saas-api/internal/postgres"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -15,13 +15,13 @@ import (
 )
 
 type PostgresUserRepository struct {
-	queries *sqlc.Queries
+	queries *postgres.Queries
 	pool    *pgxpool.Pool
 }
 
 func NewPostgresUserRepository(pool *pgxpool.Pool) *PostgresUserRepository {
 	return &PostgresUserRepository{
-		queries: sqlc.New(pool),
+		queries: postgres.New(pool),
 		pool:    pool,
 	}
 }
@@ -43,7 +43,7 @@ func (r *PostgresUserRepository) FindById(ctx context.Context, id int64) (*domai
 }
 
 func (r *PostgresUserRepository) FindByPhone(ctx context.Context, phone domain.Phone) (*domain.User, error) {
-	row, err := r.queries.FindUserByPhone(ctx, sqlc.FindUserByPhoneParams{
+	row, err := r.queries.FindUserByPhone(ctx, postgres.FindUserByPhoneParams{
 		PhoneCountryCode: phone.CountryCode(),
 		PhoneNumber:      phone.Number(),
 	})
@@ -82,11 +82,11 @@ func (r *PostgresUserRepository) FindByEmail(ctx context.Context, email domain.E
 
 func (r *PostgresUserRepository) FindAll(ctx context.Context, pagination domain.Pagination) ([]*domain.User, error) {
 	limit := pagination.Limit()
-	var dbRows []sqlc.FindUsersPaginatedWithCursorRow
+	var dbRows []postgres.FindUsersPaginatedWithCursorRow
 
 	if pagination.LastID() != nil {
 		var err error
-		dbRows, err = r.queries.FindUsersPaginatedWithCursor(ctx, sqlc.FindUsersPaginatedWithCursorParams{
+		dbRows, err = r.queries.FindUsersPaginatedWithCursor(ctx, postgres.FindUsersPaginatedWithCursorParams{
 			ID:    *pagination.LastID(),
 			Limit: limit,
 		})
@@ -98,9 +98,9 @@ func (r *PostgresUserRepository) FindAll(ctx context.Context, pagination domain.
 		if err != nil {
 			return nil, err
 		}
-		dbRows = make([]sqlc.FindUsersPaginatedWithCursorRow, len(rows))
+		dbRows = make([]postgres.FindUsersPaginatedWithCursorRow, len(rows))
 		for i, row := range rows {
-			dbRows[i] = sqlc.FindUsersPaginatedWithCursorRow(row)
+			dbRows[i] = postgres.FindUsersPaginatedWithCursorRow(row)
 		}
 	}
 
@@ -125,7 +125,7 @@ func (r *PostgresUserRepository) Create(ctx context.Context, user *domain.User) 
 		return err
 	}
 
-	id, err := r.queries.CreateUser(ctx, sqlc.CreateUserParams{
+	id, err := r.queries.CreateUser(ctx, postgres.CreateUserParams{
 		IdentificationType:   string(user.Identification().Type()),
 		IdentificationNumber: user.Identification().Number(),
 		FirstName:            user.FirstName(),
@@ -152,7 +152,7 @@ func (r *PostgresUserRepository) Update(ctx context.Context, user *domain.User) 
 		return err
 	}
 
-	return r.queries.UpdateUser(ctx, sqlc.UpdateUserParams{
+	return r.queries.UpdateUser(ctx, postgres.UpdateUserParams{
 		IdentificationType:   string(user.Identification().Type()),
 		IdentificationNumber: user.Identification().Number(),
 		FirstName:            user.FirstName(),
