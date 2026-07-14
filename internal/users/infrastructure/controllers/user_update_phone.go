@@ -3,9 +3,9 @@ package controllers
 import (
 	"net/http"
 
+	sharedHttp "jdgonzalez907/saas-api/internal/shared/http"
 	"jdgonzalez907/saas-api/internal/users/application"
 	"jdgonzalez907/saas-api/internal/users/domain"
-	sharedHttp "jdgonzalez907/saas-api/internal/shared/http"
 )
 
 type UpdateUserPhoneController struct {

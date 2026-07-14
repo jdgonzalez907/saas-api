@@ -3,8 +3,8 @@ package controllers
 import (
 	"net/http"
 
-	"jdgonzalez907/saas-api/internal/users/application"
 	sharedHttp "jdgonzalez907/saas-api/internal/shared/http"
+	"jdgonzalez907/saas-api/internal/users/application"
 )
 
 type FindUserByIDController struct {

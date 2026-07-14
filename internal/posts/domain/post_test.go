@@ -797,4 +797,3 @@ func TestPost_AssignID(t *testing.T) {
 		t.Errorf("expected ID to be 42 after AssignID, got %d", post.ID())
 	}
 }
-

@@ -21,7 +21,7 @@ var (
 	ErrInvalidLastEditorID              = errors.New("invalid editor identification")
 	ErrDraftCannotHavePublicationDate   = errors.New("a draft post cannot have a publication date")
 	ErrPublishedMustHavePublicationDate = errors.New("a published post must have a publication date")
-	ErrPostNotFound                    = errors.New("the requested post was not found")
+	ErrPostNotFound                     = errors.New("the requested post was not found")
 	ErrCreatingPost                     = errors.New("error creating post")
 	ErrFindingPost                      = errors.New("error finding post")
 	ErrUpdatingPost                     = errors.New("error updating post")

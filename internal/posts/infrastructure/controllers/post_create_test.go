@@ -40,8 +40,8 @@ func TestCreatePostController_Handle(t *testing.T) {
 		expectedBody   string
 	}{
 		{
-			testName:   "success - post created",
-			authUserID: int64(1),
+			testName:    "success - post created",
+			authUserID:  int64(1),
 			requestBody: validBody,
 			setupMock: func(m *mockApp.MockCreatePostUseCase) {
 				m.EXPECT().Execute(mock.Anything, mock.MatchedBy(func(p *domain.Post) bool {
@@ -94,16 +94,16 @@ func TestCreatePostController_Handle(t *testing.T) {
 			expectedBody:   domain.ErrInvalidPostStatus.Error(),
 		},
 		{
-			testName:    "fail - invalid author ID",
-			authUserID:  int64(0),
-			requestBody: validBody,
-			setupMock:   func(_ *mockApp.MockCreatePostUseCase) {},
+			testName:       "fail - invalid author ID",
+			authUserID:     int64(0),
+			requestBody:    validBody,
+			setupMock:      func(_ *mockApp.MockCreatePostUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   domain.ErrInvalidAuthorID.Error(),
 		},
 		{
-			testName:   "fail - usecase execution error",
-			authUserID: int64(1),
+			testName:    "fail - usecase execution error",
+			authUserID:  int64(1),
 			requestBody: validBody,
 			setupMock: func(m *mockApp.MockCreatePostUseCase) {
 				m.EXPECT().Execute(mock.Anything, mock.Anything).Return(errors.New("db insert failed"))

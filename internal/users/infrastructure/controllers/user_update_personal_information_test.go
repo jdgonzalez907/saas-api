@@ -14,9 +14,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
+	sharedHttp "jdgonzalez907/saas-api/internal/shared/http"
 	"jdgonzalez907/saas-api/internal/users/domain"
 	"jdgonzalez907/saas-api/internal/users/infrastructure/controllers"
-	sharedHttp "jdgonzalez907/saas-api/internal/shared/http"
 	mockApp "jdgonzalez907/saas-api/mocks/application"
 )
 
