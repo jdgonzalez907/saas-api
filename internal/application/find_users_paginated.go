@@ -27,7 +27,7 @@ func (u *findUsersPaginatedUseCase) Execute(ctx context.Context, pagination doma
 		return domain.PaginatedUsers{}, fmt.Errorf("%v: %w", domain.ErrFindingUsers, err)
 	}
 
-	var nextCursor *int
+	var nextCursor *int64
 	if len(users) > 0 {
 		nextCursorVal := users[len(users)-1].ID()
 		nextCursor = &nextCursorVal

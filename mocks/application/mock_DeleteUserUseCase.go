@@ -22,7 +22,7 @@ func (_m *MockDeleteUserUseCase) EXPECT() *MockDeleteUserUseCase_Expecter {
 }
 
 // Execute provides a mock function with given fields: ctx, id
-func (_m *MockDeleteUserUseCase) Execute(ctx context.Context, id int) error {
+func (_m *MockDeleteUserUseCase) Execute(ctx context.Context, id int64) error {
 	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
@@ -30,7 +30,7 @@ func (_m *MockDeleteUserUseCase) Execute(ctx context.Context, id int) error {
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int64) error); ok {
 		r0 = rf(ctx, id)
 	} else {
 		r0 = ret.Error(0)
@@ -46,14 +46,14 @@ type MockDeleteUserUseCase_Execute_Call struct {
 
 // Execute is a helper method to define mock.On call
 //   - ctx context.Context
-//   - id int
+//   - id int64
 func (_e *MockDeleteUserUseCase_Expecter) Execute(ctx interface{}, id interface{}) *MockDeleteUserUseCase_Execute_Call {
 	return &MockDeleteUserUseCase_Execute_Call{Call: _e.mock.On("Execute", ctx, id)}
 }
 
-func (_c *MockDeleteUserUseCase_Execute_Call) Run(run func(ctx context.Context, id int)) *MockDeleteUserUseCase_Execute_Call {
+func (_c *MockDeleteUserUseCase_Execute_Call) Run(run func(ctx context.Context, id int64)) *MockDeleteUserUseCase_Execute_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(int))
+		run(args[0].(context.Context), args[1].(int64))
 	})
 	return _c
 }
@@ -63,7 +63,7 @@ func (_c *MockDeleteUserUseCase_Execute_Call) Return(_a0 error) *MockDeleteUserU
 	return _c
 }
 
-func (_c *MockDeleteUserUseCase_Execute_Call) RunAndReturn(run func(context.Context, int) error) *MockDeleteUserUseCase_Execute_Call {
+func (_c *MockDeleteUserUseCase_Execute_Call) RunAndReturn(run func(context.Context, int64) error) *MockDeleteUserUseCase_Execute_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -8,7 +8,7 @@ import (
 )
 
 type UpdateUserEmailUseCase interface {
-	Execute(ctx context.Context, id int, email *domain.Email) error
+	Execute(ctx context.Context, id int64, email *domain.Email) error
 }
 
 type updateUserEmailUseCase struct {
@@ -19,7 +19,7 @@ func NewUpdateUserEmailUseCase(userRepository domain.UserRepository) UpdateUserE
 	return &updateUserEmailUseCase{userRepository: userRepository}
 }
 
-func (u *updateUserEmailUseCase) Execute(ctx context.Context, id int, email *domain.Email) error {
+func (u *updateUserEmailUseCase) Execute(ctx context.Context, id int64, email *domain.Email) error {
 	if err := domain.ValidateAssignedUserID(id); err != nil {
 		return err
 	}

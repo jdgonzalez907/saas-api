@@ -26,8 +26,8 @@ func NewPostgresUserRepository(pool *pgxpool.Pool) *PostgresUserRepository {
 	}
 }
 
-func (r *PostgresUserRepository) FindById(ctx context.Context, id int) (*domain.User, error) {
-	row, err := r.queries.FindUserByID(ctx, int64(id))
+func (r *PostgresUserRepository) FindById(ctx context.Context, id int64) (*domain.User, error) {
+	row, err := r.queries.FindUserByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
@@ -81,13 +81,13 @@ func (r *PostgresUserRepository) FindByEmail(ctx context.Context, email domain.E
 }
 
 func (r *PostgresUserRepository) FindAll(ctx context.Context, pagination domain.Pagination) ([]*domain.User, error) {
-	limit := int32(pagination.Limit())
+	limit := pagination.Limit()
 	var dbRows []sqlc.FindUsersPaginatedWithCursorRow
 
 	if pagination.LastID() != nil {
 		var err error
 		dbRows, err = r.queries.FindUsersPaginatedWithCursor(ctx, sqlc.FindUsersPaginatedWithCursorParams{
-			ID:    int64(*pagination.LastID()),
+			ID:    *pagination.LastID(),
 			Limit: limit,
 		})
 		if err != nil {
@@ -142,7 +142,7 @@ func (r *PostgresUserRepository) Create(ctx context.Context, user *domain.User) 
 		return err
 	}
 
-	user.AssignID(int(id))
+	user.AssignID(id)
 	return nil
 }
 
@@ -163,12 +163,12 @@ func (r *PostgresUserRepository) Update(ctx context.Context, user *domain.User) 
 		PhoneNumber:          user.Phone().Number(),
 		Email:                toPgText(user.Email()),
 		UpdatedAt:            pgtype.Timestamptz{Time: user.UpdatedAt(), Valid: true},
-		ID:                   int64(user.ID()),
+		ID:                   user.ID(),
 	})
 }
 
-func (r *PostgresUserRepository) Delete(ctx context.Context, id int) error {
-	return r.queries.DeleteUser(ctx, int64(id))
+func (r *PostgresUserRepository) Delete(ctx context.Context, id int64) error {
+	return r.queries.DeleteUser(ctx, id)
 }
 
 func toPgDate(bd *domain.BirthDate) pgtype.Date {
@@ -256,7 +256,7 @@ func mapToDomain(
 	}
 
 	return domain.NewUser(domain.UserParams{
-		ID:                  int(id),
+		ID:                  id,
 		PersonalInformation: personalInfo,
 		Phone:               phone,
 		Email:               emailVO,
