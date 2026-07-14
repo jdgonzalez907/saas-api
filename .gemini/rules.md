@@ -1,6 +1,6 @@
 # Reglas de Desarrollo y Buenas Prácticas (AI Agent Guidelines)
 
-Este documento sirve como la fuente de verdad (Skill / Rules) para que cualquier inteligencia artificial o desarrollador que trabaje en este repositorio (`users-api`) mantenga la consistencia arquitectónica, patrones de diseño, y estándares de pruebas del proyecto.
+Este documento sirve como la fuente de verdad (Skill / Rules) para que cualquier inteligencia artificial o desarrollador que trabaje en este repositorio (`saas-api`) mantenga la consistencia arquitectónica, patrones de diseño, y estándares de pruebas del proyecto.
 
 ---
 
@@ -57,7 +57,7 @@ Cada caso de uso en la capa de aplicación debe seguir una estructura estricta y
   - `"success - [descripción corta del éxito]"`
   - `"fail - [descripción corta del error/falla]"`
 - **Mocking**: Utilizar `mockery` para la generación automática de mocks. Los mocks deben estar ubicados bajo la carpeta `mocks/`.
-- **Cobertura de Código**: Se requiere obligatoriamente una cobertura del **100.0% de sentencias** (statement coverage) para todos los paquetes de negocio y de infraestructura bajo el directorio `internal/` (incluyendo `internal/domain`, `internal/application` e `internal/infrastructure/controllers`).
+- **Cobertura de Código**: Se requiere obligatoriamente una cobertura del **100.0% de sentencias** (statement coverage) para todos los paquetes de negocio y de infraestructura bajo el directorio `internal/` (incluyendo `internal/<modulo>/domain`, `internal/<modulo>/application` e `internal/<modulo>/infrastructure/controllers`).
 - **Prohibición de Reflexión (No Reflection)**: Está estrictamente prohibido usar el paquete `reflect` o funciones como `reflect.DeepEqual` en las pruebas unitarias. Las validaciones de aserción e igualdad de entidades y value objects deben realizarse de forma explícita y manual, campo por campo. Ante campos opcionales o punteros, se debe validar si son diferentes de `nil` y, de ser así, verificar sus campos internos individualmente. Esto asegura claridad, legibilidad y facilidad de depuración.
 - **Nombres de Variables con Intención**: Queda prohibido el uso de nombres de variables genéricos, numerados o confusos (`x1`, `x2`, `user1`, `user2`, etc.) en los archivos de pruebas. Las variables deben ser nombradas con nombres que demuestren claramente su intención (ej. `firstUser`, `secondUser`, `personalInfo`, `badEmail`).
 - **Verificación**: Ejecutar la validación con:
@@ -83,7 +83,7 @@ Cada cambio y nueva funcionalidad debe apegarse estrictamente al siguiente flujo
 
 ---
 
-## 5. Capa de Controllers HTTP (`internal/infrastructure/controllers`)
+## 5. Capa de Controllers HTTP (`internal/<modulo>/infrastructure/controllers`)
 
 Cada controller HTTP debe seguir una estructura estricta y limpia:
 - **Router**: Configurado en `router.go` usando `go-chi/chi/v5`. Middlewares globales registrados en orden: `RequestID` → `Logger` → `Recoverer` → `JSONContentTypeMiddleware`. No usar `RealIP` (deprecated).
@@ -134,7 +134,7 @@ Cada controller HTTP debe seguir una estructura estricta y limpia:
   - `migrate` tiene `restart: "no"` porque es una tarea de una sola ejecución. Si falla, se investiga y se vuelve a correr manualmente.
   - `api` solo arranca si `migrate` completó exitosamente (`service_completed_successfully`).
 - **Variables de entorno**: Definidas en `.env` (ignorado por git). Usar `.env.example` como plantilla. La aplicación las lee con `github.com/caarlos0/env/v11`.
-- **Config de la aplicación**: Vive en `internal/infrastructure/boostrap.go`. `DATABASE_URL` es requerida; `HTTP_PORT` tiene default `8080`.
+- **Config de la aplicación**: Vive en `internal/configuration/boostrap.go`. `DATABASE_URL` es requerida; `HTTP_PORT` tiene default `8080`.
 
 ---
 
