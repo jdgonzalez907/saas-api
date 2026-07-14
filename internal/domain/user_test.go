@@ -45,6 +45,12 @@ func TestNewUser(t *testing.T) {
 			info:          personalInfo,
 			expectedError: domain.ErrInvalidUserID,
 		},
+		{
+			testName:      "fail - invalid id equal to 0",
+			id:            0,
+			info:          personalInfo,
+			expectedError: domain.ErrInvalidUserID,
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -493,5 +499,38 @@ func TestUserGetters(t *testing.T) {
 		if *infoDTO.BirthDate != *expectedInfoDTO.BirthDate {
 			t.Errorf("expected BirthDate value to match")
 		}
+	}
+}
+
+func TestValidateAssignedUserID(t *testing.T) {
+	testCases := []struct {
+		name          string
+		id            int
+		expectedError error
+	}{
+		{
+			name:          "success - valid id",
+			id:            1,
+			expectedError: nil,
+		},
+		{
+			name:          "fail - unassigned id",
+			id:            0,
+			expectedError: domain.ErrInvalidUserID,
+		},
+		{
+			name:          "fail - negative id",
+			id:            -1,
+			expectedError: domain.ErrInvalidUserID,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := domain.ValidateAssignedUserID(tc.id)
+			if err != tc.expectedError {
+				t.Errorf("expected error %v, got %v", tc.expectedError, err)
+			}
+		})
 	}
 }

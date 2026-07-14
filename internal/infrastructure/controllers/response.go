@@ -8,6 +8,8 @@ import (
 	"jdgonzalez907/users-api/internal/domain"
 )
 
+const InternalServerErrorMessage = "internal server error"
+
 type ErrorResponse struct {
 	Message string `json:"message"`
 }
@@ -19,20 +21,23 @@ var domainErrorStatus = map[error]int{
 	domain.ErrUserPhoneAlreadyExists: http.StatusConflict,
 	domain.ErrUserEmailAlreadyExists: http.StatusConflict,
 
-	domain.ErrInvalidUserID:                http.StatusBadRequest,
-	domain.ErrInvalidFirstName:             http.StatusBadRequest,
-	domain.ErrInvalidLastName:              http.StatusBadRequest,
-	domain.ErrInvalidPhone:                 http.StatusBadRequest,
-	domain.ErrInvalidEmail:                 http.StatusBadRequest,
-	domain.ErrUserUnderage:                 http.StatusBadRequest,
-	domain.ErrInvalidBirthDateFormat:       http.StatusBadRequest,
-	domain.ErrInvalidIdentificationType:    http.StatusBadRequest,
-	domain.ErrInvalidStreet:                http.StatusBadRequest,
-	domain.ErrInvalidCity:                  http.StatusBadRequest,
-	domain.ErrInvalidState:                 http.StatusBadRequest,
-	domain.ErrInvalidCountry:               http.StatusBadRequest,
-	domain.ErrInvalidPostalCode:            http.StatusBadRequest,
-	domain.ErrInvalidDescription:           http.StatusBadRequest,
+	domain.ErrInvalidUserID:             http.StatusBadRequest,
+	domain.ErrInvalidFirstName:          http.StatusBadRequest,
+	domain.ErrInvalidLastName:           http.StatusBadRequest,
+	domain.ErrInvalidPhone:              http.StatusBadRequest,
+	domain.ErrInvalidEmail:              http.StatusBadRequest,
+	domain.ErrUserUnderage:              http.StatusBadRequest,
+	domain.ErrInvalidBirthDateFormat:    http.StatusBadRequest,
+	domain.ErrInvalidIdentificationType:   http.StatusBadRequest,
+	domain.ErrInvalidIdentificationNumber: http.StatusBadRequest,
+	domain.ErrInvalidStreet:             http.StatusBadRequest,
+	domain.ErrInvalidCity:               http.StatusBadRequest,
+	domain.ErrInvalidState:              http.StatusBadRequest,
+	domain.ErrInvalidCountry:            http.StatusBadRequest,
+	domain.ErrInvalidPostalCode:         http.StatusBadRequest,
+	domain.ErrInvalidDescription:        http.StatusBadRequest,
+	domain.ErrInvalidPaginationLimit:    http.StatusBadRequest,
+	domain.ErrInvalidPaginationCursor:   http.StatusBadRequest,
 
 	domain.ErrCreatingUser:                    http.StatusInternalServerError,
 	domain.ErrUpdatingUserPersonalInformation: http.StatusInternalServerError,
@@ -48,12 +53,12 @@ func statusFromDomainError(err error) (int, string) {
 		if errors.Is(err, domainErr) {
 			msg := domainErr.Error()
 			if status == http.StatusInternalServerError {
-				msg = "internal server error"
+				msg = InternalServerErrorMessage
 			}
 			return status, msg
 		}
 	}
-	return http.StatusInternalServerError, "internal server error"
+	return http.StatusInternalServerError, InternalServerErrorMessage
 }
 
 func RespondWithJSON(w http.ResponseWriter, status int, data any) {
@@ -68,7 +73,10 @@ func RespondWithError(w http.ResponseWriter, status int, message string) {
 	RespondWithJSON(w, status, ErrorResponse{Message: message})
 }
 
-func RespondWithDomainError(w http.ResponseWriter, err error) {
+func RespondWithDomainError(w http.ResponseWriter, r *http.Request, err error) {
 	status, msg := statusFromDomainError(err)
+	if holder, ok := r.Context().Value(errorHolderKey).(*ErrorHolder); ok {
+		holder.Err = err
+	}
 	RespondWithError(w, status, msg)
 }

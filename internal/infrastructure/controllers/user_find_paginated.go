@@ -30,16 +30,15 @@ func (c *FindUsersPaginatedController) Handle(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	limitVal := 0
-	if limitPtr != nil {
-		limitVal = *limitPtr
+	pagination, err := domain.NewPagination(cursorPtr, limitPtr)
+	if err != nil {
+		RespondWithDomainError(w, r, err)
+		return
 	}
-
-	pagination := domain.NewPagination(cursorPtr, limitVal)
 
 	paginatedUsers, err := c.useCase.Execute(r.Context(), pagination)
 	if err != nil {
-		RespondWithDomainError(w, err)
+		RespondWithDomainError(w, r, err)
 		return
 	}
 

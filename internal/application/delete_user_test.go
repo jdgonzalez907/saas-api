@@ -57,6 +57,14 @@ func TestDeleteUserUseCase(t *testing.T) {
 			expectedError: nil,
 		},
 		{
+			testName: "fail - invalid user id",
+			inputID:  0,
+			mockExpectations: func(m *domainMocks.MockUserRepository) {
+				// No expectations
+			},
+			expectedError: domain.ErrInvalidUserID,
+		},
+		{
 			testName: "fail - user not found",
 			inputID:  userID,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
