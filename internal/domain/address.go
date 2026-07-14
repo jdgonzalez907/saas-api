@@ -59,6 +59,25 @@ type AddressDTO struct {
 	Description *string `json:"description"`
 }
 
+func (a Address) Equals(other Address) bool {
+	if a.street != other.street || a.city != other.city || a.state != other.state || a.country != other.country {
+		return false
+	}
+	if (a.postalCode == nil) != (other.postalCode == nil) {
+		return false
+	}
+	if a.postalCode != nil && *a.postalCode != *other.postalCode {
+		return false
+	}
+	if (a.description == nil) != (other.description == nil) {
+		return false
+	}
+	if a.description != nil && *a.description != *other.description {
+		return false
+	}
+	return true
+}
+
 func (a Address) ToDTO() AddressDTO {
 	return AddressDTO{
 		Street:      a.street,

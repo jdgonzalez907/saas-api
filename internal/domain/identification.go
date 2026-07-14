@@ -36,6 +36,10 @@ type IdentificationDTO struct {
 	Number string             `json:"number"`
 }
 
+func (id Identification) Equals(other Identification) bool {
+	return id.idType == other.idType && id.number == other.number
+}
+
 func (id Identification) ToDTO() IdentificationDTO {
 	return IdentificationDTO{
 		Type:   id.idType,

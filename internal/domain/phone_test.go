@@ -64,18 +64,43 @@ func TestNewPhone(t *testing.T) {
 }
 
 func TestPhone_Equals(t *testing.T) {
-	phone1, _ := domain.NewPhone("57", "3001234567")
-	phone2, _ := domain.NewPhone("57", "3001234567")
-	phone3, _ := domain.NewPhone("1", "3001234567")
-	phone4, _ := domain.NewPhone("57", "3009999999")
+	phoneBase, _ := domain.NewPhone("57", "3001234567")
+	phoneSame, _ := domain.NewPhone("57", "3001234567")
+	phoneDiffCC, _ := domain.NewPhone("1", "3001234567")
+	phoneDiffNum, _ := domain.NewPhone("57", "3009999999")
 
-	if !phone1.Equals(phone2) {
-		t.Error("expected phone1 to equal phone2")
+	testCases := []struct {
+		testName string
+		phone1   domain.Phone
+		phone2   domain.Phone
+		expected bool
+	}{
+		{
+			testName: "success - identical phones",
+			phone1:   phoneBase,
+			phone2:   phoneSame,
+			expected: true,
+		},
+		{
+			testName: "fail - different country code",
+			phone1:   phoneBase,
+			phone2:   phoneDiffCC,
+			expected: false,
+		},
+		{
+			testName: "fail - different number",
+			phone1:   phoneBase,
+			phone2:   phoneDiffNum,
+			expected: false,
+		},
 	}
-	if phone1.Equals(phone3) {
-		t.Error("expected phone1 not to equal phone3")
-	}
-	if phone1.Equals(phone4) {
-		t.Error("expected phone1 not to equal phone4")
+
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := tc.phone1.Equals(tc.phone2)
+			if result != tc.expected {
+				t.Errorf("expected %v, got %v", tc.expected, result)
+			}
+		})
 	}
 }
