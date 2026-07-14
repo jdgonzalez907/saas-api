@@ -30,15 +30,19 @@ saas-api/
 │   ├── migrations/                  # Migraciones SQL (golang-migrate)
 │   └── queries/                     # Queries SQL (sqlc)
 ├── internal/
-│   ├── domain/                      # Entidades, Value Objects, interfaces de repositorio, errores de dominio
-│   ├── application/                 # Casos de uso (interfaces + implementaciones)
-│   └── infrastructure/
-│       ├── boostrap.go              # Wiring de la aplicación y configuración
-│       ├── controllers/             # Handlers HTTP, router, middlewares, helpers de request/response
-│       └── database/
-│           ├── connection.go        # Pool de conexiones pgxpool
-│           ├── postgres_user_repository.go
-│           └── sqlc/                # Código generado por sqlc (NO editar manualmente)
+│   ├── configuration/               # Wiring de la aplicación y pools de conexión
+│   │   ├── boostrap.go
+│   │   └── connection.go
+│   ├── postgres/                    # Código autogenerado por sqlc
+│   │   ├── db.go
+│   │   ├── models.go
+│   │   └── users.sql.go
+│   └── users/                       # Módulo de usuarios
+│       ├── domain/                  # Entidades, Value Objects, interfaces de repositorio, errores de dominio
+│       ├── application/             # Casos de uso (interfaces + implementaciones)
+│       └── infrastructure/
+│           ├── controllers/         # Handlers HTTP, router, middlewares, helpers de request/response
+│           └── database/            # Implementación concreta del repositorio de usuarios
 ├── mocks/                           # Mocks generados por mockery (NO editar manualmente)
 │   ├── application/
 │   └── domain/
@@ -62,9 +66,11 @@ HTTP Request
                [infrastructure/database]  →  PostgreSQL
 ```
 
-- **`domain`**: Núcleo del negocio. Sin dependencias externas. Define entidades (`User`), Value Objects (`Phone`, `Email`, `BirthDate`, etc.), la interfaz `UserRepository` y los errores de dominio.
-- **`application`**: Casos de uso. Solo depende de `domain`. Nunca importa paquetes de infraestructura.
-- **`infrastructure`**: Detalles de implementación. Implementa la interfaz del repositorio, configura el router HTTP y hace el wiring de dependencias en `boostrap.go`.
+- **`domain`** (`internal/users/domain`): Núcleo del negocio. Sin dependencias externas. Define entidades (`User`), Value Objects (`Phone`, `Email`, `BirthDate`, etc.), la interfaz `UserRepository` y los errores de dominio.
+- **`application`** (`internal/users/application`): Casos de uso. Solo depende de `domain`. Nunca importa paquetes de infraestructura.
+- **`infrastructure`** (`internal/users/infrastructure`): Detalles de implementación. `database` implementa la interfaz del repositorio y `controllers` configura los handlers y router HTTP.
+- **`configuration`** (`internal/configuration`): Hace el wiring de dependencias en `boostrap.go` e inicializa el pool de conexiones.
+
 
 ### Decisiones de Diseño
 
@@ -305,7 +311,7 @@ go test ./...
 go test -coverprofile=coverage.out ./internal/... && go tool cover -func=coverage.out
 ```
 
-La cobertura mínima requerida es **100% de sentencias** en `internal/domain`, `internal/application` e `internal/infrastructure/controllers`.
+La cobertura mínima requerida es **100% de sentencias** en `internal/users/domain`, `internal/users/application` e `internal/users/infrastructure/controllers`.
 
 ---
 
