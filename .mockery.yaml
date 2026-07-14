@@ -7,9 +7,9 @@ disable-version-string: true
 issue-845-fix: true
 
 packages:
-  jdgonzalez907/users-api/internal/domain:
+  jdgonzalez907/saas-api/users/internal/domain:
     config:
       all: true
-  jdgonzalez907/users-api/internal/application:
+  jdgonzalez907/saas-api/users/internal/application:
     config:
       all: true
