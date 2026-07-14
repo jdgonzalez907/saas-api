@@ -68,6 +68,15 @@ func TestUpdateUserPersonalInformationUseCase(t *testing.T) {
 			expectedError: nil,
 		},
 		{
+			testName: "success - no changes to personal info",
+			id:       userID,
+			info:     existingPersonalInfo,
+			mockExpectations: func(m *domainMocks.MockUserRepository) {
+				m.On("FindById", mock.Anything, userID).Return(existingUser, nil)
+			},
+			expectedError: nil,
+		},
+		{
 			testName: "fail - user not found",
 			id:       userID,
 			info:     personalInfo,

@@ -29,6 +29,10 @@ func (u *updateUserPersonalInformationUseCase) Execute(ctx context.Context, id i
 		return domain.ErrUserNotFound
 	}
 
+	if info.Equals(userFound.PersonalInformation()) {
+		return nil
+	}
+
 	updatedUser := userFound.WithPersonalInformation(info)
 
 	err = u.userRepository.Update(ctx, updatedUser)

@@ -97,3 +97,80 @@ func TestPersonalInformation(t *testing.T) {
 		})
 	}
 }
+
+func TestPersonalInformation_Equals(t *testing.T) {
+	id1, _ := domain.NewIdentification(domain.IdType_CC, "123456")
+	id2, _ := domain.NewIdentification(domain.IdType_PASSPORT, "123456")
+	addr1, _ := domain.NewAddress("St1", "City", "State", "Country", nil, nil)
+	addr2, _ := domain.NewAddress("St2", "City", "State", "Country", nil, nil)
+	bd1, _ := domain.NewBirthDate("2000-01-01")
+	bd2, _ := domain.NewBirthDate("1999-01-01")
+
+	piBase, _ := domain.NewPersonalInformation(id1, "John", "Doe", &addr1, &bd1)
+	piSame, _ := domain.NewPersonalInformation(id1, "John", "Doe", &addr1, &bd1)
+	piDiffName, _ := domain.NewPersonalInformation(id1, "Jane", "Doe", &addr1, &bd1)
+	piDiffId, _ := domain.NewPersonalInformation(id2, "John", "Doe", &addr1, &bd1)
+	piNilAddr, _ := domain.NewPersonalInformation(id1, "John", "Doe", nil, &bd1)
+	piDiffAddr, _ := domain.NewPersonalInformation(id1, "John", "Doe", &addr2, &bd1)
+	piNilBD, _ := domain.NewPersonalInformation(id1, "John", "Doe", &addr1, nil)
+	piDiffBD, _ := domain.NewPersonalInformation(id1, "John", "Doe", &addr1, &bd2)
+
+	testCases := []struct {
+		testName string
+		pi1      domain.PersonalInformation
+		pi2      domain.PersonalInformation
+		expected bool
+	}{
+		{
+			testName: "success - identical personal info",
+			pi1:      piBase,
+			pi2:      piSame,
+			expected: true,
+		},
+		{
+			testName: "fail - different first name",
+			pi1:      piBase,
+			pi2:      piDiffName,
+			expected: false,
+		},
+		{
+			testName: "fail - different identification",
+			pi1:      piBase,
+			pi2:      piDiffId,
+			expected: false,
+		},
+		{
+			testName: "fail - nil address vs non-nil",
+			pi1:      piBase,
+			pi2:      piNilAddr,
+			expected: false,
+		},
+		{
+			testName: "fail - different address",
+			pi1:      piBase,
+			pi2:      piDiffAddr,
+			expected: false,
+		},
+		{
+			testName: "fail - nil birth date vs non-nil",
+			pi1:      piBase,
+			pi2:      piNilBD,
+			expected: false,
+		},
+		{
+			testName: "fail - different birth date",
+			pi1:      piBase,
+			pi2:      piDiffBD,
+			expected: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := tc.pi1.Equals(tc.pi2)
+			if result != tc.expected {
+				t.Errorf("expected %v, got %v", tc.expected, result)
+			}
+		})
+	}
+}
