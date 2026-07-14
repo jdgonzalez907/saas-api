@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 
 	"jdgonzalez907/saas-api/internal/posts/domain"
 	"jdgonzalez907/saas-api/internal/posts/infrastructure/controllers"
+	sharedHttp "jdgonzalez907/saas-api/internal/shared/http"
 	mockApp "jdgonzalez907/saas-api/mocks/application"
 )
 
@@ -36,14 +38,16 @@ func TestFindPostsPaginatedController_Handle(t *testing.T) {
 
 	testCases := []struct {
 		testName       string
+		authUserID     any
 		urlQuery       string
 		setupMock      func(m *mockApp.MockFindPostsPaginatedUseCase)
 		expectedStatus int
 		expectedBody   string
 	}{
 		{
-			testName: "success - default pagination",
-			urlQuery: "?status=published",
+			testName:   "success - default pagination",
+			authUserID: int64(1),
+			urlQuery:   "?status=published",
 			setupMock: func(m *mockApp.MockFindPostsPaginatedUseCase) {
 				m.EXPECT().Execute(mock.Anything, domain.StatusPublished, mock.MatchedBy(func(p domain.Pagination) bool {
 					return p.LastID() == nil && p.LastPublishedAt() == nil && p.Limit() == 10
@@ -53,8 +57,9 @@ func TestFindPostsPaginatedController_Handle(t *testing.T) {
 			expectedBody:   `"posts"`,
 		},
 		{
-			testName: "success - with cursor and limit",
-			urlQuery: "?status=published&limit=25&lastID=5&lastPublishedAt=2026-07-14T19:00:00Z",
+			testName:   "success - with cursor and limit",
+			authUserID: int64(1),
+			urlQuery:   "?status=published&limit=25&lastID=5&lastPublishedAt=2026-07-14T19:00:00Z",
 			setupMock: func(m *mockApp.MockFindPostsPaginatedUseCase) {
 				m.EXPECT().Execute(mock.Anything, domain.StatusPublished, mock.MatchedBy(func(p domain.Pagination) bool {
 					return p.LastID() != nil && *p.LastID() == 5 &&
@@ -65,7 +70,16 @@ func TestFindPostsPaginatedController_Handle(t *testing.T) {
 			expectedBody:   `"posts"`,
 		},
 		{
+			testName:       "fail - unauthenticated",
+			authUserID:     nil,
+			urlQuery:       "?status=published",
+			setupMock:      func(_ *mockApp.MockFindPostsPaginatedUseCase) {},
+			expectedStatus: http.StatusUnauthorized,
+			expectedBody:   sharedHttp.ErrUnauthenticated.Error(),
+		},
+		{
 			testName:       "fail - invalid status",
+			authUserID:     int64(1),
 			urlQuery:       "?status=invalid-status",
 			setupMock:      func(_ *mockApp.MockFindPostsPaginatedUseCase) {},
 			expectedStatus: http.StatusBadRequest,
@@ -73,6 +87,7 @@ func TestFindPostsPaginatedController_Handle(t *testing.T) {
 		},
 		{
 			testName:       "fail - invalid limit",
+			authUserID:     int64(1),
 			urlQuery:       "?status=published&limit=abc",
 			setupMock:      func(_ *mockApp.MockFindPostsPaginatedUseCase) {},
 			expectedStatus: http.StatusBadRequest,
@@ -80,6 +95,7 @@ func TestFindPostsPaginatedController_Handle(t *testing.T) {
 		},
 		{
 			testName:       "fail - invalid lastID",
+			authUserID:     int64(1),
 			urlQuery:       "?status=published&lastID=abc",
 			setupMock:      func(_ *mockApp.MockFindPostsPaginatedUseCase) {},
 			expectedStatus: http.StatusBadRequest,
@@ -87,6 +103,7 @@ func TestFindPostsPaginatedController_Handle(t *testing.T) {
 		},
 		{
 			testName:       "fail - invalid lastPublishedAt",
+			authUserID:     int64(1),
 			urlQuery:       "?status=published&lastPublishedAt=abc",
 			setupMock:      func(_ *mockApp.MockFindPostsPaginatedUseCase) {},
 			expectedStatus: http.StatusBadRequest,
@@ -94,14 +111,16 @@ func TestFindPostsPaginatedController_Handle(t *testing.T) {
 		},
 		{
 			testName:       "fail - pagination validation error (mismatched cursor params)",
+			authUserID:     int64(1),
 			urlQuery:       "?status=published&lastID=5",
 			setupMock:      func(_ *mockApp.MockFindPostsPaginatedUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   domain.ErrInvalidPaginationCursor.Error(),
 		},
 		{
-			testName: "fail - usecase execution error",
-			urlQuery: "?status=published",
+			testName:   "fail - usecase execution error",
+			authUserID: int64(1),
+			urlQuery:   "?status=published",
 			setupMock: func(m *mockApp.MockFindPostsPaginatedUseCase) {
 				m.EXPECT().Execute(mock.Anything, mock.Anything, mock.Anything).Return(domain.PaginatedPosts{}, errors.New("db find failed"))
 			},
@@ -118,9 +137,13 @@ func TestFindPostsPaginatedController_Handle(t *testing.T) {
 			controller := controllers.NewFindPostsPaginatedController(mockUseCase)
 
 			req := httptest.NewRequest(http.MethodGet, "/posts"+tc.urlQuery, nil)
+			if tc.authUserID != nil {
+				req.Header.Set("Authorization", strconv.FormatInt(tc.authUserID.(int64), 10))
+			}
 			rec := httptest.NewRecorder()
 
-			controller.Handle(rec, req)
+			handler := sharedHttp.Protected(controller.Handle)
+			handler.ServeHTTP(rec, req)
 
 			assert.Equal(t, tc.expectedStatus, rec.Code)
 			if tc.expectedBody != "" {

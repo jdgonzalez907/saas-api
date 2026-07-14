@@ -17,20 +17,14 @@ func NewDeletePostController(useCase application.DeletePostUseCase) *DeletePostC
 	}
 }
 
-func (c *DeletePostController) Handle(w http.ResponseWriter, r *http.Request) {
-	deletedByID, err := sharedHttp.GetAuthenticatedUserID(r.Context())
-	if err != nil {
-		sharedHttp.RespondWithDomainError(w, r, err)
-		return
-	}
-
+func (c *DeletePostController) Handle(w http.ResponseWriter, r *http.Request, userID int64) {
 	id, err := sharedHttp.ParseRouteInt64Param(r, "id")
 	if err != nil {
 		sharedHttp.RespondWithError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	if err := c.useCase.Execute(r.Context(), id, deletedByID); err != nil {
+	if err := c.useCase.Execute(r.Context(), id, userID); err != nil {
 		sharedHttp.RespondWithDomainError(w, r, err)
 		return
 	}

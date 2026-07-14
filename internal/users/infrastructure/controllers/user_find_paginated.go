@@ -18,7 +18,7 @@ func NewFindUsersPaginatedController(useCase application.FindUsersPaginatedUseCa
 	}
 }
 
-func (c *FindUsersPaginatedController) Handle(w http.ResponseWriter, r *http.Request) {
+func (c *FindUsersPaginatedController) Handle(w http.ResponseWriter, r *http.Request, _ int64) {
 	limitPtr, err := sharedHttp.ParseQueryInt32Param(r, "limit")
 	if err != nil {
 		sharedHttp.RespondWithError(w, http.StatusBadRequest, err.Error())

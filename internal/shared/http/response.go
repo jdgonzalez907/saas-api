@@ -19,6 +19,8 @@ type ErrorHolder struct {
 	Err error
 }
 
+type contextKey string
+
 const ErrorHolderKey contextKey = "error_holder"
 
 var domainErrorStatus = map[error]int{

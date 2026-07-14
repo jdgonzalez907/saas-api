@@ -771,6 +771,7 @@ func TestPostFromDTO_Validation(t *testing.T) {
 		})
 	}
 }
+
 func TestPost_EnsureInvariants_Private(t *testing.T) {
 	t.Run("ensureInvariants - negative ID", func(t *testing.T) {
 		p := &Post{

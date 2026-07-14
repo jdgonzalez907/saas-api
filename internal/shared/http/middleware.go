@@ -4,6 +4,8 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/go-chi/chi/v5/middleware"
 )
@@ -29,5 +31,30 @@ func ErrorLoggerMiddleware(next http.Handler) http.Handler {
 				log.Printf("[ERROR] RequestID: %s - Internal Server Error: %v", reqID, holder.Err)
 			}
 		}
+	})
+}
+
+type ProtectedHandlerFunc func(w http.ResponseWriter, r *http.Request, userID int64)
+
+func Protected(next ProtectedHandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		authHeader := r.Header.Get("Authorization")
+		if authHeader == "" {
+			RespondWithDomainError(w, r, ErrUnauthenticated)
+			return
+		}
+
+		token := authHeader
+		if strings.HasPrefix(strings.ToLower(authHeader), "bearer ") {
+			token = authHeader[7:]
+		}
+
+		userID, err := strconv.ParseInt(strings.TrimSpace(token), 10, 64)
+		if err != nil {
+			RespondWithDomainError(w, r, ErrUnauthenticated)
+			return
+		}
+
+		next(w, r, userID)
 	})
 }

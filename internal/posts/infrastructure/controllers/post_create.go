@@ -23,13 +23,7 @@ type CreatePostRequest struct {
 	Status string `json:"status"`
 }
 
-func (c *CreatePostController) Handle(w http.ResponseWriter, r *http.Request) {
-	authorID, err := sharedHttp.GetAuthenticatedUserID(r.Context())
-	if err != nil {
-		sharedHttp.RespondWithDomainError(w, r, err)
-		return
-	}
-
+func (c *CreatePostController) Handle(w http.ResponseWriter, r *http.Request, userID int64) {
 	var req CreatePostRequest
 	if err := sharedHttp.DecodeJSON(r, &req); err != nil {
 		sharedHttp.RespondWithError(w, http.StatusBadRequest, err.Error())
@@ -48,7 +42,7 @@ func (c *CreatePostController) Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	post, err := domain.NewPostWithoutID(contentInfo, status, authorID)
+	post, err := domain.NewPostWithoutID(contentInfo, status, userID)
 	if err != nil {
 		sharedHttp.RespondWithDomainError(w, r, err)
 		return

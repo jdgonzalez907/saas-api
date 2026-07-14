@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 	"time"
 
@@ -14,6 +15,7 @@ import (
 
 	"jdgonzalez907/saas-api/internal/posts/domain"
 	"jdgonzalez907/saas-api/internal/posts/infrastructure/controllers"
+	sharedHttp "jdgonzalez907/saas-api/internal/shared/http"
 	mockApp "jdgonzalez907/saas-api/mocks/application"
 )
 
@@ -34,6 +36,7 @@ func TestFindPostByIDController_Handle(t *testing.T) {
 
 	testCases := []struct {
 		testName       string
+		authUserID     any
 		routeParamID   string
 		setupMock      func(m *mockApp.MockFindPostByIDUseCase)
 		expectedStatus int
@@ -41,6 +44,7 @@ func TestFindPostByIDController_Handle(t *testing.T) {
 	}{
 		{
 			testName:     "success - post found",
+			authUserID:   int64(1),
 			routeParamID: "1",
 			setupMock: func(m *mockApp.MockFindPostByIDUseCase) {
 				m.EXPECT().Execute(mock.Anything, int64(1)).Return(validPost, nil)
@@ -49,7 +53,16 @@ func TestFindPostByIDController_Handle(t *testing.T) {
 			expectedBody:   `"title":"Post Title"`,
 		},
 		{
+			testName:       "fail - unauthenticated",
+			authUserID:     nil,
+			routeParamID:   "1",
+			setupMock:      func(_ *mockApp.MockFindPostByIDUseCase) {},
+			expectedStatus: http.StatusUnauthorized,
+			expectedBody:   sharedHttp.ErrUnauthenticated.Error(),
+		},
+		{
 			testName:       "fail - route parameter is not an integer",
+			authUserID:     int64(1),
 			routeParamID:   "abc",
 			setupMock:      func(_ *mockApp.MockFindPostByIDUseCase) {},
 			expectedStatus: http.StatusBadRequest,
@@ -57,6 +70,7 @@ func TestFindPostByIDController_Handle(t *testing.T) {
 		},
 		{
 			testName:     "fail - post not found",
+			authUserID:   int64(1),
 			routeParamID: "1",
 			setupMock: func(m *mockApp.MockFindPostByIDUseCase) {
 				m.EXPECT().Execute(mock.Anything, int64(1)).Return(nil, domain.ErrPostNotFound)
@@ -66,6 +80,7 @@ func TestFindPostByIDController_Handle(t *testing.T) {
 		},
 		{
 			testName:     "fail - usecase execution error",
+			authUserID:   int64(1),
 			routeParamID: "1",
 			setupMock: func(m *mockApp.MockFindPostByIDUseCase) {
 				m.EXPECT().Execute(mock.Anything, int64(1)).Return(nil, errors.New("db find failed"))
@@ -83,12 +98,16 @@ func TestFindPostByIDController_Handle(t *testing.T) {
 			controller := controllers.NewFindPostByIDController(mockUseCase)
 
 			req := httptest.NewRequest(http.MethodGet, "/posts", nil)
+			if tc.authUserID != nil {
+				req.Header.Set("Authorization", strconv.FormatInt(tc.authUserID.(int64), 10))
+			}
 			rctx := chi.NewRouteContext()
 			rctx.URLParams.Add("id", tc.routeParamID)
 			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 
 			rec := httptest.NewRecorder()
-			controller.Handle(rec, req)
+			handler := sharedHttp.Protected(controller.Handle)
+			handler.ServeHTTP(rec, req)
 
 			assert.Equal(t, tc.expectedStatus, rec.Code)
 			if tc.expectedBody != "" {

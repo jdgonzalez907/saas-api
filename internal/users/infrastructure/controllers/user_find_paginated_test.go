@@ -3,12 +3,14 @@ package controllers_test
 import (
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
+	sharedHttp "jdgonzalez907/saas-api/internal/shared/http"
 	"jdgonzalez907/saas-api/internal/users/domain"
 	"jdgonzalez907/saas-api/internal/users/infrastructure/controllers"
 	mockApp "jdgonzalez907/saas-api/mocks/application"
@@ -45,14 +47,16 @@ func TestFindUsersPaginatedController_Handle(t *testing.T) {
 
 	testCases := []struct {
 		testName       string
+		authUserID     any
 		urlQuery       string
 		setupMock      func(m *mockApp.MockFindUsersPaginatedUseCase)
 		expectedStatus int
 		expectedBody   string
 	}{
 		{
-			testName: "success - default pagination without query params",
-			urlQuery: "",
+			testName:   "success - default pagination without query params",
+			authUserID: int64(1),
+			urlQuery:   "",
 			setupMock: func(m *mockApp.MockFindUsersPaginatedUseCase) {
 				m.EXPECT().Execute(mock.Anything, mock.MatchedBy(func(p domain.Pagination) bool {
 					return p.LastID() == nil && p.Limit() == 10
@@ -62,8 +66,9 @@ func TestFindUsersPaginatedController_Handle(t *testing.T) {
 			expectedBody:   `"users"`,
 		},
 		{
-			testName: "success - valid cursor and limit",
-			urlQuery: "?cursor=5&limit=25",
+			testName:   "success - valid cursor and limit",
+			authUserID: int64(1),
+			urlQuery:   "?cursor=5&limit=25",
 			setupMock: func(m *mockApp.MockFindUsersPaginatedUseCase) {
 				m.EXPECT().Execute(mock.Anything, mock.MatchedBy(func(p domain.Pagination) bool {
 					return p.LastID() != nil && *p.LastID() == 5 && p.Limit() == 25
@@ -73,7 +78,16 @@ func TestFindUsersPaginatedController_Handle(t *testing.T) {
 			expectedBody:   `"users"`,
 		},
 		{
+			testName:       "fail - unauthenticated",
+			authUserID:     nil,
+			urlQuery:       "",
+			setupMock:      func(_ *mockApp.MockFindUsersPaginatedUseCase) {},
+			expectedStatus: http.StatusUnauthorized,
+			expectedBody:   sharedHttp.ErrUnauthenticated.Error(),
+		},
+		{
 			testName:       "fail - invalid cursor string",
+			authUserID:     int64(1),
 			urlQuery:       "?cursor=abc",
 			setupMock:      func(_ *mockApp.MockFindUsersPaginatedUseCase) {},
 			expectedStatus: http.StatusBadRequest,
@@ -81,6 +95,7 @@ func TestFindUsersPaginatedController_Handle(t *testing.T) {
 		},
 		{
 			testName:       "fail - invalid cursor negative",
+			authUserID:     int64(1),
 			urlQuery:       "?cursor=-5",
 			setupMock:      func(_ *mockApp.MockFindUsersPaginatedUseCase) {},
 			expectedStatus: http.StatusBadRequest,
@@ -88,6 +103,7 @@ func TestFindUsersPaginatedController_Handle(t *testing.T) {
 		},
 		{
 			testName:       "fail - invalid limit string",
+			authUserID:     int64(1),
 			urlQuery:       "?limit=abc",
 			setupMock:      func(_ *mockApp.MockFindUsersPaginatedUseCase) {},
 			expectedStatus: http.StatusBadRequest,
@@ -95,6 +111,7 @@ func TestFindUsersPaginatedController_Handle(t *testing.T) {
 		},
 		{
 			testName:       "fail - invalid limit negative",
+			authUserID:     int64(1),
 			urlQuery:       "?limit=-10",
 			setupMock:      func(_ *mockApp.MockFindUsersPaginatedUseCase) {},
 			expectedStatus: http.StatusBadRequest,
@@ -102,14 +119,16 @@ func TestFindUsersPaginatedController_Handle(t *testing.T) {
 		},
 		{
 			testName:       "fail - invalid limit value not allowed",
+			authUserID:     int64(1),
 			urlQuery:       "?limit=12",
 			setupMock:      func(_ *mockApp.MockFindUsersPaginatedUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   domain.ErrInvalidPaginationLimit.Error(),
 		},
 		{
-			testName: "fail - usecase execution error",
-			urlQuery: "",
+			testName:   "fail - usecase execution error",
+			authUserID: int64(1),
+			urlQuery:   "",
 			setupMock: func(m *mockApp.MockFindUsersPaginatedUseCase) {
 				m.EXPECT().Execute(mock.Anything, mock.Anything).Return(domain.PaginatedUsers{}, domain.ErrFindingUsers)
 			},
@@ -126,9 +145,13 @@ func TestFindUsersPaginatedController_Handle(t *testing.T) {
 			controller := controllers.NewFindUsersPaginatedController(mockUseCase)
 
 			req := httptest.NewRequest(http.MethodGet, "/users"+tc.urlQuery, nil)
+			if tc.authUserID != nil {
+				req.Header.Set("Authorization", strconv.FormatInt(tc.authUserID.(int64), 10))
+			}
 			rec := httptest.NewRecorder()
 
-			controller.Handle(rec, req)
+			handler := sharedHttp.Protected(controller.Handle)
+			handler.ServeHTTP(rec, req)
 
 			assert.Equal(t, tc.expectedStatus, rec.Code)
 			if tc.expectedBody != "" {

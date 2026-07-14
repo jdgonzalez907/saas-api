@@ -41,6 +41,7 @@ func TestRouterAndMiddleware(t *testing.T) {
 
 	t.Run("JSONContentTypeMiddleware sets header", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/users/1", nil)
+		req.Header.Set("Authorization", "1")
 		rec := httptest.NewRecorder()
 
 		mockFindUseCase.EXPECT().Execute(mock.Anything, int64(1)).Return(nil, http.ErrNoLocation).Once()

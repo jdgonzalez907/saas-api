@@ -17,7 +17,7 @@ func NewDeleteUserController(useCase application.DeleteUserUseCase) *DeleteUserC
 	}
 }
 
-func (c *DeleteUserController) Handle(w http.ResponseWriter, r *http.Request) {
+func (c *DeleteUserController) Handle(w http.ResponseWriter, r *http.Request, _ int64) {
 	id, err := sharedHttp.ParseRouteInt64Param(r, "id")
 	if err != nil {
 		sharedHttp.RespondWithError(w, http.StatusBadRequest, err.Error())

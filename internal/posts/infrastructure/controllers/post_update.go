@@ -23,13 +23,7 @@ type UpdatePostRequest struct {
 	Status string `json:"status"`
 }
 
-func (c *UpdatePostController) Handle(w http.ResponseWriter, r *http.Request) {
-	editorID, err := sharedHttp.GetAuthenticatedUserID(r.Context())
-	if err != nil {
-		sharedHttp.RespondWithDomainError(w, r, err)
-		return
-	}
-
+func (c *UpdatePostController) Handle(w http.ResponseWriter, r *http.Request, userID int64) {
 	id, err := sharedHttp.ParseRouteInt64Param(r, "id")
 	if err != nil {
 		sharedHttp.RespondWithError(w, http.StatusBadRequest, err.Error())
@@ -54,7 +48,7 @@ func (c *UpdatePostController) Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	post, err := c.useCase.Execute(r.Context(), id, contentInfo, status, editorID)
+	post, err := c.useCase.Execute(r.Context(), id, contentInfo, status, userID)
 	if err != nil {
 		sharedHttp.RespondWithDomainError(w, r, err)
 		return
