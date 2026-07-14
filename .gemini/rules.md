@@ -86,7 +86,7 @@ Cada cambio y nueva funcionalidad debe apegarse estrictamente al siguiente flujo
 ## 5. Capa de Controllers HTTP (`internal/<modulo>/infrastructure/controllers`)
 
 Cada controller HTTP debe seguir una estructura estricta y limpia:
-- **Router**: Configurado en `router.go` usando `go-chi/chi/v5`. Middlewares globales registrados en orden: `RequestID` → `Logger` → `Recoverer` → `JSONContentTypeMiddleware`. No usar `RealIP` (deprecated).
+- **Router**: Configurado en `router.go` usando `go-chi/chi/v5`. Middlewares globales registrados en orden: `RequestID` → `Logger` → `ErrorLoggerMiddleware` → `Recoverer` → `JSONContentTypeMiddleware`. No usar `RealIP` (deprecated).
 - **Struct de Controller**: Estructura pública que recibe sus dependencias (casos de uso) por constructor (ej. `NewUserController(...)`).
 - **Responsabilidad del Handler**: El método handler parsea la request y construye las entidades/VOs de dominio necesarias, llama al caso de uso (que recibe y devuelve solo entidades/VOs), y convierte el resultado a DTO vía `.ToDTO()` para responder. Nunca pasar DTOs directamente a los casos de uso.
 - **Mapeo de DTOs Planos y Embebidos**:
