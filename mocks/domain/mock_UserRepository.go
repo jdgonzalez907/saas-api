@@ -4,7 +4,7 @@ package domain
 
 import (
 	context "context"
-	domain "jdgonzalez907/users-api/internal/domain"
+	domain "jdgonzalez907/saas-api/internal/users/domain"
 
 	mock "github.com/stretchr/testify/mock"
 )
