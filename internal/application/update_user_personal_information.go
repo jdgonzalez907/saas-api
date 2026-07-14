@@ -20,6 +20,10 @@ func NewUpdateUserPersonalInformationUseCase(userRepository domain.UserRepositor
 }
 
 func (u *updateUserPersonalInformationUseCase) Execute(ctx context.Context, id int, info domain.PersonalInformation) error {
+	if err := domain.ValidateAssignedUserID(id); err != nil {
+		return err
+	}
+
 	userFound, err := u.userRepository.FindById(ctx, id)
 	if err != nil {
 		return fmt.Errorf("%v: %w", domain.ErrUpdatingUserPersonalInformation, err)

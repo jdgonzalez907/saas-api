@@ -20,6 +20,7 @@ func NewRouter(params RouterParams) *chi.Mux {
 
 	r.Use(middleware.RequestID)
 	r.Use(middleware.Logger)
+	r.Use(ErrorLoggerMiddleware)
 	r.Use(middleware.Recoverer)
 	r.Use(JSONContentTypeMiddleware)
 

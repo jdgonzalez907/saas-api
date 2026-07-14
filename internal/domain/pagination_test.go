@@ -8,66 +8,107 @@ import (
 
 func TestNewPagination(t *testing.T) {
 	lastID := 42
+	lastIDZero := 0
+	lastIDNeg := -10
+	limitVal10 := 10
+	limitVal25 := 25
+	limitVal50 := 50
+	limitVal15 := 15
+	limitValNeg5 := -5
 
 	testCases := []struct {
 		testName      string
 		inputLastID   *int
-		inputLimit    int
+		inputLimit    *int
 		expectedLimit int
+		expectedError error
 	}{
 		{
 			testName:      "success - limit is 10",
 			inputLastID:   &lastID,
-			inputLimit:    10,
+			inputLimit:    &limitVal10,
 			expectedLimit: 10,
+			expectedError: nil,
 		},
 		{
 			testName:      "success - limit is 25",
 			inputLastID:   &lastID,
-			inputLimit:    25,
+			inputLimit:    &limitVal25,
 			expectedLimit: 25,
+			expectedError: nil,
 		},
 		{
 			testName:      "success - limit is 50",
 			inputLastID:   &lastID,
-			inputLimit:    50,
+			inputLimit:    &limitVal50,
 			expectedLimit: 50,
+			expectedError: nil,
 		},
 		{
-			testName:      "success - invalid limit defaults to 10",
+			testName:      "fail - invalid limit returns error",
 			inputLastID:   &lastID,
-			inputLimit:    15,
-			expectedLimit: 10,
+			inputLimit:    &limitVal15,
+			expectedLimit: 0,
+			expectedError: domain.ErrInvalidPaginationLimit,
 		},
 		{
-			testName:      "success - negative limit defaults to 10",
+			testName:      "fail - negative limit returns error",
 			inputLastID:   &lastID,
-			inputLimit:    -5,
+			inputLimit:    &limitValNeg5,
+			expectedLimit: 0,
+			expectedError: domain.ErrInvalidPaginationLimit,
+		},
+		{
+			testName:      "success - nil limit defaults to 10",
+			inputLastID:   &lastID,
+			inputLimit:    nil,
 			expectedLimit: 10,
+			expectedError: nil,
 		},
 		{
 			testName:      "success - nil lastID is accepted",
 			inputLastID:   nil,
-			inputLimit:    25,
+			inputLimit:    &limitVal25,
 			expectedLimit: 25,
+			expectedError: nil,
+		},
+		{
+			testName:      "fail - lastID zero returns error",
+			inputLastID:   &lastIDZero,
+			inputLimit:    &limitVal25,
+			expectedLimit: 0,
+			expectedError: domain.ErrInvalidPaginationCursor,
+		},
+		{
+			testName:      "fail - lastID negative returns error",
+			inputLastID:   &lastIDNeg,
+			inputLimit:    &limitVal25,
+			expectedLimit: 0,
+			expectedError: domain.ErrInvalidPaginationCursor,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.testName, func(t *testing.T) {
-			pagination := domain.NewPagination(tc.inputLastID, tc.inputLimit)
+			pagination, err := domain.NewPagination(tc.inputLastID, tc.inputLimit)
 
-			if pagination.Limit() != tc.expectedLimit {
-				t.Errorf("expected limit: %d, got: %d", tc.expectedLimit, pagination.Limit())
+			if err != tc.expectedError {
+				t.Fatalf("expected error: %v, got: %v", tc.expectedError, err)
 			}
 
-			if tc.inputLastID == nil {
-				if pagination.LastID() != nil {
-					t.Errorf("expected lastID to be nil, got: %v", pagination.LastID())
+			if tc.expectedError == nil {
+				if pagination.Limit() != tc.expectedLimit {
+					t.Errorf("expected limit: %d, got: %d", tc.expectedLimit, pagination.Limit())
 				}
-			} else {
-				if pagination.LastID() == nil || *pagination.LastID() != *tc.inputLastID {
-					t.Errorf("expected lastID: %d, got: %v", *tc.inputLastID, pagination.LastID())
+
+				if tc.inputLastID == nil {
+					if pagination.LastID() != nil {
+						t.Errorf("expected lastID to be nil, got: %v", pagination.LastID())
+					}
+				} else {
+					if pagination.LastID() == nil || *pagination.LastID() != *tc.inputLastID {
+						t.Errorf("expected lastID: %d, got: %v", *tc.inputLastID, pagination.LastID())
+					}
 				}
 			}
 		})
