@@ -6,15 +6,15 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/mock"
+
 	"jdgonzalez907/saas-api/internal/users/application"
 	"jdgonzalez907/saas-api/internal/users/domain"
 	domainMocks "jdgonzalez907/saas-api/mocks/domain"
-
-	"github.com/stretchr/testify/mock"
 )
 
 func TestCreateUserUseCase(t *testing.T) {
-	identification, _ := domain.NewIdentification(domain.IdType_CC, "1111")
+	identification, _ := domain.NewIdentification(domain.IDTypeCC, "1111")
 	phone, _ := domain.NewPhone("57", "123456789")
 	email, _ := domain.NewEmail("john.doe@example.com")
 	address, _ := domain.NewAddress("123 Main St", "City", "State", "Country", nil, nil)
@@ -59,7 +59,7 @@ func TestCreateUserUseCase(t *testing.T) {
 			name:  "success - create user",
 			input: *user,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", mock.Anything, user.ID()).Return(nil, nil)
+				m.On("FindByID", mock.Anything, user.ID()).Return(nil, nil)
 				m.On("FindByPhone", mock.Anything, phone).Return(nil, nil)
 				m.On("FindByEmail", mock.Anything, email).Return(nil, nil)
 				m.On("Create", mock.Anything, user).Return(nil)
@@ -70,7 +70,7 @@ func TestCreateUserUseCase(t *testing.T) {
 			name:  "fail - id already exists",
 			input: *user,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", mock.Anything, user.ID()).Return(user, nil)
+				m.On("FindByID", mock.Anything, user.ID()).Return(user, nil)
 			},
 			expectedError: domain.ErrUserIDAlreadyExists,
 		},
@@ -78,7 +78,7 @@ func TestCreateUserUseCase(t *testing.T) {
 			name:  "fail - phone already exists",
 			input: *user,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", mock.Anything, user.ID()).Return(nil, nil)
+				m.On("FindByID", mock.Anything, user.ID()).Return(nil, nil)
 				m.On("FindByPhone", mock.Anything, phone).Return(user, nil)
 			},
 			expectedError: domain.ErrUserPhoneAlreadyExists,
@@ -87,17 +87,17 @@ func TestCreateUserUseCase(t *testing.T) {
 			name:  "fail - email already exists",
 			input: *user,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", mock.Anything, user.ID()).Return(nil, nil)
+				m.On("FindByID", mock.Anything, user.ID()).Return(nil, nil)
 				m.On("FindByPhone", mock.Anything, phone).Return(nil, nil)
 				m.On("FindByEmail", mock.Anything, email).Return(user, nil)
 			},
 			expectedError: domain.ErrUserEmailAlreadyExists,
 		},
 		{
-			name:  "fail - infra error on FindById",
+			name:  "fail - infra error on FindByID",
 			input: *user,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", mock.Anything, user.ID()).Return(nil, dbErr)
+				m.On("FindByID", mock.Anything, user.ID()).Return(nil, dbErr)
 			},
 			expectedError: domain.ErrCreatingUser,
 		},
@@ -105,7 +105,7 @@ func TestCreateUserUseCase(t *testing.T) {
 			name:  "fail - infra error on FindByPhone",
 			input: *user,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", mock.Anything, user.ID()).Return(nil, nil)
+				m.On("FindByID", mock.Anything, user.ID()).Return(nil, nil)
 				m.On("FindByPhone", mock.Anything, phone).Return(nil, dbErr)
 			},
 			expectedError: domain.ErrCreatingUser,
@@ -114,7 +114,7 @@ func TestCreateUserUseCase(t *testing.T) {
 			name:  "fail - infra error on FindByEmail",
 			input: *user,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", mock.Anything, user.ID()).Return(nil, nil)
+				m.On("FindByID", mock.Anything, user.ID()).Return(nil, nil)
 				m.On("FindByPhone", mock.Anything, phone).Return(nil, nil)
 				m.On("FindByEmail", mock.Anything, email).Return(nil, dbErr)
 			},
@@ -124,7 +124,7 @@ func TestCreateUserUseCase(t *testing.T) {
 			name:  "fail - repo create error",
 			input: *user,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", mock.Anything, user.ID()).Return(nil, nil)
+				m.On("FindByID", mock.Anything, user.ID()).Return(nil, nil)
 				m.On("FindByPhone", mock.Anything, phone).Return(nil, nil)
 				m.On("FindByEmail", mock.Anything, email).Return(nil, nil)
 				m.On("Create", mock.Anything, user).Return(dbErr)
@@ -135,7 +135,7 @@ func TestCreateUserUseCase(t *testing.T) {
 			name:  "success - nil email",
 			input: *userWithNilEmail,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", mock.Anything, userWithNilEmail.ID()).Return(nil, nil)
+				m.On("FindByID", mock.Anything, userWithNilEmail.ID()).Return(nil, nil)
 				m.On("FindByPhone", mock.Anything, phone).Return(nil, nil)
 				m.On("Create", mock.Anything, userWithNilEmail).Return(nil)
 			},
@@ -156,9 +156,7 @@ func TestCreateUserUseCase(t *testing.T) {
 					t.Fatalf("expected error: %v, got nil", tc.expectedError)
 				}
 				if !errors.Is(err, tc.expectedError) {
-					if tc.expectedError == domain.ErrCreatingUser && errors.Unwrap(err) != nil {
-						// Success: wrapped infra error
-					} else {
+					if !(tc.expectedError == domain.ErrCreatingUser && errors.Unwrap(err) != nil) {
 						t.Errorf("expected error: %v, got %v", tc.expectedError, err)
 					}
 				}

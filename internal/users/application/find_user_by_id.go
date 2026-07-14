@@ -26,7 +26,7 @@ func (u *findUserByIDUseCase) Execute(ctx context.Context, id int64) (*domain.Us
 		return nil, err
 	}
 
-	userFound, err := u.userRepository.FindById(ctx, id)
+	userFound, err := u.userRepository.FindByID(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("%v: %w", domain.ErrFindingUserByID, err)
 	}

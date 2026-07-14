@@ -9,13 +9,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"jdgonzalez907/saas-api/internal/users/domain"
-	"jdgonzalez907/saas-api/internal/users/infrastructure/controllers"
-	mockApp "jdgonzalez907/saas-api/mocks/application"
-
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	"jdgonzalez907/saas-api/internal/users/domain"
+	"jdgonzalez907/saas-api/internal/users/infrastructure/controllers"
+	mockApp "jdgonzalez907/saas-api/mocks/application"
 )
 
 func TestUpdateUserPhoneController_Handle(t *testing.T) {
@@ -44,7 +44,7 @@ func TestUpdateUserPhoneController_Handle(t *testing.T) {
 			testName:       "fail - route parameter is not an integer",
 			routeParamID:   "abc",
 			requestBody:    validBody,
-			setupMock:      func(m *mockApp.MockUpdateUserPhoneUseCase) {},
+			setupMock:      func(_ *mockApp.MockUpdateUserPhoneUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   "parameter id must be a positive integer",
 		},
@@ -52,7 +52,7 @@ func TestUpdateUserPhoneController_Handle(t *testing.T) {
 			testName:       "fail - invalid json body",
 			routeParamID:   "1",
 			requestBody:    "{invalid json}",
-			setupMock:      func(m *mockApp.MockUpdateUserPhoneUseCase) {},
+			setupMock:      func(_ *mockApp.MockUpdateUserPhoneUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   controllers.ErrInvalidRequestBody.Error(),
 		},
@@ -60,7 +60,7 @@ func TestUpdateUserPhoneController_Handle(t *testing.T) {
 			testName:       "fail - nil request body",
 			routeParamID:   "1",
 			requestBody:    nil,
-			setupMock:      func(m *mockApp.MockUpdateUserPhoneUseCase) {},
+			setupMock:      func(_ *mockApp.MockUpdateUserPhoneUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   controllers.ErrInvalidRequestBody.Error(),
 		},
@@ -70,7 +70,7 @@ func TestUpdateUserPhoneController_Handle(t *testing.T) {
 			requestBody: domain.PhoneDTO{
 				CountryCode: "", Number: "987654321",
 			},
-			setupMock:      func(m *mockApp.MockUpdateUserPhoneUseCase) {},
+			setupMock:      func(_ *mockApp.MockUpdateUserPhoneUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   domain.ErrInvalidPhone.Error(),
 		},
@@ -80,7 +80,7 @@ func TestUpdateUserPhoneController_Handle(t *testing.T) {
 			requestBody: domain.PhoneDTO{
 				CountryCode: "57", Number: "",
 			},
-			setupMock:      func(m *mockApp.MockUpdateUserPhoneUseCase) {},
+			setupMock:      func(_ *mockApp.MockUpdateUserPhoneUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   domain.ErrInvalidPhone.Error(),
 		},

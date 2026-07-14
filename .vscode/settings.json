@@ -1,0 +1,19 @@
+{
+  "[go]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "always"
+    },
+    "editor.defaultFormatter": "golang.go"
+  },
+  "go.formatTool": "goimports",
+  "go.lintTool": "golangci-lint",
+  "go.lintOnSave": "package",
+  "go.lintFlags": [
+    "--fast"
+  ],
+  "go.alternateTools": {
+    "golangci-lint": "~/go/bin/golangci-lint",
+    "goimports": "~/go/bin/goimports"
+  }
+}

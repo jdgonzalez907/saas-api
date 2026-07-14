@@ -1,14 +1,15 @@
 package domain_test
 
 import (
-	"jdgonzalez907/saas-api/internal/users/domain"
 	"testing"
 	"time"
+
+	"jdgonzalez907/saas-api/internal/users/domain"
 )
 
 func TestPaginatedUsersVO(t *testing.T) {
 	now := time.Now()
-	identification, _ := domain.NewIdentification(domain.IdType_CC, "1111")
+	identification, _ := domain.NewIdentification(domain.IDTypeCC, "1111")
 	phone, _ := domain.NewPhone("57", "123456789")
 	email, _ := domain.NewEmail("john.doe@example.com")
 	address, _ := domain.NewAddress("123 Main St", "City", "State", "Country", nil, nil)

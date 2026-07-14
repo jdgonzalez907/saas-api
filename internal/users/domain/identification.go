@@ -10,11 +10,11 @@ var (
 type IdentificationType string
 
 const (
-	IdType_CC       IdentificationType = "CC"
-	IdType_CE       IdentificationType = "CE"
-	IdType_PASSPORT IdentificationType = "PASSPORT"
-	IdType_NIT      IdentificationType = "NIT"
-	IdType_IC       IdentificationType = "IC"
+	IDTypeCC       IdentificationType = "CC"
+	IDTypeCE       IdentificationType = "CE"
+	IDTypePASSPORT IdentificationType = "PASSPORT"
+	IDTypeNIT      IdentificationType = "NIT"
+	IDTypeIC       IdentificationType = "IC"
 )
 
 type Identification struct {
@@ -27,7 +27,7 @@ func NewIdentification(idType IdentificationType, number string) (Identification
 		return Identification{}, ErrInvalidIdentificationNumber
 	}
 	switch idType {
-	case IdType_CC, IdType_CE, IdType_PASSPORT, IdType_NIT, IdType_IC:
+	case IDTypeCC, IDTypeCE, IDTypePASSPORT, IDTypeNIT, IDTypeIC:
 		return Identification{
 			idType: idType,
 			number: number,

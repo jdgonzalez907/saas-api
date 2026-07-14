@@ -24,7 +24,7 @@ func (u *updateUserPersonalInformationUseCase) Execute(ctx context.Context, id i
 		return err
 	}
 
-	userFound, err := u.userRepository.FindById(ctx, id)
+	userFound, err := u.userRepository.FindByID(ctx, id)
 	if err != nil {
 		return fmt.Errorf("%v: %w", domain.ErrUpdatingUserPersonalInformation, err)
 	}

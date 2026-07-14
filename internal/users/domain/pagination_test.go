@@ -1,8 +1,9 @@
 package domain_test
 
 import (
-	"jdgonzalez907/saas-api/internal/users/domain"
 	"testing"
+
+	"jdgonzalez907/saas-api/internal/users/domain"
 )
 
 func TestNewPagination(t *testing.T) {

@@ -234,12 +234,12 @@ func (_c *MockUserRepository_FindByEmail_Call) RunAndReturn(run func(context.Con
 	return _c
 }
 
-// FindById provides a mock function with given fields: ctx, id
-func (_m *MockUserRepository) FindById(ctx context.Context, id int64) (*domain.User, error) {
+// FindByID provides a mock function with given fields: ctx, id
+func (_m *MockUserRepository) FindByID(ctx context.Context, id int64) (*domain.User, error) {
 	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
-		panic("no return value specified for FindById")
+		panic("no return value specified for FindByID")
 	}
 
 	var r0 *domain.User
@@ -264,31 +264,31 @@ func (_m *MockUserRepository) FindById(ctx context.Context, id int64) (*domain.U
 	return r0, r1
 }
 
-// MockUserRepository_FindById_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'FindById'
-type MockUserRepository_FindById_Call struct {
+// MockUserRepository_FindByID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'FindByID'
+type MockUserRepository_FindByID_Call struct {
 	*mock.Call
 }
 
-// FindById is a helper method to define mock.On call
+// FindByID is a helper method to define mock.On call
 //   - ctx context.Context
 //   - id int64
-func (_e *MockUserRepository_Expecter) FindById(ctx interface{}, id interface{}) *MockUserRepository_FindById_Call {
-	return &MockUserRepository_FindById_Call{Call: _e.mock.On("FindById", ctx, id)}
+func (_e *MockUserRepository_Expecter) FindByID(ctx interface{}, id interface{}) *MockUserRepository_FindByID_Call {
+	return &MockUserRepository_FindByID_Call{Call: _e.mock.On("FindByID", ctx, id)}
 }
 
-func (_c *MockUserRepository_FindById_Call) Run(run func(ctx context.Context, id int64)) *MockUserRepository_FindById_Call {
+func (_c *MockUserRepository_FindByID_Call) Run(run func(ctx context.Context, id int64)) *MockUserRepository_FindByID_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(int64))
 	})
 	return _c
 }
 
-func (_c *MockUserRepository_FindById_Call) Return(_a0 *domain.User, _a1 error) *MockUserRepository_FindById_Call {
+func (_c *MockUserRepository_FindByID_Call) Return(_a0 *domain.User, _a1 error) *MockUserRepository_FindByID_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *MockUserRepository_FindById_Call) RunAndReturn(run func(context.Context, int64) (*domain.User, error)) *MockUserRepository_FindById_Call {
+func (_c *MockUserRepository_FindByID_Call) RunAndReturn(run func(context.Context, int64) (*domain.User, error)) *MockUserRepository_FindByID_Call {
 	_c.Call.Return(run)
 	return _c
 }

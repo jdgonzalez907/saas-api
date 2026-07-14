@@ -6,12 +6,12 @@ import (
 	"errors"
 	"fmt"
 
-	"jdgonzalez907/saas-api/internal/users/domain"
-	"jdgonzalez907/saas-api/internal/postgres"
-
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"jdgonzalez907/saas-api/internal/postgres"
+	"jdgonzalez907/saas-api/internal/users/domain"
 )
 
 type PostgresUserRepository struct {
@@ -26,7 +26,7 @@ func NewPostgresUserRepository(pool *pgxpool.Pool) *PostgresUserRepository {
 	}
 }
 
-func (r *PostgresUserRepository) FindById(ctx context.Context, id int64) (*domain.User, error) {
+func (r *PostgresUserRepository) FindByID(ctx context.Context, id int64) (*domain.User, error) {
 	row, err := r.queries.FindUserByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {

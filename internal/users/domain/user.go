@@ -52,7 +52,7 @@ type UserDTO struct {
 	UpdatedAt              time.Time `json:"updated_at"`
 }
 
-func NewUserWithoutId(
+func NewUserWithoutID(
 	personalInformation PersonalInformation,
 	phone Phone,
 	email *Email,

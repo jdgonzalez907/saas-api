@@ -1,14 +1,14 @@
 package domain_test
 
 import (
-	"jdgonzalez907/saas-api/internal/users/domain"
 	"testing"
 	"time"
+
+	"jdgonzalez907/saas-api/internal/users/domain"
 )
 
 var (
-	testTime          = time.Date(1995, 5, 5, 0, 0, 0, 0, time.UTC)
-	identification, _ = domain.NewIdentification(domain.IdType_CC, "123456789")
+	identification, _ = domain.NewIdentification(domain.IDTypeCC, "123456789")
 	email, _          = domain.NewEmail("name@domain.com")
 	phone, _          = domain.NewPhone("57", "123456789")
 	address, _        = domain.NewAddress("123 Main St", "New York", "NY", "USA", nil, nil)
@@ -104,12 +104,11 @@ func isEqual(user *domain.User, params *domain.UserParams) bool {
 }
 
 func TestNewUserWithoutId(t *testing.T) {
-	user, err := domain.NewUserWithoutId(
+	user, err := domain.NewUserWithoutID(
 		personalInfo,
 		phone,
 		&email,
 	)
-
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -125,7 +124,7 @@ func TestNewUserWithoutId(t *testing.T) {
 }
 
 func TestAssignID(t *testing.T) {
-	user, err := domain.NewUserWithoutId(personalInfo, phone, &email)
+	user, err := domain.NewUserWithoutID(personalInfo, phone, &email)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -276,7 +275,7 @@ func TestUserWithPersonalInformation(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	newIdentification, _ := domain.NewIdentification(domain.IdType_CC, "987654321")
+	newIdentification, _ := domain.NewIdentification(domain.IDTypeCC, "987654321")
 	newFirstName := "Jane"
 	newLastName := "Smith"
 	newAddress, _ := domain.NewAddress("456 Main St", "Boston", "MA", "USA", nil, nil)

@@ -8,13 +8,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"jdgonzalez907/saas-api/internal/users/domain"
-	"jdgonzalez907/saas-api/internal/users/infrastructure/controllers"
-	mockApp "jdgonzalez907/saas-api/mocks/application"
-
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	"jdgonzalez907/saas-api/internal/users/domain"
+	"jdgonzalez907/saas-api/internal/users/infrastructure/controllers"
+	mockApp "jdgonzalez907/saas-api/mocks/application"
 )
 
 func TestDeleteUserController_Handle(t *testing.T) {
@@ -36,21 +36,21 @@ func TestDeleteUserController_Handle(t *testing.T) {
 		{
 			testName:       "fail - route parameter is not an integer",
 			routeParamID:   "abc",
-			setupMock:      func(m *mockApp.MockDeleteUserUseCase) {},
+			setupMock:      func(_ *mockApp.MockDeleteUserUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   "parameter id must be a positive integer",
 		},
 		{
 			testName:       "fail - route parameter is empty",
 			routeParamID:   "",
-			setupMock:      func(m *mockApp.MockDeleteUserUseCase) {},
+			setupMock:      func(_ *mockApp.MockDeleteUserUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   "parameter id is missing",
 		},
 		{
 			testName:       "fail - route parameter is negative",
 			routeParamID:   "-3",
-			setupMock:      func(m *mockApp.MockDeleteUserUseCase) {},
+			setupMock:      func(_ *mockApp.MockDeleteUserUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   "parameter id must be a positive integer",
 		},

@@ -30,15 +30,19 @@ saas-api/
 │   ├── migrations/                  # Migraciones SQL (golang-migrate)
 │   └── queries/                     # Queries SQL (sqlc)
 ├── internal/
-│   ├── domain/                      # Entidades, Value Objects, interfaces de repositorio, errores de dominio
-│   ├── application/                 # Casos de uso (interfaces + implementaciones)
-│   └── infrastructure/
-│       ├── boostrap.go              # Wiring de la aplicación y configuración
-│       ├── controllers/             # Handlers HTTP, router, middlewares, helpers de request/response
-│       └── database/
-│           ├── connection.go        # Pool de conexiones pgxpool
-│           ├── postgres_user_repository.go
-│           └── sqlc/                # Código generado por sqlc (NO editar manualmente)
+│   ├── configuration/               # Wiring de la aplicación y pools de conexión
+│   │   ├── boostrap.go
+│   │   └── connection.go
+│   ├── postgres/                    # Código autogenerado por sqlc
+│   │   ├── db.go
+│   │   ├── models.go
+│   │   └── users.sql.go
+│   └── users/                       # Módulo de usuarios
+│       ├── domain/                  # Entidades, Value Objects, interfaces de repositorio, errores de dominio
+│       ├── application/             # Casos de uso (interfaces + implementaciones)
+│       └── infrastructure/
+│           ├── controllers/         # Handlers HTTP, router, middlewares, helpers de request/response
+│           └── database/            # Implementación concreta del repositorio de usuarios
 ├── mocks/                           # Mocks generados por mockery (NO editar manualmente)
 │   ├── application/
 │   └── domain/
@@ -62,9 +66,11 @@ HTTP Request
                [infrastructure/database]  →  PostgreSQL
 ```
 
-- **`domain`**: Núcleo del negocio. Sin dependencias externas. Define entidades (`User`), Value Objects (`Phone`, `Email`, `BirthDate`, etc.), la interfaz `UserRepository` y los errores de dominio.
-- **`application`**: Casos de uso. Solo depende de `domain`. Nunca importa paquetes de infraestructura.
-- **`infrastructure`**: Detalles de implementación. Implementa la interfaz del repositorio, configura el router HTTP y hace el wiring de dependencias en `boostrap.go`.
+- **`domain`** (`internal/users/domain`): Núcleo del negocio. Sin dependencias externas. Define entidades (`User`), Value Objects (`Phone`, `Email`, `BirthDate`, etc.), la interfaz `UserRepository` y los errores de dominio.
+- **`application`** (`internal/users/application`): Casos de uso. Solo depende de `domain`. Nunca importa paquetes de infraestructura.
+- **`infrastructure`** (`internal/users/infrastructure`): Detalles de implementación. `database` implementa la interfaz del repositorio y `controllers` configura los handlers y router HTTP.
+- **`configuration`** (`internal/configuration`): Hace el wiring de dependencias en `boostrap.go` e inicializa el pool de conexiones.
+
 
 ### Decisiones de Diseño
 
@@ -143,6 +149,9 @@ docker compose logs migrate
 - `golang-migrate` CLI
 - `sqlc` CLI
 - `mockery` CLI
+- `golangci-lint` CLI
+- `gci` CLI
+
 
 ### Configurar variables de entorno
 
@@ -240,7 +249,7 @@ migrate -path db/migrations -database "$DATABASE_URL" up
 
 ### sqlc
 
-`sqlc` genera el código Go del paquete `internal/infrastructure/database/sqlc/` a partir de los archivos en `db/queries/` y el schema en `db/migrations/`.
+`sqlc` genera el código Go del paquete `internal/postgres/` a partir de los archivos en `db/queries/` y el schema en `db/migrations/`.
 
 **Cuándo correrlo**: Al agregar, modificar o eliminar cualquier query en `db/queries/users.sql`.
 
@@ -248,11 +257,11 @@ migrate -path db/migrations -database "$DATABASE_URL" up
 $(go env GOPATH)/bin/sqlc generate
 ```
 
-Los archivos en `internal/infrastructure/database/sqlc/` son generados — **no editarlos manualmente**.
+Los archivos en `internal/postgres/` son generados — **no editarlos manualmente**.
 
 ### mockery
 
-`mockery` genera los mocks en `mocks/` a partir de las interfaces definidas en `internal/domain/` e `internal/application/`.
+`mockery` genera los mocks en `mocks/` a partir de las interfaces definidas en `internal/users/domain/` e `internal/users/application/`.
 
 **Cuándo correrlo**: Al agregar, renombrar o cambiar la firma de cualquier método en una interfaz trackeada.
 
@@ -268,6 +277,30 @@ Los archivos en `mocks/` son generados — **no editarlos manualmente**.
 
 ---
 
+## Calidad de Código y Linters
+
+Para mantener un estándar de calidad alto y consistente en la industria, utilizamos:
+- **`golangci-lint`**: Ejecuta múltiples analizadores estáticos esenciales (`govet`, `errcheck`, `staticcheck`, `revive`, `unused`, etc.).
+- **`gci`**: Organiza los imports de forma determinista dividiéndolos en tres bloques: estándar, terceros y local (`jdgonzalez907/saas-api`).
+- **`goimports`**: Aplica el formateo estándar de Go compatible con la estructuración de imports.
+
+### Comandos de Linter
+
+```bash
+# Ejecutar el linter localmente
+golangci-lint run
+
+# Organizar imports manualmente en un archivo
+gci write --section Standard --section Default --section "Prefix(jdgonzalez907/saas-api)" internal/users/domain/user.go
+```
+
+### Integración en VS Code / Cursor
+
+Al abrir el repositorio en VS Code o Cursor, se aplicarán automáticamente el formateo y la organización de imports al guardar cualquier archivo `.go` gracias a la configuración en `.vscode/settings.json`.
+
+
+---
+
 ## Tests
 
 ```bash
@@ -278,7 +311,7 @@ go test ./...
 go test -coverprofile=coverage.out ./internal/... && go tool cover -func=coverage.out
 ```
 
-La cobertura mínima requerida es **100% de sentencias** en `internal/domain`, `internal/application` e `internal/infrastructure/controllers`.
+La cobertura mínima requerida es **100% de sentencias** en `internal/users/domain`, `internal/users/application` e `internal/users/infrastructure/controllers`.
 
 ---
 
@@ -319,11 +352,13 @@ git branch -d hotfix/nombre-del-problema
 ### Qué verificar antes de cada merge
 
 1. `go build ./...` sin errores.
-2. `go test ./...` todos en verde.
-3. Cobertura 100% en paquetes `internal/`.
-4. Si se cambió una interfaz: mocks regenerados con `mockery` y tests actualizados.
-5. Si se modificó un query SQL: código regenerado con `sqlc generate`.
-6. Si se agregó una migración: probada localmente antes del merge.
+2. `golangci-lint run` limpio y sin advertencias/errores.
+3. `go test ./...` todos en verde.
+4. Cobertura 100% en paquetes `internal/`.
+5. Si se cambió una interfaz: mocks regenerados con `mockery` y tests actualizados.
+6. Si se modificó un query SQL: código regenerado con `sqlc generate`.
+7. Si se agregó una migración: probada localmente antes del merge.
+
 
 ---
 

@@ -9,13 +9,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"jdgonzalez907/saas-api/internal/users/domain"
-	"jdgonzalez907/saas-api/internal/users/infrastructure/controllers"
-	mockApp "jdgonzalez907/saas-api/mocks/application"
-
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	"jdgonzalez907/saas-api/internal/users/domain"
+	"jdgonzalez907/saas-api/internal/users/infrastructure/controllers"
+	mockApp "jdgonzalez907/saas-api/mocks/application"
 )
 
 func TestUpdateUserEmailController_Handle(t *testing.T) {
@@ -61,7 +61,7 @@ func TestUpdateUserEmailController_Handle(t *testing.T) {
 			testName:       "fail - route parameter is not an integer",
 			routeParamID:   "abc",
 			requestBody:    validBody,
-			setupMock:      func(m *mockApp.MockUpdateUserEmailUseCase) {},
+			setupMock:      func(_ *mockApp.MockUpdateUserEmailUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   "parameter id must be a positive integer",
 		},
@@ -69,7 +69,7 @@ func TestUpdateUserEmailController_Handle(t *testing.T) {
 			testName:       "fail - invalid json body",
 			routeParamID:   "1",
 			requestBody:    "{invalid json}",
-			setupMock:      func(m *mockApp.MockUpdateUserEmailUseCase) {},
+			setupMock:      func(_ *mockApp.MockUpdateUserEmailUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   controllers.ErrInvalidRequestBody.Error(),
 		},
@@ -77,7 +77,7 @@ func TestUpdateUserEmailController_Handle(t *testing.T) {
 			testName:       "fail - nil request body",
 			routeParamID:   "1",
 			requestBody:    nil,
-			setupMock:      func(m *mockApp.MockUpdateUserEmailUseCase) {},
+			setupMock:      func(_ *mockApp.MockUpdateUserEmailUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   controllers.ErrInvalidRequestBody.Error(),
 		},
@@ -87,7 +87,7 @@ func TestUpdateUserEmailController_Handle(t *testing.T) {
 			requestBody: controllers.UpdateEmailRequest{
 				Email: &invalidEmail,
 			},
-			setupMock:      func(m *mockApp.MockUpdateUserEmailUseCase) {},
+			setupMock:      func(_ *mockApp.MockUpdateUserEmailUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   domain.ErrInvalidEmail.Error(),
 		},

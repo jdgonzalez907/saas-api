@@ -79,7 +79,7 @@ func (c *CreateUserController) Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, _ := domain.NewUserWithoutId(personalInfo, phone, email)
+	user, _ := domain.NewUserWithoutID(personalInfo, phone, email)
 
 	if err := c.useCase.Execute(r.Context(), user); err != nil {
 		RespondWithDomainError(w, r, err)

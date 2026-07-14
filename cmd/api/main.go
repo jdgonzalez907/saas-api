@@ -1,10 +1,10 @@
 package main
 
 import (
-	"jdgonzalez907/saas-api/internal/configuration"
 	"log"
-
 	_ "time/tzdata" // embed timezone DB for distroless images (no /usr/share/zoneinfo)
+
+	"jdgonzalez907/saas-api/internal/configuration"
 )
 
 func main() {

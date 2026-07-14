@@ -6,16 +6,16 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+
 	"jdgonzalez907/saas-api/internal/users/domain"
 	"jdgonzalez907/saas-api/internal/users/infrastructure/controllers"
 	mockApp "jdgonzalez907/saas-api/mocks/application"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
 
 func TestFindUsersPaginatedController_Handle(t *testing.T) {
-	identification, _ := domain.NewIdentification(domain.IdType_CC, "123456")
+	identification, _ := domain.NewIdentification(domain.IDTypeCC, "123456")
 	phone, _ := domain.NewPhone("57", "987654321")
 	email, _ := domain.NewEmail("test@example.com")
 	address, _ := domain.NewAddress("St", "City", "State", "Country", nil, nil)
@@ -75,28 +75,28 @@ func TestFindUsersPaginatedController_Handle(t *testing.T) {
 		{
 			testName:       "fail - invalid cursor string",
 			urlQuery:       "?cursor=abc",
-			setupMock:      func(m *mockApp.MockFindUsersPaginatedUseCase) {},
+			setupMock:      func(_ *mockApp.MockFindUsersPaginatedUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   "parameter cursor must be a positive integer",
 		},
 		{
 			testName:       "fail - invalid cursor negative",
 			urlQuery:       "?cursor=-5",
-			setupMock:      func(m *mockApp.MockFindUsersPaginatedUseCase) {},
+			setupMock:      func(_ *mockApp.MockFindUsersPaginatedUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   "parameter cursor must be a positive integer",
 		},
 		{
 			testName:       "fail - invalid limit string",
 			urlQuery:       "?limit=abc",
-			setupMock:      func(m *mockApp.MockFindUsersPaginatedUseCase) {},
+			setupMock:      func(_ *mockApp.MockFindUsersPaginatedUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   "parameter limit must be a positive integer",
 		},
 		{
 			testName:       "fail - invalid limit negative",
 			urlQuery:       "?limit=-10",
-			setupMock:      func(m *mockApp.MockFindUsersPaginatedUseCase) {},
+			setupMock:      func(_ *mockApp.MockFindUsersPaginatedUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   "parameter limit must be a positive integer",
 		},

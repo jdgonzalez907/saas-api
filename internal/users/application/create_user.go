@@ -3,6 +3,7 @@ package application
 import (
 	"context"
 	"fmt"
+
 	"jdgonzalez907/saas-api/internal/users/domain"
 )
 
@@ -19,7 +20,7 @@ func NewCreateUserUseCase(userRepository domain.UserRepository) CreateUserUseCas
 }
 
 func (c *createUserUseCase) Execute(ctx context.Context, user *domain.User) error {
-	userFound, err := c.userRepository.FindById(ctx, user.ID())
+	userFound, err := c.userRepository.FindByID(ctx, user.ID())
 	if err != nil {
 		return fmt.Errorf("%v: %w", domain.ErrCreatingUser, err)
 	}
