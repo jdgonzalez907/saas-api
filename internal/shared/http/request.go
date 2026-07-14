@@ -1,4 +1,4 @@
-package controllers
+package http
 
 import (
 	"encoding/json"
@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -59,7 +60,7 @@ func ParseQueryInt32Param(r *http.Request, paramName string) (*int32, error) {
 	return &val32, nil
 }
 
-func ParseJSONBody(r *http.Request, dst any) error {
+func DecodeJSON(r *http.Request, dst any) error {
 	if r.Body == nil {
 		return fmt.Errorf("%w: request body is required", ErrInvalidRequestBody)
 	}
@@ -68,4 +69,18 @@ func ParseJSONBody(r *http.Request, dst any) error {
 		return fmt.Errorf("%w: %s", ErrInvalidRequestBody, err.Error())
 	}
 	return nil
+}
+
+func ParseQueryTimeParam(r *http.Request, paramName string) (*time.Time, error) {
+	valStr := r.URL.Query().Get(paramName)
+	if valStr == "" {
+		return nil, nil
+	}
+
+	val, err := time.Parse(time.RFC3339, valStr)
+	if err != nil {
+		return nil, fmt.Errorf("%w: parameter %s must be a valid RFC3339 timestamp", ErrInvalidQueryParam, paramName)
+	}
+
+	return &val, nil
 }

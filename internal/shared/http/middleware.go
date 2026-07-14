@@ -1,4 +1,4 @@
-package controllers
+package http
 
 import (
 	"context"
@@ -7,14 +7,6 @@ import (
 
 	"github.com/go-chi/chi/v5/middleware"
 )
-
-type contextKey string
-
-const errorHolderKey contextKey = "error_holder"
-
-type ErrorHolder struct {
-	Err error
-}
 
 func JSONContentTypeMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -26,7 +18,7 @@ func JSONContentTypeMiddleware(next http.Handler) http.Handler {
 func ErrorLoggerMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		holder := &ErrorHolder{}
-		ctx := context.WithValue(r.Context(), errorHolderKey, holder)
+		ctx := context.WithValue(r.Context(), ErrorHolderKey, holder)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 
