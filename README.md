@@ -96,9 +96,9 @@ cp .env.example .env
 |---|---|---|---|
 | `HTTP_PORT` | No | `8080` | Puerto del servidor HTTP |
 | `DATABASE_URL` | **Sí** | — | DSN de conexión a Postgres |
-| `POSTGRES_USER` | No | `users` | Solo para docker-compose |
+| `POSTGRES_USER` | No | `saas` | Solo para docker-compose |
 | `POSTGRES_PASSWORD` | No | `secret` | Solo para docker-compose |
-| `POSTGRES_DB` | No | `users_db` | Solo para docker-compose |
+| `POSTGRES_DB` | No | `saas_db` | Solo para docker-compose |
 | `POSTGRES_PORT` | No | `5432` | Solo para docker-compose |
 
 ---
@@ -158,14 +158,14 @@ docker compose logs migrate
 ```bash
 cp .env.example .env
 # Editar DATABASE_URL con la conexión a tu Postgres local:
-# DATABASE_URL=postgres://usuario:password@localhost:5432/users_db?sslmode=disable
+# DATABASE_URL=postgres://usuario:password@localhost:5432/saas_db?sslmode=disable
 ```
 
 ### Aplicar migraciones
 
 ```bash
 migrate -path db/migrations \
-  -database "postgres://usuario:password@localhost:5432/users_db?sslmode=disable" \
+  -database "postgres://usuario:password@localhost:5432/saas_db?sslmode=disable" \
   up
 ```
 
