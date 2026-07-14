@@ -11,8 +11,8 @@ import (
 )
 
 var (
-	ErrInvalidRouteParam = errors.New("invalid route parameter")
-	ErrInvalidQueryParam = errors.New("invalid query parameter")
+	ErrInvalidRouteParam  = errors.New("invalid route parameter")
+	ErrInvalidQueryParam  = errors.New("invalid query parameter")
 	ErrInvalidRequestBody = errors.New("invalid request body")
 )
 

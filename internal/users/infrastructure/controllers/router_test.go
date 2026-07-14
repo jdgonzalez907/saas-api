@@ -5,11 +5,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"jdgonzalez907/saas-api/internal/users/infrastructure/controllers"
-	mockApp "jdgonzalez907/saas-api/mocks/application"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	"jdgonzalez907/saas-api/internal/users/infrastructure/controllers"
+	mockApp "jdgonzalez907/saas-api/mocks/application"
 )
 
 func TestRouterAndMiddleware(t *testing.T) {

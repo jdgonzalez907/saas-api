@@ -2,14 +2,15 @@ package configuration
 
 import (
 	"context"
-	"jdgonzalez907/saas-api/internal/users/application"
-	"jdgonzalez907/saas-api/internal/users/infrastructure/controllers"
-	"jdgonzalez907/saas-api/internal/users/infrastructure/database"
 	"net/http"
 	"time"
 
 	"github.com/caarlos0/env/v11"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"jdgonzalez907/saas-api/internal/users/application"
+	"jdgonzalez907/saas-api/internal/users/infrastructure/controllers"
+	"jdgonzalez907/saas-api/internal/users/infrastructure/database"
 )
 
 type ContentInformation struct {

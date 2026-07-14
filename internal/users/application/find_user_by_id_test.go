@@ -6,16 +6,16 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/mock"
+
 	"jdgonzalez907/saas-api/internal/users/application"
 	"jdgonzalez907/saas-api/internal/users/domain"
 	domainMocks "jdgonzalez907/saas-api/mocks/domain"
-
-	"github.com/stretchr/testify/mock"
 )
 
 func TestFindUserByIdUseCase(t *testing.T) {
 	now := time.Now()
-	identification, _ := domain.NewIdentification(domain.IdType_CC, "1111")
+	identification, _ := domain.NewIdentification(domain.IDTypeCC, "1111")
 	phone, _ := domain.NewPhone("57", "123456789")
 	email, _ := domain.NewEmail("john.doe@example.com")
 	address, _ := domain.NewAddress("123 Main St", "City", "State", "Country", nil, nil)
@@ -51,7 +51,7 @@ func TestFindUserByIdUseCase(t *testing.T) {
 			testName: "success - user found",
 			inputID:  int64(1),
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", mock.Anything, int64(1)).Return(user, nil)
+				m.On("FindByID", mock.Anything, int64(1)).Return(user, nil)
 			},
 			expectedResult: user,
 			expectedError:  nil,
@@ -59,7 +59,7 @@ func TestFindUserByIdUseCase(t *testing.T) {
 		{
 			testName: "fail - invalid user id (<= 0)",
 			inputID:  int64(0),
-			mockExpectations: func(m *domainMocks.MockUserRepository) {
+			mockExpectations: func(_ *domainMocks.MockUserRepository) {
 				// No expectations
 			},
 			expectedResult: nil,
@@ -69,7 +69,7 @@ func TestFindUserByIdUseCase(t *testing.T) {
 			testName: "fail - user not found",
 			inputID:  int64(99),
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", mock.Anything, int64(99)).Return(nil, nil)
+				m.On("FindByID", mock.Anything, int64(99)).Return(nil, nil)
 			},
 			expectedResult: nil,
 			expectedError:  domain.ErrUserNotFound,
@@ -78,7 +78,7 @@ func TestFindUserByIdUseCase(t *testing.T) {
 			testName: "fail - repository error",
 			inputID:  int64(1),
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindById", mock.Anything, int64(1)).Return(nil, dbErr)
+				m.On("FindByID", mock.Anything, int64(1)).Return(nil, dbErr)
 			},
 			expectedResult: nil,
 			expectedError:  domain.ErrFindingUserByID,
@@ -98,9 +98,7 @@ func TestFindUserByIdUseCase(t *testing.T) {
 					t.Fatalf("expected error: %v, got nil", tc.expectedError)
 				}
 				if !errors.Is(err, tc.expectedError) {
-					if tc.expectedError == domain.ErrFindingUserByID && errors.Unwrap(err) != nil {
-						// Success: wrapped infra error
-					} else {
+					if !(tc.expectedError == domain.ErrFindingUserByID && errors.Unwrap(err) != nil) {
 						t.Errorf("expected error: %v, got %v", tc.expectedError, err)
 					}
 				}

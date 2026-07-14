@@ -1,8 +1,9 @@
 package domain_test
 
 import (
-	"jdgonzalez907/saas-api/internal/users/domain"
 	"testing"
+
+	"jdgonzalez907/saas-api/internal/users/domain"
 )
 
 func TestNewIdentification(t *testing.T) {
@@ -14,7 +15,7 @@ func TestNewIdentification(t *testing.T) {
 	}{
 		{
 			testName:      "success - create identification",
-			idType:        domain.IdType_CC,
+			idType:        domain.IDTypeCC,
 			number:        "123456789",
 			expectedError: nil,
 		},
@@ -26,7 +27,7 @@ func TestNewIdentification(t *testing.T) {
 		},
 		{
 			testName:      "fail - empty number",
-			idType:        domain.IdType_CC,
+			idType:        domain.IDTypeCC,
 			number:        "",
 			expectedError: domain.ErrInvalidIdentificationNumber,
 		},
@@ -56,10 +57,10 @@ func TestNewIdentification(t *testing.T) {
 }
 
 func TestIdentification_Equals(t *testing.T) {
-	idBase, _ := domain.NewIdentification(domain.IdType_CC, "123456789")
-	idSame, _ := domain.NewIdentification(domain.IdType_CC, "123456789")
-	idDiffType, _ := domain.NewIdentification(domain.IdType_PASSPORT, "123456789")
-	idDiffNum, _ := domain.NewIdentification(domain.IdType_CC, "987654321")
+	idBase, _ := domain.NewIdentification(domain.IDTypeCC, "123456789")
+	idSame, _ := domain.NewIdentification(domain.IDTypeCC, "123456789")
+	idDiffType, _ := domain.NewIdentification(domain.IDTypePASSPORT, "123456789")
+	idDiffNum, _ := domain.NewIdentification(domain.IDTypeCC, "987654321")
 
 	testCases := []struct {
 		testName string

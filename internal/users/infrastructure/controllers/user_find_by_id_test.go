@@ -9,17 +9,17 @@ import (
 	"testing"
 	"time"
 
-	"jdgonzalez907/saas-api/internal/users/domain"
-	"jdgonzalez907/saas-api/internal/users/infrastructure/controllers"
-	mockApp "jdgonzalez907/saas-api/mocks/application"
-
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	"jdgonzalez907/saas-api/internal/users/domain"
+	"jdgonzalez907/saas-api/internal/users/infrastructure/controllers"
+	mockApp "jdgonzalez907/saas-api/mocks/application"
 )
 
 func TestFindUserByIDController_Handle(t *testing.T) {
-	identification, _ := domain.NewIdentification(domain.IdType_CC, "123456789")
+	identification, _ := domain.NewIdentification(domain.IDTypeCC, "123456789")
 	phone, _ := domain.NewPhone("57", "3112223344")
 	email, _ := domain.NewEmail("test@example.com")
 	address, _ := domain.NewAddress("Street 1", "City", "State", "Country", nil, nil)
@@ -61,21 +61,21 @@ func TestFindUserByIDController_Handle(t *testing.T) {
 		{
 			testName:       "fail - route parameter is not an integer",
 			routeParamID:   "abc",
-			setupMock:      func(m *mockApp.MockFindUserByIDUseCase) {},
+			setupMock:      func(_ *mockApp.MockFindUserByIDUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   "parameter id must be a positive integer",
 		},
 		{
 			testName:       "fail - route parameter is empty",
 			routeParamID:   "",
-			setupMock:      func(m *mockApp.MockFindUserByIDUseCase) {},
+			setupMock:      func(_ *mockApp.MockFindUserByIDUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   "parameter id is missing",
 		},
 		{
 			testName:       "fail - route parameter is negative",
 			routeParamID:   "-5",
-			setupMock:      func(m *mockApp.MockFindUserByIDUseCase) {},
+			setupMock:      func(_ *mockApp.MockFindUserByIDUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   "parameter id must be a positive integer",
 		},
