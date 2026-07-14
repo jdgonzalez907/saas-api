@@ -8,7 +8,7 @@ import (
 )
 
 type DeletePostUseCase interface {
-	Execute(ctx context.Context, id int64) error
+	Execute(ctx context.Context, id int64, deletedByID int64) error
 }
 
 type deletePostUseCase struct {
@@ -19,7 +19,7 @@ func NewDeletePostUseCase(postRepository domain.PostRepository) DeletePostUseCas
 	return &deletePostUseCase{postRepository: postRepository}
 }
 
-func (d *deletePostUseCase) Execute(ctx context.Context, id int64) error {
+func (d *deletePostUseCase) Execute(ctx context.Context, id int64, deletedByID int64) error {
 	post, err := d.postRepository.FindByID(ctx, id)
 	if err != nil {
 		return fmt.Errorf("%v: %w", domain.ErrDeletingPost, err)
@@ -28,7 +28,7 @@ func (d *deletePostUseCase) Execute(ctx context.Context, id int64) error {
 		return domain.ErrPostNotFound
 	}
 
-	err = d.postRepository.Delete(ctx, id)
+	err = d.postRepository.Delete(ctx, id, deletedByID)
 	if err != nil {
 		return fmt.Errorf("%v: %w", domain.ErrDeletingPost, err)
 	}
