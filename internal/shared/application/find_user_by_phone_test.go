@@ -6,13 +6,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+
 	"jdgonzalez907/saas-api/internal/shared/application"
 	"jdgonzalez907/saas-api/internal/shared/domain"
 	domainUser "jdgonzalez907/saas-api/internal/users/domain"
 	domainMocks "jdgonzalez907/saas-api/mocks/domain"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
 
 func TestExecute(t *testing.T) {
@@ -95,7 +95,7 @@ func TestExecute(t *testing.T) {
 			testName:         "fail - invalid phone number",
 			inputCountryCode: "",
 			inputNumber:      "1234567890",
-			mockExpectations: func(m *domainMocks.MockUserRepository) {},
+			mockExpectations: func(_ *domainMocks.MockUserRepository) {},
 			expectedResult:   nil,
 			expectedError:    domainUser.ErrInvalidPhone,
 		},

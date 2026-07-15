@@ -4,9 +4,9 @@ import (
 	"testing"
 	"time"
 
-	"jdgonzalez907/saas-api/internal/users/domain"
-
 	"github.com/stretchr/testify/assert"
+
+	"jdgonzalez907/saas-api/internal/users/domain"
 )
 
 var (
