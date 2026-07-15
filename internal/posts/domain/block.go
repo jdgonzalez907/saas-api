@@ -18,17 +18,17 @@ const (
 )
 
 var (
-	ErrInvalidBlockType          = errors.New("invalid block type")
-	ErrInvalidBlockStructure     = errors.New("invalid block structure")
-	ErrEmptyImageURL             = errors.New("image url cannot be empty")
-	ErrInvalidMarkStyle          = errors.New("invalid mark style")
-	ErrInvalidMarkStructure      = errors.New("invalid mark structure")
-	ErrInvalidListitemStructure  = errors.New("invalid listitem structure")
-	ErrInvalidParagraphStructure = errors.New("invalid paragraph structure")
-	ErrInvalidTitleStructure     = errors.New("invalid title structure")
-	ErrInvalidSubtitleStructure  = errors.New("invalid subtitle structure")
-	ErrListDirectTextNotEmpty    = errors.New("list direct text must be empty")
-	ErrInvalidListChildren       = errors.New("invalid list children")
+	ErrInvalidBlockType          = errors.New("invalid content block type")
+	ErrInvalidBlockStructure     = errors.New("block structure does not match its type")
+	ErrEmptyImageURL             = errors.New("image block must specify a valid image url")
+	ErrInvalidMarkStyle          = errors.New("text formatting style must be bold or italic")
+	ErrInvalidMarkStructure      = errors.New("formatted text cannot contain nested blocks")
+	ErrInvalidListitemStructure  = errors.New("list item can only contain formatted text")
+	ErrInvalidParagraphStructure = errors.New("paragraph can only contain formatted text")
+	ErrInvalidTitleStructure     = errors.New("title block cannot contain nested blocks")
+	ErrInvalidSubtitleStructure  = errors.New("subtitle block cannot contain nested blocks")
+	ErrListDirectTextNotEmpty    = errors.New("list block cannot contain direct text, only list items")
+	ErrInvalidListChildren       = errors.New("list block can only contain list items")
 )
 
 type Block struct {

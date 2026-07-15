@@ -57,54 +57,110 @@ func TestNewPost_Validation(t *testing.T) {
 		wantErr error
 	}{
 		{
-			name: "fail - invalid ID",
+			name: "fail - invalid ID (zero)",
 			params: PostParams{
 				ID:                 0,
 				ContentInformation: contentInfo,
 				Status:             StatusDraft,
 				CreatedAt:          now,
 				UpdatedAt:          now,
-				CreatedBy:          1,
-				UpdatedBy:          1,
+				AuthorID:           1,
+				LastEditorID:       1,
 			},
 			wantErr: ErrInvalidPostID,
 		},
 		{
-			name: "fail - invalid CreatedBy",
+			name: "fail - invalid ID (negative)",
 			params: PostParams{
-				ID:                 1,
+				ID:                 -5,
 				ContentInformation: contentInfo,
 				Status:             StatusDraft,
 				CreatedAt:          now,
 				UpdatedAt:          now,
-				CreatedBy:          0,
-				UpdatedBy:          1,
+				AuthorID:           1,
+				LastEditorID:       1,
 			},
-			wantErr: ErrInvalidUserID,
+			wantErr: ErrInvalidPostID,
 		},
 		{
-			name: "fail - invalid UpdatedBy",
+			name: "fail - invalid AuthorID",
 			params: PostParams{
 				ID:                 1,
 				ContentInformation: contentInfo,
 				Status:             StatusDraft,
 				CreatedAt:          now,
 				UpdatedAt:          now,
-				CreatedBy:          1,
-				UpdatedBy:          -1,
+				AuthorID:           0,
+				LastEditorID:       1,
 			},
-			wantErr: ErrInvalidUserID,
+			wantErr: ErrInvalidAuthorID,
 		},
 		{
-			name: "success - valid params",
+			name: "fail - invalid LastEditorID",
 			params: PostParams{
 				ID:                 1,
 				ContentInformation: contentInfo,
 				Status:             StatusDraft,
 				CreatedAt:          now,
 				UpdatedAt:          now,
-				CreatedBy:          1,
-				UpdatedBy:          1,
+				AuthorID:           1,
+				LastEditorID:       -1,
+			},
+			wantErr: ErrInvalidLastEditorID,
+		},
+		{
+			name: "fail - draft with publication date",
+			params: PostParams{
+				ID:                 1,
+				ContentInformation: contentInfo,
+				Status:             StatusDraft,
+				CreatedAt:          now,
+				UpdatedAt:          now,
+				AuthorID:           1,
+				LastEditorID:       1,
+				PublishedAt:        &now,
+			},
+			wantErr: ErrDraftCannotHavePublicationDate,
+		},
+		{
+			name: "fail - published without publication date",
+			params: PostParams{
+				ID:                 1,
+				ContentInformation: contentInfo,
+				Status:             StatusPublished,
+				CreatedAt:          now,
+				UpdatedAt:          now,
+				AuthorID:           1,
+				LastEditorID:       1,
+				PublishedAt:        nil,
+			},
+			wantErr: ErrPublishedMustHavePublicationDate,
+		},
+		{
+			name: "success - valid draft",
+			params: PostParams{
+				ID:                 1,
+				ContentInformation: contentInfo,
+				Status:             StatusDraft,
+				CreatedAt:          now,
+				UpdatedAt:          now,
+				AuthorID:           1,
+				LastEditorID:       1,
+				PublishedAt:        nil,
+			},
+			wantErr: nil,
+		},
+		{
+			name: "success - valid published",
+			params: PostParams{
+				ID:                 1,
+				ContentInformation: contentInfo,
+				Status:             StatusPublished,
+				CreatedAt:          now,
+				UpdatedAt:          now,
+				AuthorID:           1,
+				LastEditorID:       1,
+				PublishedAt:        &now,
 			},
 			wantErr: nil,
 		},
@@ -124,14 +180,14 @@ func TestNewPostWithoutID_Validation(t *testing.T) {
 	titleBlock, _ := NewTitleBlock("Title")
 	contentInfo, _ := NewContentInformation("Post Title", []Block{titleBlock})
 
-	t.Run("fail - invalid createdBy", func(t *testing.T) {
+	t.Run("fail - invalid authorID", func(t *testing.T) {
 		_, err := NewPostWithoutID(contentInfo, StatusDraft, 0)
-		if !errors.Is(err, ErrInvalidUserID) {
-			t.Errorf("expected ErrInvalidUserID, got %v", err)
+		if !errors.Is(err, ErrInvalidAuthorID) {
+			t.Errorf("expected ErrInvalidAuthorID, got %v", err)
 		}
 	})
 
-	t.Run("success - valid", func(t *testing.T) {
+	t.Run("success - valid draft", func(t *testing.T) {
 		post, err := NewPostWithoutID(contentInfo, StatusDraft, 5)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
@@ -139,14 +195,30 @@ func TestNewPostWithoutID_Validation(t *testing.T) {
 		if post.ID() != UnassignedPostID {
 			t.Errorf("expected ID to be unassigned (%d), got %d", UnassignedPostID, post.ID())
 		}
-		if post.CreatedBy() != 5 {
-			t.Errorf("expected CreatedBy 5, got %d", post.CreatedBy())
+		if post.AuthorID() != 5 {
+			t.Errorf("expected AuthorID 5, got %d", post.AuthorID())
 		}
-		if post.UpdatedBy() != 5 {
-			t.Errorf("expected UpdatedBy 5, got %d", post.UpdatedBy())
+		if post.LastEditorID() != 5 {
+			t.Errorf("expected LastEditorID 5, got %d", post.LastEditorID())
+		}
+		if post.PublishedAt() != nil {
+			t.Error("expected publishedAt to be nil for draft")
 		}
 		if post.CreatedAt().IsZero() || post.UpdatedAt().IsZero() {
 			t.Error("expected timestamps to be initialized")
+		}
+	})
+
+	t.Run("success - valid published", func(t *testing.T) {
+		post, err := NewPostWithoutID(contentInfo, StatusPublished, 5)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if post.PublishedAt() == nil {
+			t.Fatal("expected publishedAt to be set for published post")
+		}
+		if post.PublishedAt().IsZero() {
+			t.Error("expected publication date to be valid")
 		}
 	})
 }
@@ -162,8 +234,9 @@ func TestPost_Getters(t *testing.T) {
 		Status:             StatusDraft,
 		CreatedAt:          now,
 		UpdatedAt:          now,
-		CreatedBy:          10,
-		UpdatedBy:          10,
+		AuthorID:           10,
+		LastEditorID:       12,
+		PublishedAt:        nil,
 	})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -184,11 +257,14 @@ func TestPost_Getters(t *testing.T) {
 	if !post.UpdatedAt().Equal(now) {
 		t.Errorf("expected updatedAt %v, got %v", now, post.UpdatedAt())
 	}
-	if post.CreatedBy() != 10 {
-		t.Errorf("expected CreatedBy 10, got %d", post.CreatedBy())
+	if post.AuthorID() != 10 {
+		t.Errorf("expected AuthorID 10, got %d", post.AuthorID())
 	}
-	if post.UpdatedBy() != 10 {
-		t.Errorf("expected UpdatedBy 10, got %d", post.UpdatedBy())
+	if post.LastEditorID() != 12 {
+		t.Errorf("expected LastEditorID 12, got %d", post.LastEditorID())
+	}
+	if post.PublishedAt() != nil {
+		t.Errorf("expected PublishedAt to be nil, got %v", post.PublishedAt())
 	}
 }
 
@@ -199,6 +275,7 @@ func TestPost_Equals(t *testing.T) {
 	contentInfo2, _ := NewContentInformation("Post A", []Block{titleBlock2})
 
 	now := time.Now().UTC()
+	anotherTime := now.Add(time.Second)
 
 	post1, _ := NewPost(PostParams{
 		ID:                 1,
@@ -206,8 +283,9 @@ func TestPost_Equals(t *testing.T) {
 		Status:             StatusDraft,
 		CreatedAt:          now,
 		UpdatedAt:          now,
-		CreatedBy:          10,
-		UpdatedBy:          10,
+		AuthorID:           10,
+		LastEditorID:       10,
+		PublishedAt:        nil,
 	})
 
 	post2, _ := NewPost(PostParams{
@@ -216,8 +294,9 @@ func TestPost_Equals(t *testing.T) {
 		Status:             StatusDraft,
 		CreatedAt:          now,
 		UpdatedAt:          now,
-		CreatedBy:          10,
-		UpdatedBy:          10,
+		AuthorID:           10,
+		LastEditorID:       10,
+		PublishedAt:        nil,
 	})
 
 	postDifferentID, _ := NewPost(PostParams{
@@ -226,8 +305,8 @@ func TestPost_Equals(t *testing.T) {
 		Status:             StatusDraft,
 		CreatedAt:          now,
 		UpdatedAt:          now,
-		CreatedBy:          10,
-		UpdatedBy:          10,
+		AuthorID:           10,
+		LastEditorID:       10,
 	})
 
 	postDifferentStatus, _ := NewPost(PostParams{
@@ -236,28 +315,29 @@ func TestPost_Equals(t *testing.T) {
 		Status:             StatusPublished,
 		CreatedAt:          now,
 		UpdatedAt:          now,
-		CreatedBy:          10,
-		UpdatedBy:          10,
+		AuthorID:           10,
+		LastEditorID:       10,
+		PublishedAt:        &now,
 	})
 
-	postDifferentCreatedBy, _ := NewPost(PostParams{
+	postDifferentAuthorID, _ := NewPost(PostParams{
 		ID:                 1,
 		ContentInformation: contentInfo1,
 		Status:             StatusDraft,
 		CreatedAt:          now,
 		UpdatedAt:          now,
-		CreatedBy:          11,
-		UpdatedBy:          10,
+		AuthorID:           11,
+		LastEditorID:       10,
 	})
 
-	postDifferentUpdatedBy, _ := NewPost(PostParams{
+	postDifferentLastEditorID, _ := NewPost(PostParams{
 		ID:                 1,
 		ContentInformation: contentInfo1,
 		Status:             StatusDraft,
 		CreatedAt:          now,
 		UpdatedAt:          now,
-		CreatedBy:          10,
-		UpdatedBy:          11,
+		AuthorID:           10,
+		LastEditorID:       11,
 	})
 
 	postDifferentCreatedAt, _ := NewPost(PostParams{
@@ -266,8 +346,8 @@ func TestPost_Equals(t *testing.T) {
 		Status:             StatusDraft,
 		CreatedAt:          now.Add(time.Second),
 		UpdatedAt:          now,
-		CreatedBy:          10,
-		UpdatedBy:          10,
+		AuthorID:           10,
+		LastEditorID:       10,
 	})
 
 	postDifferentUpdatedAt, _ := NewPost(PostParams{
@@ -276,8 +356,8 @@ func TestPost_Equals(t *testing.T) {
 		Status:             StatusDraft,
 		CreatedAt:          now,
 		UpdatedAt:          now.Add(time.Second),
-		CreatedBy:          10,
-		UpdatedBy:          10,
+		AuthorID:           10,
+		LastEditorID:       10,
 	})
 
 	postDifferentContentInfo, _ := NewPost(PostParams{
@@ -286,9 +366,54 @@ func TestPost_Equals(t *testing.T) {
 		Status:             StatusDraft,
 		CreatedAt:          now,
 		UpdatedAt:          now,
-		CreatedBy:          10,
-		UpdatedBy:          10,
+		AuthorID:           10,
+		LastEditorID:       10,
 	})
+
+	postPublishedBase, _ := NewPost(PostParams{
+		ID:                 1,
+		ContentInformation: contentInfo1,
+		Status:             StatusPublished,
+		CreatedAt:          now,
+		UpdatedAt:          now,
+		AuthorID:           10,
+		LastEditorID:       10,
+		PublishedAt:        &now,
+	})
+
+	postPublishedDiffTime, _ := NewPost(PostParams{
+		ID:                 1,
+		ContentInformation: contentInfo1,
+		Status:             StatusPublished,
+		CreatedAt:          now,
+		UpdatedAt:          now,
+		AuthorID:           10,
+		LastEditorID:       10,
+		PublishedAt:        &anotherTime,
+	})
+
+	postPublishedDiffContent, _ := NewPost(PostParams{
+		ID:                 1,
+		ContentInformation: contentInfo2,
+		Status:             StatusPublished,
+		CreatedAt:          now,
+		UpdatedAt:          now,
+		AuthorID:           10,
+		LastEditorID:       10,
+		PublishedAt:        &now,
+	})
+
+	// Bypassing constructor to test direct Equals boundary checks for coverage
+	postMismatchedPublishedAt1 := &Post{
+		id:          1,
+		status:      StatusPublished,
+		publishedAt: nil,
+	}
+	postMismatchedPublishedAt2 := &Post{
+		id:          1,
+		status:      StatusPublished,
+		publishedAt: &now,
+	}
 
 	testCases := []struct {
 		name     string
@@ -297,7 +422,7 @@ func TestPost_Equals(t *testing.T) {
 		expected bool
 	}{
 		{
-			name:     "success - identical posts",
+			name:     "success - identical draft posts",
 			base:     post1,
 			other:    post2,
 			expected: true,
@@ -321,15 +446,15 @@ func TestPost_Equals(t *testing.T) {
 			expected: false,
 		},
 		{
-			name:     "fail - different createdBy",
+			name:     "fail - different authorID",
 			base:     post1,
-			other:    postDifferentCreatedBy,
+			other:    postDifferentAuthorID,
 			expected: false,
 		},
 		{
-			name:     "fail - different updatedBy",
+			name:     "fail - different lastEditorID",
 			base:     post1,
-			other:    postDifferentUpdatedBy,
+			other:    postDifferentLastEditorID,
 			expected: false,
 		},
 		{
@@ -348,6 +473,42 @@ func TestPost_Equals(t *testing.T) {
 			name:     "fail - different contentInformation",
 			base:     post1,
 			other:    postDifferentContentInfo,
+			expected: false,
+		},
+		{
+			name:     "fail - draft vs published (nil vs non-nil publishedAt)",
+			base:     post1,
+			other:    postPublishedBase,
+			expected: false,
+		},
+		{
+			name:     "fail - different publishedAt times",
+			base:     postPublishedBase,
+			other:    postPublishedDiffTime,
+			expected: false,
+		},
+		{
+			name:     "success - identical published posts",
+			base:     postPublishedBase,
+			other:    postPublishedBase,
+			expected: true,
+		},
+		{
+			name:     "fail - published vs draft (non-nil vs nil publishedAt)",
+			base:     postPublishedBase,
+			other:    post1,
+			expected: false,
+		},
+		{
+			name:     "fail - published posts with different content",
+			base:     postPublishedBase,
+			other:    postPublishedDiffContent,
+			expected: false,
+		},
+		{
+			name:     "fail - same status mismatched publishedAt pointers",
+			base:     postMismatchedPublishedAt1,
+			other:    postMismatchedPublishedAt2,
 			expected: false,
 		},
 	}
@@ -374,18 +535,19 @@ func TestPost_Wither(t *testing.T) {
 		Status:             StatusDraft,
 		CreatedAt:          now,
 		UpdatedAt:          now,
-		CreatedBy:          5,
-		UpdatedBy:          5,
+		AuthorID:           5,
+		LastEditorID:       5,
+		PublishedAt:        nil,
 	})
 
-	t.Run("fail - invalid updatedBy user ID", func(t *testing.T) {
+	t.Run("fail - invalid lastEditorID", func(t *testing.T) {
 		_, err := post.WithContentAndStatus(contentInfo2, StatusPublished, 0)
-		if !errors.Is(err, ErrInvalidUserID) {
-			t.Errorf("expected ErrInvalidUserID, got %v", err)
+		if !errors.Is(err, ErrInvalidLastEditorID) {
+			t.Errorf("expected ErrInvalidLastEditorID, got %v", err)
 		}
 	})
 
-	t.Run("success - valid wither", func(t *testing.T) {
+	t.Run("success - draft to published", func(t *testing.T) {
 		time.Sleep(10 * time.Millisecond) // Ensure time moves forward
 		updated, err := post.WithContentAndStatus(contentInfo2, StatusPublished, 6)
 		if err != nil {
@@ -398,8 +560,8 @@ func TestPost_Wither(t *testing.T) {
 		if !updated.CreatedAt().Equal(post.CreatedAt()) {
 			t.Error("expected CreatedAt to remain unchanged")
 		}
-		if updated.CreatedBy() != post.CreatedBy() {
-			t.Error("expected CreatedBy to remain unchanged")
+		if updated.AuthorID() != post.AuthorID() {
+			t.Error("expected AuthorID to remain unchanged")
 		}
 
 		if !updated.ContentInformation().Equals(contentInfo2) {
@@ -408,11 +570,62 @@ func TestPost_Wither(t *testing.T) {
 		if updated.Status() != StatusPublished {
 			t.Errorf("expected status to be updated to %s, got %s", StatusPublished, updated.Status())
 		}
-		if updated.UpdatedBy() != 6 {
-			t.Errorf("expected UpdatedBy to be 6, got %d", updated.UpdatedBy())
+		if updated.LastEditorID() != 6 {
+			t.Errorf("expected LastEditorID to be 6, got %d", updated.LastEditorID())
 		}
 		if !updated.UpdatedAt().After(post.UpdatedAt()) {
 			t.Error("expected UpdatedAt to be updated to a newer time")
+		}
+		if updated.PublishedAt() == nil {
+			t.Error("expected PublishedAt to be set when transitioning to published")
+		}
+	})
+
+	t.Run("success - published remains published (preserves publishedAt)", func(t *testing.T) {
+		pubTime := now.Add(-time.Hour)
+		pubPost, _ := NewPost(PostParams{
+			ID:                 1,
+			ContentInformation: contentInfo1,
+			Status:             StatusPublished,
+			CreatedAt:          now,
+			UpdatedAt:          now,
+			AuthorID:           5,
+			LastEditorID:       5,
+			PublishedAt:        &pubTime,
+		})
+
+		updated, err := pubPost.WithContentAndStatus(contentInfo2, StatusPublished, 6)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if !updated.PublishedAt().Equal(pubTime) {
+			t.Errorf("expected publishedAt to be preserved as %v, got %v", pubTime, updated.PublishedAt())
+		}
+	})
+
+	t.Run("success - published to draft (clears publishedAt)", func(t *testing.T) {
+		pubPost, _ := NewPost(PostParams{
+			ID:                 1,
+			ContentInformation: contentInfo1,
+			Status:             StatusPublished,
+			CreatedAt:          now,
+			UpdatedAt:          now,
+			AuthorID:           5,
+			LastEditorID:       5,
+			PublishedAt:        &now,
+		})
+
+		updated, err := pubPost.WithContentAndStatus(contentInfo2, StatusDraft, 6)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if updated.Status() != StatusDraft {
+			t.Errorf("expected status to be draft, got %s", updated.Status())
+		}
+		if updated.PublishedAt() != nil {
+			t.Error("expected publishedAt to be cleared (nil) when transitioning back to draft")
 		}
 	})
 }
@@ -428,8 +641,9 @@ func TestPostDTO_Mapping(t *testing.T) {
 		Status:             StatusPublished,
 		CreatedAt:          now,
 		UpdatedAt:          now,
-		CreatedBy:          8,
-		UpdatedBy:          9,
+		AuthorID:           8,
+		LastEditorID:       9,
+		PublishedAt:        &now,
 	})
 
 	dto := post.ToDTO()
@@ -443,11 +657,14 @@ func TestPostDTO_Mapping(t *testing.T) {
 	if dto.Status != "published" {
 		t.Errorf("expected dto Status published, got %s", dto.Status)
 	}
-	if dto.CreatedBy != 8 {
-		t.Errorf("expected dto CreatedBy 8, got %d", dto.CreatedBy)
+	if dto.AuthorID != 8 {
+		t.Errorf("expected dto AuthorID 8, got %d", dto.AuthorID)
 	}
-	if dto.UpdatedBy != 9 {
-		t.Errorf("expected dto UpdatedBy 9, got %d", dto.UpdatedBy)
+	if dto.LastEditorID != 9 {
+		t.Errorf("expected dto LastEditorID 9, got %d", dto.LastEditorID)
+	}
+	if dto.PublishedAt == nil || !dto.PublishedAt.Equal(now) {
+		t.Errorf("expected dto PublishedAt %v, got %v", now, dto.PublishedAt)
 	}
 
 	// Normal reconstruction
@@ -499,11 +716,11 @@ func TestPostFromDTO_Validation(t *testing.T) {
 						},
 					},
 				},
-				Status:    "draft",
-				CreatedAt: now,
-				UpdatedAt: now,
-				CreatedBy: 1,
-				UpdatedBy: 1,
+				Status:       "draft",
+				CreatedAt:    now,
+				UpdatedAt:    now,
+				AuthorID:     1,
+				LastEditorID: 1,
 			},
 			wantErr: ErrInvalidBlockType,
 		},
@@ -515,13 +732,30 @@ func TestPostFromDTO_Validation(t *testing.T) {
 					Title:   "Title",
 					Content: nil,
 				},
-				Status:    "invalid-status",
-				CreatedAt: now,
-				UpdatedAt: now,
-				CreatedBy: 1,
-				UpdatedBy: 1,
+				Status:       "invalid-status",
+				CreatedAt:    now,
+				UpdatedAt:    now,
+				AuthorID:     1,
+				LastEditorID: 1,
 			},
 			wantErr: ErrInvalidPostStatus,
+		},
+		{
+			name: "fail - unassigned post with draft state having published date",
+			dto: &PostDTO{
+				ID: UnassignedPostID,
+				ContentInformationDTO: ContentInformationDTO{
+					Title:   "Title",
+					Content: nil,
+				},
+				Status:       "draft",
+				CreatedAt:    now,
+				UpdatedAt:    now,
+				AuthorID:     1,
+				LastEditorID: 1,
+				PublishedAt:  &now,
+			},
+			wantErr: ErrDraftCannotHavePublicationDate,
 		},
 	}
 
@@ -535,5 +769,32 @@ func TestPostFromDTO_Validation(t *testing.T) {
 				t.Error("expected returned post to be nil")
 			}
 		})
+	}
+}
+
+func TestPost_EnsureInvariants_Private(t *testing.T) {
+	t.Run("ensureInvariants - negative ID", func(t *testing.T) {
+		p := &Post{
+			id: -1,
+		}
+		err := p.ensureInvariants()
+		if !errors.Is(err, ErrInvalidPostID) {
+			t.Errorf("expected ErrInvalidPostID, got %v", err)
+		}
+	})
+}
+
+func TestPost_AssignID(t *testing.T) {
+	titleBlock, _ := NewTitleBlock("Title")
+	contentInfo, _ := NewContentInformation("Post Title", []Block{titleBlock})
+	post, _ := NewPostWithoutID(contentInfo, StatusDraft, 10)
+
+	if post.ID() != UnassignedPostID {
+		t.Errorf("expected ID to be unassigned (0), got %d", post.ID())
+	}
+
+	post.AssignID(42)
+	if post.ID() != 42 {
+		t.Errorf("expected ID to be 42 after AssignID, got %d", post.ID())
 	}
 }

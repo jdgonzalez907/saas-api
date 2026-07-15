@@ -10,23 +10,23 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"jdgonzalez907/saas-api/internal/postgres"
+	"jdgonzalez907/saas-api/internal/shared/infrastructure/postgres"
 	"jdgonzalez907/saas-api/internal/users/domain"
 )
 
-type PostgresUserRepository struct {
+type postgresUserRepository struct {
 	queries *postgres.Queries
 	pool    *pgxpool.Pool
 }
 
-func NewPostgresUserRepository(pool *pgxpool.Pool) *PostgresUserRepository {
-	return &PostgresUserRepository{
+func NewPostgresUserRepository(pool *pgxpool.Pool) domain.UserRepository {
+	return &postgresUserRepository{
 		queries: postgres.New(pool),
 		pool:    pool,
 	}
 }
 
-func (r *PostgresUserRepository) FindByID(ctx context.Context, id int64) (*domain.User, error) {
+func (r *postgresUserRepository) FindByID(ctx context.Context, id int64) (*domain.User, error) {
 	row, err := r.queries.FindUserByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -42,7 +42,7 @@ func (r *PostgresUserRepository) FindByID(ctx context.Context, id int64) (*domai
 	)
 }
 
-func (r *PostgresUserRepository) FindByPhone(ctx context.Context, phone domain.Phone) (*domain.User, error) {
+func (r *postgresUserRepository) FindByPhone(ctx context.Context, phone domain.Phone) (*domain.User, error) {
 	row, err := r.queries.FindUserByPhone(ctx, postgres.FindUserByPhoneParams{
 		PhoneCountryCode: phone.CountryCode(),
 		PhoneNumber:      phone.Number(),
@@ -61,7 +61,7 @@ func (r *PostgresUserRepository) FindByPhone(ctx context.Context, phone domain.P
 	)
 }
 
-func (r *PostgresUserRepository) FindByEmail(ctx context.Context, email domain.Email) (*domain.User, error) {
+func (r *postgresUserRepository) FindByEmail(ctx context.Context, email domain.Email) (*domain.User, error) {
 	row, err := r.queries.FindUserByEmail(ctx, pgtype.Text{
 		String: email.Value(),
 		Valid:  true,
@@ -80,7 +80,7 @@ func (r *PostgresUserRepository) FindByEmail(ctx context.Context, email domain.E
 	)
 }
 
-func (r *PostgresUserRepository) FindAll(ctx context.Context, pagination domain.Pagination) ([]*domain.User, error) {
+func (r *postgresUserRepository) FindAll(ctx context.Context, pagination domain.Pagination) ([]*domain.User, error) {
 	limit := pagination.Limit()
 	var dbRows []postgres.FindUsersPaginatedWithCursorRow
 
@@ -119,7 +119,7 @@ func (r *PostgresUserRepository) FindAll(ctx context.Context, pagination domain.
 	return users, nil
 }
 
-func (r *PostgresUserRepository) Create(ctx context.Context, user *domain.User) error {
+func (r *postgresUserRepository) Create(ctx context.Context, user *domain.User) error {
 	addressBytes, err := toJSONB(user.Address())
 	if err != nil {
 		return err
@@ -146,7 +146,7 @@ func (r *PostgresUserRepository) Create(ctx context.Context, user *domain.User) 
 	return nil
 }
 
-func (r *PostgresUserRepository) Update(ctx context.Context, user *domain.User) error {
+func (r *postgresUserRepository) Update(ctx context.Context, user *domain.User) error {
 	addressBytes, err := toJSONB(user.Address())
 	if err != nil {
 		return err
@@ -167,7 +167,7 @@ func (r *PostgresUserRepository) Update(ctx context.Context, user *domain.User) 
 	})
 }
 
-func (r *PostgresUserRepository) Delete(ctx context.Context, id int64) error {
+func (r *postgresUserRepository) Delete(ctx context.Context, id int64) error {
 	return r.queries.DeleteUser(ctx, id)
 }
 

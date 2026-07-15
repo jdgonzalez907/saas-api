@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 
+	sharedHttp "jdgonzalez907/saas-api/internal/shared/infrastructure/http"
 	"jdgonzalez907/saas-api/internal/users/application"
 )
 
@@ -16,18 +17,18 @@ func NewFindUserByIDController(useCase application.FindUserByIDUseCase) *FindUse
 	}
 }
 
-func (c *FindUserByIDController) Handle(w http.ResponseWriter, r *http.Request) {
-	id, err := ParseRouteInt64Param(r, "id")
+func (c *FindUserByIDController) Handle(w http.ResponseWriter, r *http.Request, _ int64) {
+	id, err := sharedHttp.ParseRouteInt64Param(r, "id")
 	if err != nil {
-		RespondWithError(w, http.StatusBadRequest, err.Error())
+		sharedHttp.RespondWithError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	user, err := c.useCase.Execute(r.Context(), id)
 	if err != nil {
-		RespondWithDomainError(w, r, err)
+		sharedHttp.RespondWithDomainError(w, r, err)
 		return
 	}
 
-	RespondWithJSON(w, http.StatusOK, user.ToDTO())
+	sharedHttp.RespondWithJSON(w, http.StatusOK, user.ToDTO())
 }

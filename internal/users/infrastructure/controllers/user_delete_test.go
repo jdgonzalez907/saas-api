@@ -6,12 +6,14 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
+	sharedHttp "jdgonzalez907/saas-api/internal/shared/infrastructure/http"
 	"jdgonzalez907/saas-api/internal/users/domain"
 	"jdgonzalez907/saas-api/internal/users/infrastructure/controllers"
 	mockApp "jdgonzalez907/saas-api/mocks/application"
@@ -20,6 +22,7 @@ import (
 func TestDeleteUserController_Handle(t *testing.T) {
 	testCases := []struct {
 		testName       string
+		authUserID     any
 		routeParamID   string
 		setupMock      func(m *mockApp.MockDeleteUserUseCase)
 		expectedStatus int
@@ -27,6 +30,7 @@ func TestDeleteUserController_Handle(t *testing.T) {
 	}{
 		{
 			testName:     "success - user deleted",
+			authUserID:   int64(1),
 			routeParamID: "1",
 			setupMock: func(m *mockApp.MockDeleteUserUseCase) {
 				m.EXPECT().Execute(mock.Anything, int64(1)).Return(nil)
@@ -34,7 +38,16 @@ func TestDeleteUserController_Handle(t *testing.T) {
 			expectedStatus: http.StatusNoContent,
 		},
 		{
+			testName:       "fail - unauthenticated",
+			authUserID:     nil,
+			routeParamID:   "1",
+			setupMock:      func(_ *mockApp.MockDeleteUserUseCase) {},
+			expectedStatus: http.StatusUnauthorized,
+			expectedBody:   sharedHttp.ErrUnauthenticated.Error(),
+		},
+		{
 			testName:       "fail - route parameter is not an integer",
+			authUserID:     int64(1),
 			routeParamID:   "abc",
 			setupMock:      func(_ *mockApp.MockDeleteUserUseCase) {},
 			expectedStatus: http.StatusBadRequest,
@@ -42,6 +55,7 @@ func TestDeleteUserController_Handle(t *testing.T) {
 		},
 		{
 			testName:       "fail - route parameter is empty",
+			authUserID:     int64(1),
 			routeParamID:   "",
 			setupMock:      func(_ *mockApp.MockDeleteUserUseCase) {},
 			expectedStatus: http.StatusBadRequest,
@@ -49,6 +63,7 @@ func TestDeleteUserController_Handle(t *testing.T) {
 		},
 		{
 			testName:       "fail - route parameter is negative",
+			authUserID:     int64(1),
 			routeParamID:   "-3",
 			setupMock:      func(_ *mockApp.MockDeleteUserUseCase) {},
 			expectedStatus: http.StatusBadRequest,
@@ -56,6 +71,7 @@ func TestDeleteUserController_Handle(t *testing.T) {
 		},
 		{
 			testName:     "fail - user not found",
+			authUserID:   int64(1),
 			routeParamID: "1",
 			setupMock: func(m *mockApp.MockDeleteUserUseCase) {
 				m.EXPECT().Execute(mock.Anything, int64(1)).Return(domain.ErrUserNotFound)
@@ -65,6 +81,7 @@ func TestDeleteUserController_Handle(t *testing.T) {
 		},
 		{
 			testName:     "fail - internal server error from usecase",
+			authUserID:   int64(1),
 			routeParamID: "1",
 			setupMock: func(m *mockApp.MockDeleteUserUseCase) {
 				m.EXPECT().Execute(mock.Anything, int64(1)).Return(errors.New("db delete failure"))
@@ -82,12 +99,16 @@ func TestDeleteUserController_Handle(t *testing.T) {
 			controller := controllers.NewDeleteUserController(mockUseCase)
 
 			req := httptest.NewRequest(http.MethodDelete, "/users", nil)
+			if tc.authUserID != nil {
+				req.Header.Set("Authorization", strconv.FormatInt(tc.authUserID.(int64), 10))
+			}
 			rctx := chi.NewRouteContext()
 			rctx.URLParams.Add("id", tc.routeParamID)
 			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 
 			rec := httptest.NewRecorder()
-			controller.Handle(rec, req)
+			handler := sharedHttp.Protected(controller.Handle)
+			handler.ServeHTTP(rec, req)
 
 			assert.Equal(t, tc.expectedStatus, rec.Code)
 			if tc.expectedBody != "" {

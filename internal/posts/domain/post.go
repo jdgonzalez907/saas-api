@@ -15,9 +15,19 @@ const (
 )
 
 var (
-	ErrInvalidPostID     = errors.New("invalid post id")
-	ErrInvalidPostStatus = errors.New("invalid post status")
-	ErrInvalidUserID     = errors.New("invalid user id")
+	ErrInvalidPostID                    = errors.New("invalid post identification")
+	ErrInvalidPostStatus                = errors.New("invalid post status")
+	ErrInvalidAuthorID                  = errors.New("invalid author identification")
+	ErrInvalidLastEditorID              = errors.New("invalid editor identification")
+	ErrDraftCannotHavePublicationDate   = errors.New("a draft post cannot have a publication date")
+	ErrPublishedMustHavePublicationDate = errors.New("a published post must have a publication date")
+	ErrPostNotFound                     = errors.New("the requested post was not found")
+	ErrCreatingPost                     = errors.New("error creating post")
+	ErrFindingPost                      = errors.New("error finding post")
+	ErrUpdatingPost                     = errors.New("error updating post")
+	ErrDeletingPost                     = errors.New("error deleting post")
+	ErrFindingPosts                     = errors.New("error finding posts")
+	ErrPostIDAlreadyExists              = errors.New("post ID already exists")
 )
 
 func NewPostStatus(s string) (PostStatus, error) {
@@ -36,8 +46,9 @@ type Post struct {
 	status             PostStatus
 	createdAt          time.Time
 	updatedAt          time.Time
-	createdBy          int64
-	updatedBy          int64
+	authorID           int64
+	lastEditorID       int64
+	publishedAt        *time.Time
 }
 
 type PostParams struct {
@@ -46,58 +57,96 @@ type PostParams struct {
 	Status             PostStatus
 	CreatedAt          time.Time
 	UpdatedAt          time.Time
-	CreatedBy          int64
-	UpdatedBy          int64
+	AuthorID           int64
+	LastEditorID       int64
+	PublishedAt        *time.Time
 }
 
 type PostDTO struct {
 	ID int64 `json:"id"`
 	ContentInformationDTO
-	Status    string    `json:"status"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	CreatedBy int64     `json:"created_by"`
-	UpdatedBy int64     `json:"updated_by"`
+	Status       string     `json:"status"`
+	CreatedAt    time.Time  `json:"created_at"`
+	UpdatedAt    time.Time  `json:"updated_at"`
+	AuthorID     int64      `json:"author_id"`
+	LastEditorID int64      `json:"last_editor_id"`
+	PublishedAt  *time.Time `json:"published_at"`
+}
+
+func (p *Post) ensureInvariants() error {
+	if p.id < 0 {
+		return ErrInvalidPostID
+	}
+	if p.authorID <= 0 {
+		return ErrInvalidAuthorID
+	}
+	if p.lastEditorID <= 0 {
+		return ErrInvalidLastEditorID
+	}
+	if p.status == StatusDraft && p.publishedAt != nil {
+		return ErrDraftCannotHavePublicationDate
+	}
+	if p.status == StatusPublished && p.publishedAt == nil {
+		return ErrPublishedMustHavePublicationDate
+	}
+	return nil
 }
 
 func NewPost(params PostParams) (*Post, error) {
 	if params.ID <= 0 {
 		return nil, ErrInvalidPostID
 	}
-	if params.CreatedBy <= 0 || params.UpdatedBy <= 0 {
-		return nil, ErrInvalidUserID
-	}
 
-	return &Post{
+	post := &Post{
 		id:                 params.ID,
 		contentInformation: params.ContentInformation,
 		status:             params.Status,
 		createdAt:          params.CreatedAt.UTC(),
 		updatedAt:          params.UpdatedAt.UTC(),
-		createdBy:          params.CreatedBy,
-		updatedBy:          params.UpdatedBy,
-	}, nil
+		authorID:           params.AuthorID,
+		lastEditorID:       params.LastEditorID,
+		publishedAt:        params.PublishedAt,
+	}
+
+	if err := post.ensureInvariants(); err != nil {
+		return nil, err
+	}
+
+	return post, nil
 }
 
-func NewPostWithoutID(contentInformation ContentInformation, status PostStatus, createdBy int64) (*Post, error) {
-	if createdBy <= 0 {
-		return nil, ErrInvalidUserID
+func NewPostWithoutID(contentInformation ContentInformation, status PostStatus, authorID int64) (*Post, error) {
+	var publishedAt *time.Time
+	if status == StatusPublished {
+		now := time.Now().UTC()
+		publishedAt = &now
 	}
 
 	now := time.Now().UTC()
-	return &Post{
+	post := &Post{
 		id:                 UnassignedPostID,
 		contentInformation: contentInformation,
 		status:             status,
 		createdAt:          now,
 		updatedAt:          now,
-		createdBy:          createdBy,
-		updatedBy:          createdBy,
-	}, nil
+		authorID:           authorID,
+		lastEditorID:       authorID,
+		publishedAt:        publishedAt,
+	}
+
+	if err := post.ensureInvariants(); err != nil {
+		return nil, err
+	}
+
+	return post, nil
 }
 
 func (p *Post) ID() int64 {
 	return p.id
+}
+
+func (p *Post) AssignID(id int64) {
+	p.id = id
 }
 
 func (p *Post) ContentInformation() ContentInformation {
@@ -116,28 +165,45 @@ func (p *Post) UpdatedAt() time.Time {
 	return p.updatedAt
 }
 
-func (p *Post) CreatedBy() int64 {
-	return p.createdBy
+func (p *Post) AuthorID() int64 {
+	return p.authorID
 }
 
-func (p *Post) UpdatedBy() int64 {
-	return p.updatedBy
+func (p *Post) LastEditorID() int64 {
+	return p.lastEditorID
 }
 
-func (p *Post) WithContentAndStatus(contentInformation ContentInformation, status PostStatus, updatedBy int64) (*Post, error) {
-	if updatedBy <= 0 {
-		return nil, ErrInvalidUserID
+func (p *Post) PublishedAt() *time.Time {
+	return p.publishedAt
+}
+
+func (p *Post) WithContentAndStatus(contentInformation ContentInformation, status PostStatus, lastEditorID int64) (*Post, error) {
+	var publishedAt *time.Time
+	if status == StatusPublished {
+		if p.status == StatusPublished {
+			publishedAt = p.publishedAt
+		} else {
+			now := time.Now().UTC()
+			publishedAt = &now
+		}
 	}
 
-	return &Post{
+	post := &Post{
 		id:                 p.id,
 		contentInformation: contentInformation,
 		status:             status,
 		createdAt:          p.createdAt,
 		updatedAt:          time.Now().UTC(),
-		createdBy:          p.createdBy,
-		updatedBy:          updatedBy,
-	}, nil
+		authorID:           p.authorID,
+		lastEditorID:       lastEditorID,
+		publishedAt:        publishedAt,
+	}
+
+	if err := post.ensureInvariants(); err != nil {
+		return nil, err
+	}
+
+	return post, nil
 }
 
 func (p *Post) Equals(other *Post) bool {
@@ -150,10 +216,10 @@ func (p *Post) Equals(other *Post) bool {
 	if p.status != other.status {
 		return false
 	}
-	if p.createdBy != other.createdBy {
+	if p.authorID != other.authorID {
 		return false
 	}
-	if p.updatedBy != other.updatedBy {
+	if p.lastEditorID != other.lastEditorID {
 		return false
 	}
 	if !p.createdAt.Equal(other.createdAt) {
@@ -162,18 +228,31 @@ func (p *Post) Equals(other *Post) bool {
 	if !p.updatedAt.Equal(other.updatedAt) {
 		return false
 	}
+	if (p.publishedAt == nil) != (other.publishedAt == nil) {
+		return false
+	}
+	if p.publishedAt != nil && !p.publishedAt.Equal(*other.publishedAt) {
+		return false
+	}
 	return p.contentInformation.Equals(other.contentInformation)
 }
 
 func (p *Post) ToDTO() *PostDTO {
+	var publishedAt *time.Time
+	if p.publishedAt != nil {
+		tVal := *p.publishedAt
+		publishedAt = &tVal
+	}
+
 	return &PostDTO{
 		ID:                    p.id,
 		ContentInformationDTO: p.contentInformation.ToDTO(),
 		Status:                string(p.status),
 		CreatedAt:             p.createdAt,
 		UpdatedAt:             p.updatedAt,
-		CreatedBy:             p.createdBy,
-		UpdatedBy:             p.updatedBy,
+		AuthorID:              p.authorID,
+		LastEditorID:          p.lastEditorID,
+		PublishedAt:           publishedAt,
 	}
 }
 
@@ -191,15 +270,20 @@ func PostFromDTO(dto *PostDTO) (*Post, error) {
 	}
 
 	if dto.ID == UnassignedPostID {
-		return &Post{
+		post := &Post{
 			id:                 UnassignedPostID,
 			contentInformation: contentInfo,
 			status:             status,
 			createdAt:          dto.CreatedAt.UTC(),
 			updatedAt:          dto.UpdatedAt.UTC(),
-			createdBy:          dto.CreatedBy,
-			updatedBy:          dto.UpdatedBy,
-		}, nil
+			authorID:           dto.AuthorID,
+			lastEditorID:       dto.LastEditorID,
+			publishedAt:        dto.PublishedAt,
+		}
+		if err := post.ensureInvariants(); err != nil {
+			return nil, err
+		}
+		return post, nil
 	}
 
 	return NewPost(PostParams{
@@ -208,7 +292,8 @@ func PostFromDTO(dto *PostDTO) (*Post, error) {
 		Status:             status,
 		CreatedAt:          dto.CreatedAt.UTC(),
 		UpdatedAt:          dto.UpdatedAt.UTC(),
-		CreatedBy:          dto.CreatedBy,
-		UpdatedBy:          dto.UpdatedBy,
+		AuthorID:           dto.AuthorID,
+		LastEditorID:       dto.LastEditorID,
+		PublishedAt:        dto.PublishedAt,
 	})
 }

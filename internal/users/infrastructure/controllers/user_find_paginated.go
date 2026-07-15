@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 
+	sharedHttp "jdgonzalez907/saas-api/internal/shared/infrastructure/http"
 	"jdgonzalez907/saas-api/internal/users/application"
 	"jdgonzalez907/saas-api/internal/users/domain"
 )
@@ -17,30 +18,30 @@ func NewFindUsersPaginatedController(useCase application.FindUsersPaginatedUseCa
 	}
 }
 
-func (c *FindUsersPaginatedController) Handle(w http.ResponseWriter, r *http.Request) {
-	limitPtr, err := ParseQueryInt32Param(r, "limit")
+func (c *FindUsersPaginatedController) Handle(w http.ResponseWriter, r *http.Request, _ int64) {
+	limitPtr, err := sharedHttp.ParseQueryInt32Param(r, "limit")
 	if err != nil {
-		RespondWithError(w, http.StatusBadRequest, err.Error())
+		sharedHttp.RespondWithError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	cursorPtr, err := ParseQueryInt64Param(r, "cursor")
+	cursorPtr, err := sharedHttp.ParseQueryInt64Param(r, "cursor")
 	if err != nil {
-		RespondWithError(w, http.StatusBadRequest, err.Error())
+		sharedHttp.RespondWithError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	pagination, err := domain.NewPagination(cursorPtr, limitPtr)
 	if err != nil {
-		RespondWithDomainError(w, r, err)
+		sharedHttp.RespondWithDomainError(w, r, err)
 		return
 	}
 
 	paginatedUsers, err := c.useCase.Execute(r.Context(), pagination)
 	if err != nil {
-		RespondWithDomainError(w, r, err)
+		sharedHttp.RespondWithDomainError(w, r, err)
 		return
 	}
 
-	RespondWithJSON(w, http.StatusOK, paginatedUsers.ToDTO())
+	sharedHttp.RespondWithJSON(w, http.StatusOK, paginatedUsers.ToDTO())
 }

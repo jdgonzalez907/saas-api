@@ -7,12 +7,14 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
+	sharedHttp "jdgonzalez907/saas-api/internal/shared/infrastructure/http"
 	"jdgonzalez907/saas-api/internal/users/domain"
 	"jdgonzalez907/saas-api/internal/users/infrastructure/controllers"
 	mockApp "jdgonzalez907/saas-api/mocks/application"
@@ -29,6 +31,7 @@ func TestUpdateUserEmailController_Handle(t *testing.T) {
 
 	testCases := []struct {
 		testName       string
+		authUserID     any
 		routeParamID   string
 		requestBody    any
 		setupMock      func(m *mockApp.MockUpdateUserEmailUseCase)
@@ -37,6 +40,7 @@ func TestUpdateUserEmailController_Handle(t *testing.T) {
 	}{
 		{
 			testName:     "success - email updated",
+			authUserID:   int64(1),
 			routeParamID: "1",
 			requestBody:  validBody,
 			setupMock: func(m *mockApp.MockUpdateUserEmailUseCase) {
@@ -48,6 +52,7 @@ func TestUpdateUserEmailController_Handle(t *testing.T) {
 		},
 		{
 			testName:     "success - email set to nil",
+			authUserID:   int64(1),
 			routeParamID: "1",
 			requestBody: controllers.UpdateEmailRequest{
 				Email: &emptyEmail,
@@ -58,7 +63,17 @@ func TestUpdateUserEmailController_Handle(t *testing.T) {
 			expectedStatus: http.StatusNoContent,
 		},
 		{
+			testName:       "fail - unauthenticated",
+			authUserID:     nil,
+			routeParamID:   "1",
+			requestBody:    validBody,
+			setupMock:      func(_ *mockApp.MockUpdateUserEmailUseCase) {},
+			expectedStatus: http.StatusUnauthorized,
+			expectedBody:   sharedHttp.ErrUnauthenticated.Error(),
+		},
+		{
 			testName:       "fail - route parameter is not an integer",
+			authUserID:     int64(1),
 			routeParamID:   "abc",
 			requestBody:    validBody,
 			setupMock:      func(_ *mockApp.MockUpdateUserEmailUseCase) {},
@@ -67,22 +82,25 @@ func TestUpdateUserEmailController_Handle(t *testing.T) {
 		},
 		{
 			testName:       "fail - invalid json body",
+			authUserID:     int64(1),
 			routeParamID:   "1",
 			requestBody:    "{invalid json}",
 			setupMock:      func(_ *mockApp.MockUpdateUserEmailUseCase) {},
 			expectedStatus: http.StatusBadRequest,
-			expectedBody:   controllers.ErrInvalidRequestBody.Error(),
+			expectedBody:   sharedHttp.ErrInvalidRequestBody.Error(),
 		},
 		{
 			testName:       "fail - nil request body",
+			authUserID:     int64(1),
 			routeParamID:   "1",
 			requestBody:    nil,
 			setupMock:      func(_ *mockApp.MockUpdateUserEmailUseCase) {},
 			expectedStatus: http.StatusBadRequest,
-			expectedBody:   controllers.ErrInvalidRequestBody.Error(),
+			expectedBody:   sharedHttp.ErrInvalidRequestBody.Error(),
 		},
 		{
 			testName:     "fail - invalid email format",
+			authUserID:   int64(1),
 			routeParamID: "1",
 			requestBody: controllers.UpdateEmailRequest{
 				Email: &invalidEmail,
@@ -93,6 +111,7 @@ func TestUpdateUserEmailController_Handle(t *testing.T) {
 		},
 		{
 			testName:     "fail - user not found",
+			authUserID:   int64(1),
 			routeParamID: "1",
 			requestBody:  validBody,
 			setupMock: func(m *mockApp.MockUpdateUserEmailUseCase) {
@@ -103,6 +122,7 @@ func TestUpdateUserEmailController_Handle(t *testing.T) {
 		},
 		{
 			testName:     "fail - email already exists",
+			authUserID:   int64(1),
 			routeParamID: "1",
 			requestBody:  validBody,
 			setupMock: func(m *mockApp.MockUpdateUserEmailUseCase) {
@@ -113,6 +133,7 @@ func TestUpdateUserEmailController_Handle(t *testing.T) {
 		},
 		{
 			testName:     "fail - internal server error from usecase",
+			authUserID:   int64(1),
 			routeParamID: "1",
 			requestBody:  validBody,
 			setupMock: func(m *mockApp.MockUpdateUserEmailUseCase) {
@@ -145,12 +166,16 @@ func TestUpdateUserEmailController_Handle(t *testing.T) {
 				req = httptest.NewRequest(http.MethodPut, "/users/email", &buf)
 			}
 
+			if tc.authUserID != nil {
+				req.Header.Set("Authorization", strconv.FormatInt(tc.authUserID.(int64), 10))
+			}
 			rctx := chi.NewRouteContext()
 			rctx.URLParams.Add("id", tc.routeParamID)
 			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 
 			rec := httptest.NewRecorder()
-			controller.Handle(rec, req)
+			handler := sharedHttp.Protected(controller.Handle)
+			handler.ServeHTTP(rec, req)
 
 			assert.Equal(t, tc.expectedStatus, rec.Code)
 			if tc.expectedBody != "" {
