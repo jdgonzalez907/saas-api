@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"jdgonzalez907/saas-api/internal/users/domain"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -498,6 +500,9 @@ func TestUserGetters(t *testing.T) {
 			t.Errorf("expected BirthDate value to match")
 		}
 	}
+
+	userFullName := user.FullName()
+	assert.Equal(t, user.FullName(), userFullName)
 }
 
 func TestValidateAssignedUserID(t *testing.T) {

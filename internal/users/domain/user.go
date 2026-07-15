@@ -138,6 +138,10 @@ func (u *User) PersonalInformation() PersonalInformation {
 	return u.personalInformation
 }
 
+func (u *User) FullName() string {
+	return u.personalInformation.firstName + " " + u.personalInformation.lastName
+}
+
 func (u *User) ToDTO() *UserDTO {
 	if u == nil {
 		return nil
