@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	postsDomain "jdgonzalez907/saas-api/internal/posts/domain"
-	sharedHttp "jdgonzalez907/saas-api/internal/shared/http"
+	sharedHttp "jdgonzalez907/saas-api/internal/shared/infrastructure/http"
 	usersDomain "jdgonzalez907/saas-api/internal/users/domain"
 )
 

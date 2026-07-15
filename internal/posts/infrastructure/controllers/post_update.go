@@ -5,7 +5,7 @@ import (
 
 	"jdgonzalez907/saas-api/internal/posts/application"
 	"jdgonzalez907/saas-api/internal/posts/domain"
-	sharedHttp "jdgonzalez907/saas-api/internal/shared/http"
+	sharedHttp "jdgonzalez907/saas-api/internal/shared/infrastructure/http"
 )
 
 type UpdatePostController struct {

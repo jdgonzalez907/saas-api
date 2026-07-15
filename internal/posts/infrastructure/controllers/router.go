@@ -4,7 +4,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
-	sharedHttp "jdgonzalez907/saas-api/internal/shared/http"
+	sharedHttp "jdgonzalez907/saas-api/internal/shared/infrastructure/http"
 )
 
 type RouterParams struct {

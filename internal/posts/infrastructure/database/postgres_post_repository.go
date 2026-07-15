@@ -12,22 +12,22 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"jdgonzalez907/saas-api/internal/posts/domain"
-	"jdgonzalez907/saas-api/internal/shared/postgres"
+	"jdgonzalez907/saas-api/internal/shared/infrastructure/postgres"
 )
 
-type PostgresPostRepository struct {
+type postgresPostRepository struct {
 	queries *postgres.Queries
 	pool    *pgxpool.Pool
 }
 
-func NewPostgresPostRepository(pool *pgxpool.Pool) *PostgresPostRepository {
-	return &PostgresPostRepository{
+func NewPostgresPostRepository(pool *pgxpool.Pool) domain.PostRepository {
+	return &postgresPostRepository{
 		queries: postgres.New(pool),
 		pool:    pool,
 	}
 }
 
-func (r *PostgresPostRepository) FindByID(ctx context.Context, id int64) (*domain.Post, error) {
+func (r *postgresPostRepository) FindByID(ctx context.Context, id int64) (*domain.Post, error) {
 	row, err := r.queries.FindPostByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -49,7 +49,7 @@ func (r *PostgresPostRepository) FindByID(ctx context.Context, id int64) (*domai
 	)
 }
 
-func (r *PostgresPostRepository) FindAll(ctx context.Context, status domain.PostStatus, pagination domain.Pagination) ([]*domain.Post, error) {
+func (r *postgresPostRepository) FindAll(ctx context.Context, status domain.PostStatus, pagination domain.Pagination) ([]*domain.Post, error) {
 	limit := pagination.Limit()
 	var posts []*domain.Post
 
@@ -119,7 +119,7 @@ func (r *PostgresPostRepository) FindAll(ctx context.Context, status domain.Post
 	return posts, nil
 }
 
-func (r *PostgresPostRepository) Create(ctx context.Context, post *domain.Post) error {
+func (r *postgresPostRepository) Create(ctx context.Context, post *domain.Post) error {
 	contentBytes, err := toJSONB(post.ContentInformation().Content())
 	if err != nil {
 		return err
@@ -148,7 +148,7 @@ func (r *PostgresPostRepository) Create(ctx context.Context, post *domain.Post) 
 	return nil
 }
 
-func (r *PostgresPostRepository) Update(ctx context.Context, post *domain.Post) error {
+func (r *postgresPostRepository) Update(ctx context.Context, post *domain.Post) error {
 	contentBytes, err := toJSONB(post.ContentInformation().Content())
 	if err != nil {
 		return err
@@ -171,7 +171,7 @@ func (r *PostgresPostRepository) Update(ctx context.Context, post *domain.Post) 
 	})
 }
 
-func (r *PostgresPostRepository) Delete(ctx context.Context, id int64, deletedByID int64) error {
+func (r *postgresPostRepository) Delete(ctx context.Context, id int64, deletedByID int64) error {
 	return r.queries.DeletePost(ctx, postgres.DeletePostParams{
 		ID:        id,
 		DeletedBy: pgtype.Int8{Int64: deletedByID, Valid: true},

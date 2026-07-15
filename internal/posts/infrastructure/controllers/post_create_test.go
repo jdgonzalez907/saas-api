@@ -14,7 +14,7 @@ import (
 
 	"jdgonzalez907/saas-api/internal/posts/domain"
 	"jdgonzalez907/saas-api/internal/posts/infrastructure/controllers"
-	sharedHttp "jdgonzalez907/saas-api/internal/shared/http"
+	sharedHttp "jdgonzalez907/saas-api/internal/shared/infrastructure/http"
 	mockApp "jdgonzalez907/saas-api/mocks/application"
 )
 

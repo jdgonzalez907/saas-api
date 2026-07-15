@@ -3,7 +3,7 @@ package controllers
 import (
 	"net/http"
 
-	sharedHttp "jdgonzalez907/saas-api/internal/shared/http"
+	sharedHttp "jdgonzalez907/saas-api/internal/shared/infrastructure/http"
 	"jdgonzalez907/saas-api/internal/users/application"
 	"jdgonzalez907/saas-api/internal/users/domain"
 )

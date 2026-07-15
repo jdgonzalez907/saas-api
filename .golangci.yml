@@ -27,4 +27,5 @@ linters-settings:
 issues:
   exclude-dirs:
     - internal/postgres
+    - internal/shared/postgres
     - mocks

@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"jdgonzalez907/saas-api/internal/posts/application"
-	sharedHttp "jdgonzalez907/saas-api/internal/shared/http"
+	sharedHttp "jdgonzalez907/saas-api/internal/shared/infrastructure/http"
 )
 
 type FindPostByIDController struct {
