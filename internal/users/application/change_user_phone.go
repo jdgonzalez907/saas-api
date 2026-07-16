@@ -7,26 +7,26 @@ import (
 	"jdgonzalez907/saas-api/internal/users/domain"
 )
 
-type UpdateUserPhoneUseCase interface {
+type ChangeUserPhoneUseCase interface {
 	Execute(ctx context.Context, id int64, phone domain.Phone) error
 }
 
-type updateUserPhoneUseCase struct {
+type changeUserPhoneUseCase struct {
 	userRepository domain.UserRepository
 }
 
-func NewUpdateUserPhoneUseCase(userRepository domain.UserRepository) UpdateUserPhoneUseCase {
-	return &updateUserPhoneUseCase{userRepository: userRepository}
+func NewChangeUserPhoneUseCase(userRepository domain.UserRepository) ChangeUserPhoneUseCase {
+	return &changeUserPhoneUseCase{userRepository: userRepository}
 }
 
-func (u *updateUserPhoneUseCase) Execute(ctx context.Context, id int64, phone domain.Phone) error {
+func (u *changeUserPhoneUseCase) Execute(ctx context.Context, id int64, phone domain.Phone) error {
 	if err := domain.ValidateAssignedUserID(id); err != nil {
 		return err
 	}
 
 	userFound, err := u.userRepository.FindByID(ctx, id)
 	if err != nil {
-		return fmt.Errorf("%v: %w", domain.ErrUpdatingUserPhone, err)
+		return fmt.Errorf("%v: %w", domain.ErrChangingUserPhone, err)
 	}
 
 	if userFound == nil {
@@ -39,7 +39,7 @@ func (u *updateUserPhoneUseCase) Execute(ctx context.Context, id int64, phone do
 
 	foundPhone, err := u.userRepository.FindByPhone(ctx, phone)
 	if err != nil {
-		return fmt.Errorf("%v: %w", domain.ErrUpdatingUserPhone, err)
+		return fmt.Errorf("%v: %w", domain.ErrChangingUserPhone, err)
 	}
 	if foundPhone != nil {
 		return domain.ErrUserPhoneAlreadyExists
@@ -49,7 +49,7 @@ func (u *updateUserPhoneUseCase) Execute(ctx context.Context, id int64, phone do
 
 	err = u.userRepository.Update(ctx, updatedUser)
 	if err != nil {
-		return fmt.Errorf("%v: %w", domain.ErrUpdatingUserPhone, err)
+		return fmt.Errorf("%v: %w", domain.ErrChangingUserPhone, err)
 	}
 
 	return nil

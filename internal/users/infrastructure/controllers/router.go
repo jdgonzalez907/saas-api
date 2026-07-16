@@ -13,8 +13,8 @@ type RouterParams struct {
 	DeleteUser                *DeleteUserController
 	UpdatePersonalInformation *UpdateUserPersonalInformationController
 	FindUsersPaginated        *FindUsersPaginatedController
-	UpdateEmail               *UpdateUserEmailController
-	UpdatePhone               *UpdateUserPhoneController
+	UpdateEmail               *ChangeUserEmailController
+	UpdatePhone               *ChangeUserPhoneController
 }
 
 func NewRouter(params RouterParams) *chi.Mux {

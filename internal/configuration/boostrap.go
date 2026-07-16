@@ -72,16 +72,16 @@ func NewApplication() (*Application, error) {
 	deleteUserUseCase := application.NewDeleteUserUseCase(userRepository)
 	updatePersonalInformationUseCase := application.NewUpdateUserPersonalInformationUseCase(userRepository)
 	findUsersPaginatedUseCase := application.NewFindUsersPaginatedUseCase(userRepository)
-	updateEmailUseCase := application.NewUpdateUserEmailUseCase(userRepository)
-	updatePhoneUseCase := application.NewUpdateUserPhoneUseCase(userRepository)
+	updateEmailUseCase := application.NewChangeUserEmailUseCase(userRepository)
+	updatePhoneUseCase := application.NewChangeUserPhoneUseCase(userRepository)
 
 	findUserByID := controllers.NewFindUserByIDController(findUserByIDUseCase)
 	createUser := controllers.NewCreateUserController(createUserUseCase)
 	deleteUser := controllers.NewDeleteUserController(deleteUserUseCase)
 	updatePersonalInformation := controllers.NewUpdateUserPersonalInformationController(updatePersonalInformationUseCase)
 	findUsersPaginated := controllers.NewFindUsersPaginatedController(findUsersPaginatedUseCase)
-	updateEmail := controllers.NewUpdateUserEmailController(updateEmailUseCase)
-	updatePhone := controllers.NewUpdateUserPhoneController(updatePhoneUseCase)
+	updateEmail := controllers.NewChangeUserEmailController(updateEmailUseCase)
+	updatePhone := controllers.NewChangeUserPhoneController(updatePhoneUseCase)
 
 	router := controllers.NewRouter(controllers.RouterParams{
 		FindUserByID:              findUserByID,

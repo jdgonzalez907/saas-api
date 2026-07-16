@@ -52,8 +52,8 @@ var domainErrorStatus = map[error]int{
 
 	usersDomain.ErrCreatingUser:                    http.StatusInternalServerError,
 	usersDomain.ErrUpdatingUserPersonalInformation: http.StatusInternalServerError,
-	usersDomain.ErrUpdatingUserPhone:               http.StatusInternalServerError,
-	usersDomain.ErrUpdatingUserEmail:               http.StatusInternalServerError,
+	usersDomain.ErrChangingUserPhone:               http.StatusInternalServerError,
+	usersDomain.ErrChangingUserEmail:               http.StatusInternalServerError,
 	usersDomain.ErrDeletingUser:                    http.StatusInternalServerError,
 	usersDomain.ErrFindingUsers:                    http.StatusInternalServerError,
 	usersDomain.ErrFindingUserByID:                 http.StatusInternalServerError,
