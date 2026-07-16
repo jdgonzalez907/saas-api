@@ -8,7 +8,7 @@ Este documento sirve como la fuente de verdad (Skill / Rules) para que cualquier
 
 ### Value Objects
 - **Definición**: Objetos sin identidad propia definidos únicamente por sus atributos.
-- **Inmutabilidad Estricta**: Todos los campos internos deben ser privados (no exportados) para evitar el acoplamiento y asegurar la encapsulación. Los Value Objects nunca se mutan, solo se crean nuevas instancias. Si el Value Object es muy grande, se puede emplear el patrón "Wither" (ej. `.WithStreet(...)`) para retornar una nueva copia con el valor actualizado sin mutar la instancia original.
+- **Inmutabilidad Estricta**: Todos los campos internos deben ser privados (no exportados) para evitar el acoplamiento y asegurar la encapsulación. Los Value Objects nunca se mutan, solo se crean nuevas instancias.
 - **Sin Getters por Defecto**: No se deben exponer getters públicos (`Value()`, `Street()`, etc.) para sus campos de negocio, a menos que una regla de negocio específica lo requiera (YAGNI). Excepción: se permiten getters cuando la capa de infraestructura los necesita para construir queries sin pasar por un DTO.
 - **Constructor**: Deben crearse mediante un constructor del tipo `New[ValueObject](...) (ValueObject, error)` que valide sus reglas de negocio.
 - **Métodos**: Únicamente deben exponer el método `.ToDTO()` y los getters estrictamente necesarios. Ningún otro método o mutador, a menos que sea requerido explícitamente por reglas de negocio (YAGNI).
@@ -20,16 +20,17 @@ Este documento sirve como la fuente de verdad (Skill / Rules) para que cualquier
 ### Entities
 - **Definición**: Objetos con una identidad única (`id`) que persiste en el tiempo.
 - **Inmutabilidad Estricta**: Los campos internos de la entidad deben ser privados (no exportados) para evitar mutaciones directas fuera del dominio.
-- **Patrón Params**: El constructor `New[Entity](params [Entity]Params) (*[Entity], error)` recibe una estructura de parámetros pública para inicializar la entidad.
+- **Constructor con Parámetros Individuales**: El constructor `New[Entity](param1 Type1, param2 Type2, ...) (*[Entity], error)` recibe los parámetros uno por uno.
 - **Patrón DTO**:
   - Una estructura `[Entity]DTO` pública con tags `json` define el formato de serialización.
   - El método `.ToDTO() [Entity]DTO` exporta el estado interno a una estructura legible.
   - La función `[Entity]FromDTO(dto *[Entity]DTO) (*[Entity], error)` reconstruye la entidad desde su representación plana.
-- **Patrón Wither (Mutadores Específicos)**:
-  - No se permiten actualizadores genéricos tipo `.With(...)`.
-  - Se deben definir métodos "Wither" intencionales y específicos para cada caso de uso de mutación con nombres que den intención de negocio (ej. `.UpdatePersonalInformation(...)`, `.ChangePhone(...)`, `.ChangeEmail(...)`).
+- **Métodos de Negocio con Intención de Mutación**:
+  - Los métodos de actualización deben tener nombres que reflejen la operación de negocio (ej. `.ChangePhone(...)`, `.ChangeEmail(...)`, `.UpdatePersonalInformation(...)`).
   - Estos métodos retornan un nuevo puntero a la entidad actualizada, manteniendo la inmutabilidad y actualizando el campo `updatedAt` con `time.Now().UTC()`.
   - Las operaciones puras en memoria que no puedan fallar no deben retornar `error`.
+  - Ejemplo de correcto: `user.ChangePhone(newPhone)` retorna un nuevo `*User` con el teléfono actualizado.
+  - Ejemplo de incorrecto: `user.WithPhone(newPhone)` — el nombre no denota intención de negocio.
 
 ### Reglas de Referencias y Acoplamiento
 - **Aislamiento de Dominio**: Las Entidades y Value Objects de dominio únicamente deben referenciar/llamar a otras Entidades y Value Objects. Nunca deben acoplarse ni referenciar estructuras DTO en sus campos o lógica de negocio interna.
@@ -40,8 +41,8 @@ Este documento sirve como la fuente de verdad (Skill / Rules) para que cualquier
 ## 2. Estructura de Casos de Uso (Application Layer)
 
 Cada caso de uso en la capa de aplicación debe seguir una estructura estricta y limpia:
-- **Interfaz**: Definida en el mismo archivo para desacoplamiento y facilidad de mocking (ej. `type UpdateUserPhoneUseCase interface`).
-- **Struct de Implementación**: Estructura privada que implementa la interfaz (ej. `type updateUserPhoneUseCase struct`).
+- **Interfaz**: Definida en el mismo archivo para desacoplamiento y facilidad de mocking (ej. `type ChangeUserPhoneUseCase interface`).
+- **Struct de Implementación**: Estructura privada que implementa la interfaz (ej. `type changeUserPhoneUseCase struct`).
 - **Único Método Público**: Solo debe exponer el método ejecutor principal: `Execute(...) error` (o retornar entidad/value object y error para consultas).
 - **Propagación de Contexto**: Todos los métodos `Execute` reciben `context.Context` como primer argumento y lo propagan al repositorio.
 - **Tipos de Datos de Entrada/Salida**: Los casos de uso deben recibir únicamente entidades/value objects como entrada y retornar únicamente entidades/value objects y/o errores como salida. Nunca deben recibir ni retornar estructuras DTO en sus firmas públicas.
@@ -101,7 +102,7 @@ Cada controller HTTP debe seguir una estructura estricta y limpia:
 
 ## 6. Manejo de Tiempo (UTC)
 
-- **Todo `time.Now()` debe llamarse como `time.Now().UTC()`** en cualquier capa del proyecto. Esto incluye creación de entidades, métodos Wither y cualquier lógica de negocio.
+- **Todo `time.Now()` debe llamarse como `time.Now().UTC()`** en cualquier capa del proyecto. Esto incluye creación de entidades, métodos de mutación de entidades y cualquier lógica de negocio.
 - **Al leer timestamps de Postgres** (`pgtype.Timestamptz`), normalizar explícitamente con `.Time.UTC()` al construir entidades de dominio. El driver puede retornar el location del servidor si no está configurado como UTC.
 - **`_ "time/tzdata"`** se importa en `cmd/api/main.go` para embeber la base de datos de zonas horarias dentro del binario. Necesario porque la imagen de runtime (`distroless/static`) no tiene archivos de timezone en disco.
 - A nivel de infraestructura, los servicios Docker tienen `TZ=UTC` / `PGTZ=UTC` configurados como variables de entorno para garantizar consistencia en todo el stack.
