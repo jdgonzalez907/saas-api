@@ -21,23 +21,14 @@ import (
 	mockApp "jdgonzalez907/saas-api/mocks/application"
 )
 
-func TestUpdatePostController_Handle(t *testing.T) {
+func TestChangePostController_Handle(t *testing.T) {
 	titleBlock, _ := domain.NewTitleBlock("Title")
 	contentInfo, _ := domain.NewContentInformation("Post Title", []domain.Block{titleBlock})
 	now := time.Now().UTC()
-	validPost, err := domain.NewPost(domain.PostParams{
-		ID:                 1,
-		ContentInformation: contentInfo,
-		Status:             domain.StatusPublished,
-		CreatedAt:          now,
-		UpdatedAt:          now,
-		AuthorID:           2,
-		LastEditorID:       3,
-		PublishedAt:        &now,
-	})
+	validPost, err := domain.NewPost(1, contentInfo, domain.StatusPublished, now, now, 2, 3, &now)
 	assert.NoError(t, err)
 
-	validBody := controllers.UpdatePostRequest{
+	validBody := controllers.ChangePostRequest{
 		ContentInformationDTO: domain.ContentInformationDTO{
 			Title: "Post Title",
 			Content: []domain.BlockDTO{
@@ -55,16 +46,16 @@ func TestUpdatePostController_Handle(t *testing.T) {
 		authUserID     any
 		routeParamID   string
 		requestBody    any
-		setupMock      func(m *mockApp.MockUpdatePostUseCase)
+		setupMock      func(m *mockApp.MockChangePostUseCase)
 		expectedStatus int
 		expectedBody   string
 	}{
 		{
-			testName:     "success - post updated",
+			testName:     "success - post changed",
 			authUserID:   int64(3),
 			routeParamID: "1",
 			requestBody:  validBody,
-			setupMock: func(m *mockApp.MockUpdatePostUseCase) {
+			setupMock: func(m *mockApp.MockChangePostUseCase) {
 				m.EXPECT().Execute(mock.Anything, int64(1), mock.MatchedBy(func(c domain.ContentInformation) bool {
 					return c.Title() == "Post Title"
 				}), domain.StatusPublished, int64(3)).Return(validPost, nil)
@@ -77,7 +68,7 @@ func TestUpdatePostController_Handle(t *testing.T) {
 			authUserID:     nil,
 			routeParamID:   "1",
 			requestBody:    validBody,
-			setupMock:      func(_ *mockApp.MockUpdatePostUseCase) {},
+			setupMock:      func(_ *mockApp.MockChangePostUseCase) {},
 			expectedStatus: http.StatusUnauthorized,
 			expectedBody:   sharedHttp.ErrUnauthenticated.Error(),
 		},
@@ -86,7 +77,7 @@ func TestUpdatePostController_Handle(t *testing.T) {
 			authUserID:     int64(3),
 			routeParamID:   "abc",
 			requestBody:    validBody,
-			setupMock:      func(_ *mockApp.MockUpdatePostUseCase) {},
+			setupMock:      func(_ *mockApp.MockChangePostUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   "parameter id must be a positive integer",
 		},
@@ -95,7 +86,7 @@ func TestUpdatePostController_Handle(t *testing.T) {
 			authUserID:     int64(3),
 			routeParamID:   "1",
 			requestBody:    "{invalid json}",
-			setupMock:      func(_ *mockApp.MockUpdatePostUseCase) {},
+			setupMock:      func(_ *mockApp.MockChangePostUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   sharedHttp.ErrInvalidRequestBody.Error(),
 		},
@@ -103,13 +94,13 @@ func TestUpdatePostController_Handle(t *testing.T) {
 			testName:     "fail - empty post title",
 			authUserID:   int64(3),
 			routeParamID: "1",
-			requestBody: controllers.UpdatePostRequest{
+			requestBody: controllers.ChangePostRequest{
 				ContentInformationDTO: domain.ContentInformationDTO{
 					Title: "",
 				},
 				Status: "published",
 			},
-			setupMock:      func(_ *mockApp.MockUpdatePostUseCase) {},
+			setupMock:      func(_ *mockApp.MockChangePostUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   domain.ErrEmptyPostTitle.Error(),
 		},
@@ -117,11 +108,11 @@ func TestUpdatePostController_Handle(t *testing.T) {
 			testName:     "fail - invalid status",
 			authUserID:   int64(3),
 			routeParamID: "1",
-			requestBody: controllers.UpdatePostRequest{
+			requestBody: controllers.ChangePostRequest{
 				ContentInformationDTO: validBody.ContentInformationDTO,
 				Status:                "invalid-status",
 			},
-			setupMock:      func(_ *mockApp.MockUpdatePostUseCase) {},
+			setupMock:      func(_ *mockApp.MockChangePostUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   domain.ErrInvalidPostStatus.Error(),
 		},
@@ -130,7 +121,7 @@ func TestUpdatePostController_Handle(t *testing.T) {
 			authUserID:   int64(3),
 			routeParamID: "1",
 			requestBody:  validBody,
-			setupMock: func(m *mockApp.MockUpdatePostUseCase) {
+			setupMock: func(m *mockApp.MockChangePostUseCase) {
 				m.EXPECT().Execute(mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil, domain.ErrPostNotFound)
 			},
 			expectedStatus: http.StatusNotFound,
@@ -141,7 +132,7 @@ func TestUpdatePostController_Handle(t *testing.T) {
 			authUserID:   int64(3),
 			routeParamID: "1",
 			requestBody:  validBody,
-			setupMock: func(m *mockApp.MockUpdatePostUseCase) {
+			setupMock: func(m *mockApp.MockChangePostUseCase) {
 				m.EXPECT().Execute(mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil, errors.New("db update failed"))
 			},
 			expectedStatus: http.StatusInternalServerError,
@@ -151,10 +142,10 @@ func TestUpdatePostController_Handle(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.testName, func(t *testing.T) {
-			mockUseCase := mockApp.NewMockUpdatePostUseCase(t)
+			mockUseCase := mockApp.NewMockChangePostUseCase(t)
 			tc.setupMock(mockUseCase)
 
-			controller := controllers.NewUpdatePostController(mockUseCase)
+			controller := controllers.NewChangePostController(mockUseCase)
 
 			var buf bytes.Buffer
 			if tc.requestBody != nil {

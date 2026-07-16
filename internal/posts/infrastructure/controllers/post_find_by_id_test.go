@@ -23,15 +23,7 @@ func TestFindPostByIDController_Handle(t *testing.T) {
 	titleBlock, _ := domain.NewTitleBlock("Title")
 	contentInfo, _ := domain.NewContentInformation("Post Title", []domain.Block{titleBlock})
 	now := time.Now().UTC()
-	validPost, err := domain.NewPost(domain.PostParams{
-		ID:                 1,
-		ContentInformation: contentInfo,
-		Status:             domain.StatusDraft,
-		CreatedAt:          now,
-		UpdatedAt:          now,
-		AuthorID:           2,
-		LastEditorID:       2,
-	})
+	validPost, err := domain.NewPost(1, contentInfo, domain.StatusDraft, now, now, 2, 2, nil)
 	assert.NoError(t, err)
 
 	testCases := []struct {

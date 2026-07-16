@@ -101,7 +101,7 @@ func TestUpdateUserPersonalInformationUseCase(t *testing.T) {
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindByID", mock.Anything, userID).Return(nil, dbErr)
 			},
-			expectedError: domain.ErrUpdatingUserPersonalInformation,
+			expectedError: domain.ErrChangingPersonalInformation,
 		},
 		{
 			testName: "fail - repo update error",
@@ -111,7 +111,7 @@ func TestUpdateUserPersonalInformationUseCase(t *testing.T) {
 				m.On("FindByID", mock.Anything, userID).Return(existingUser, nil)
 				m.On("Update", mock.Anything, mock.Anything).Return(dbErr)
 			},
-			expectedError: domain.ErrUpdatingUserPersonalInformation,
+			expectedError: domain.ErrChangingPersonalInformation,
 		},
 	}
 
@@ -128,7 +128,7 @@ func TestUpdateUserPersonalInformationUseCase(t *testing.T) {
 					t.Fatalf("expected error: %v, got nil", tc.expectedError)
 				}
 				if !errors.Is(err, tc.expectedError) {
-					if !(tc.expectedError == domain.ErrUpdatingUserPersonalInformation && errors.Unwrap(err) != nil) {
+					if !(tc.expectedError == domain.ErrChangingPersonalInformation && errors.Unwrap(err) != nil) {
 						t.Errorf("expected error: %v, got %v", tc.expectedError, err)
 					}
 				}

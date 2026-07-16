@@ -75,8 +75,8 @@ HTTP Request
 ### Decisiones de Diseño
 
 - **Value Objects inmutables**: Ningún campo es exportado directamente. Se crean con constructores que validan las reglas de negocio.
-- **Entities con Parámetros Individuales**: `NewUser(id, personalInformation, phone, email, createdAt, updatedAt)` recibe los parámetros uno por uno.
-- **Mutadores con Intención de Negocio**: Los métodos de actualización retornan una nueva instancia sin mutar el estado original y actualizan `updatedAt` a `time.Now().UTC()`. Los nombres deben reflejar la operación de negocio (ej. `ChangePhone(...)`, `ChangeEmail(...)`, `UpdatePersonalInformation(...)`).
+- **Entities con Parámetros Individuales**: `NewUser(id, personalInformation, phone, email, createdAt, updatedAt)` y `NewPost(id, contentInformation, status, createdAt, updatedAt, authorID, lastEditorID, publishedAt)` reciben los parámetros uno por uno.
+- **Mutadores con Intención de Negocio**: Los métodos de actualización retornan una nueva instancia sin mutar el estado original y actualizan `updatedAt` a `time.Now().UTC()`. Los nombres deben reflejar la operación de negocio (ej. `ChangePhone(...)`, `ChangeEmail(...)`, `UpdatePersonalInformation(...)`, `UpdateContentAndStatus(...)`).
 - **DTOs separados**: El dominio nunca expone sus internos directamente. La serialización pasa siempre por `.ToDTO()`.
 - **UTC en todo el stack**: `time.Now().UTC()` en Go, `PGTZ=UTC` en Postgres, `TZ=UTC` en el contenedor.
 - **Paginación por cursor**: `FindAll` usa keyset pagination con `id` como cursor para evitar `OFFSET` y garantizar índices deterministas.

@@ -74,7 +74,7 @@ func TestProtected(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.testName, func(t *testing.T) {
 			var capturedUserID int64
-			nextHandler := sharedHttp.Protected(func(w http.ResponseWriter, r *http.Request, userID int64) {
+			nextHandler := sharedHttp.Protected(func(w http.ResponseWriter, _ *http.Request, userID int64) {
 				capturedUserID = userID
 				w.WriteHeader(http.StatusOK)
 			})

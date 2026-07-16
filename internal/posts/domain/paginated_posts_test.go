@@ -10,16 +10,7 @@ func TestPaginatedPostsVO(t *testing.T) {
 	contentInfo, _ := NewContentInformation("Post Title", []Block{titleBlock})
 	now := time.Now().UTC()
 
-	post, err := NewPost(PostParams{
-		ID:                 1,
-		ContentInformation: contentInfo,
-		Status:             StatusPublished,
-		CreatedAt:          now,
-		UpdatedAt:          now,
-		AuthorID:           10,
-		LastEditorID:       10,
-		PublishedAt:        &now,
-	})
+	post, err := NewPost(1, contentInfo, StatusPublished, now, now, 10, 10, &now)
 	if err != nil {
 		t.Fatalf("unexpected error creating post: %v", err)
 	}
