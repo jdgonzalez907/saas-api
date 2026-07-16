@@ -255,12 +255,12 @@ func mapToDomain(
 		emailVO = &e
 	}
 
-	return domain.NewUser(domain.UserParams{
-		ID:                  id,
-		PersonalInformation: personalInfo,
-		Phone:               phone,
-		Email:               emailVO,
-		CreatedAt:           createdAt.Time.UTC(),
-		UpdatedAt:           updatedAt.Time.UTC(),
-	})
+	return domain.NewUser(
+		id,
+		personalInfo,
+		phone,
+		emailVO,
+		createdAt.Time.UTC(),
+		updatedAt.Time.UTC(),
+	)
 }

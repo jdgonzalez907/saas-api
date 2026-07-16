@@ -7,26 +7,26 @@ import (
 	"jdgonzalez907/saas-api/internal/users/domain"
 )
 
-type UpdateUserEmailUseCase interface {
+type ChangeUserEmailUseCase interface {
 	Execute(ctx context.Context, id int64, email *domain.Email) error
 }
 
-type updateUserEmailUseCase struct {
+type changeUserEmailUseCase struct {
 	userRepository domain.UserRepository
 }
 
-func NewUpdateUserEmailUseCase(userRepository domain.UserRepository) UpdateUserEmailUseCase {
-	return &updateUserEmailUseCase{userRepository: userRepository}
+func NewChangeUserEmailUseCase(userRepository domain.UserRepository) ChangeUserEmailUseCase {
+	return &changeUserEmailUseCase{userRepository: userRepository}
 }
 
-func (u *updateUserEmailUseCase) Execute(ctx context.Context, id int64, email *domain.Email) error {
+func (u *changeUserEmailUseCase) Execute(ctx context.Context, id int64, email *domain.Email) error {
 	if err := domain.ValidateAssignedUserID(id); err != nil {
 		return err
 	}
 
 	userFound, err := u.userRepository.FindByID(ctx, id)
 	if err != nil {
-		return fmt.Errorf("%v: %w", domain.ErrUpdatingUserEmail, err)
+		return fmt.Errorf("%v: %w", domain.ErrChangingUserEmail, err)
 	}
 
 	if userFound == nil {
@@ -42,18 +42,18 @@ func (u *updateUserEmailUseCase) Execute(ctx context.Context, id int64, email *d
 	if email != nil {
 		foundEmail, err := u.userRepository.FindByEmail(ctx, *email)
 		if err != nil {
-			return fmt.Errorf("%v: %w", domain.ErrUpdatingUserEmail, err)
+			return fmt.Errorf("%v: %w", domain.ErrChangingUserEmail, err)
 		}
 		if foundEmail != nil {
 			return domain.ErrUserEmailAlreadyExists
 		}
 	}
 
-	updatedUser := userFound.WithEmail(email)
+	updatedUser := userFound.ChangeEmail(email)
 
 	err = u.userRepository.Update(ctx, updatedUser)
 	if err != nil {
-		return fmt.Errorf("%v: %w", domain.ErrUpdatingUserEmail, err)
+		return fmt.Errorf("%v: %w", domain.ErrChangingUserEmail, err)
 	}
 
 	return nil

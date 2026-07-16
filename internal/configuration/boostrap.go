@@ -72,16 +72,16 @@ func NewApplication() (*Application, error) {
 	deleteUserUseCase := application.NewDeleteUserUseCase(userRepository)
 	updatePersonalInformationUseCase := application.NewUpdateUserPersonalInformationUseCase(userRepository)
 	findUsersPaginatedUseCase := application.NewFindUsersPaginatedUseCase(userRepository)
-	updateEmailUseCase := application.NewUpdateUserEmailUseCase(userRepository)
-	updatePhoneUseCase := application.NewUpdateUserPhoneUseCase(userRepository)
+	changeEmailUseCase := application.NewChangeUserEmailUseCase(userRepository)
+	changePhoneUseCase := application.NewChangeUserPhoneUseCase(userRepository)
 
 	findUserByID := controllers.NewFindUserByIDController(findUserByIDUseCase)
 	createUser := controllers.NewCreateUserController(createUserUseCase)
 	deleteUser := controllers.NewDeleteUserController(deleteUserUseCase)
 	updatePersonalInformation := controllers.NewUpdateUserPersonalInformationController(updatePersonalInformationUseCase)
 	findUsersPaginated := controllers.NewFindUsersPaginatedController(findUsersPaginatedUseCase)
-	updateEmail := controllers.NewUpdateUserEmailController(updateEmailUseCase)
-	updatePhone := controllers.NewUpdateUserPhoneController(updatePhoneUseCase)
+	changeEmail := controllers.NewChangeUserEmailController(changeEmailUseCase)
+	changePhone := controllers.NewChangeUserPhoneController(changePhoneUseCase)
 
 	router := controllers.NewRouter(controllers.RouterParams{
 		FindUserByID:              findUserByID,
@@ -89,8 +89,8 @@ func NewApplication() (*Application, error) {
 		DeleteUser:                deleteUser,
 		UpdatePersonalInformation: updatePersonalInformation,
 		FindUsersPaginated:        findUsersPaginated,
-		UpdateEmail:               updateEmail,
-		UpdatePhone:               updatePhone,
+		ChangeEmail:               changeEmail,
+		ChangePhone:               changePhone,
 	})
 
 	server := &http.Server{

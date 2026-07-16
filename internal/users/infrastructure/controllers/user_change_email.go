@@ -8,28 +8,28 @@ import (
 	"jdgonzalez907/saas-api/internal/users/domain"
 )
 
-type UpdateUserEmailController struct {
-	useCase application.UpdateUserEmailUseCase
+type ChangeUserEmailController struct {
+	useCase application.ChangeUserEmailUseCase
 }
 
-func NewUpdateUserEmailController(useCase application.UpdateUserEmailUseCase) *UpdateUserEmailController {
-	return &UpdateUserEmailController{
+func NewChangeUserEmailController(useCase application.ChangeUserEmailUseCase) *ChangeUserEmailController {
+	return &ChangeUserEmailController{
 		useCase: useCase,
 	}
 }
 
-type UpdateEmailRequest struct {
+type ChangeEmailRequest struct {
 	Email *string `json:"email"`
 }
 
-func (c *UpdateUserEmailController) Handle(w http.ResponseWriter, r *http.Request, _ int64) {
+func (c *ChangeUserEmailController) Handle(w http.ResponseWriter, r *http.Request, _ int64) {
 	id, err := sharedHttp.ParseRouteInt64Param(r, "id")
 	if err != nil {
 		sharedHttp.RespondWithError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	var body UpdateEmailRequest
+	var body ChangeEmailRequest
 	if err := sharedHttp.DecodeJSON(r, &body); err != nil {
 		sharedHttp.RespondWithError(w, http.StatusBadRequest, err.Error())
 		return

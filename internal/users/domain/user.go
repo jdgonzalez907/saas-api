@@ -18,8 +18,8 @@ var (
 	ErrUserNotFound                    = errors.New("the requested user was not found")
 	ErrCreatingUser                    = errors.New("could not complete user registration")
 	ErrUpdatingUserPersonalInformation = errors.New("could not update user personal details")
-	ErrUpdatingUserPhone               = errors.New("could not update user contact phone number")
-	ErrUpdatingUserEmail               = errors.New("could not update user contact email address")
+	ErrChangingUserPhone               = errors.New("could not change user contact phone number")
+	ErrChangingUserEmail               = errors.New("could not change user contact email address")
 	ErrDeletingUser                    = errors.New("could not complete user deletion process")
 	ErrFindingUsers                    = errors.New("could not retrieve the users listing")
 	ErrFindingUserByID                 = errors.New("could not retrieve user by identification")
@@ -32,15 +32,6 @@ type User struct {
 	email               *Email
 	createdAt           time.Time
 	updatedAt           time.Time
-}
-
-type UserParams struct {
-	ID                  int64
-	PersonalInformation PersonalInformation
-	Phone               Phone
-	Email               *Email
-	CreatedAt           time.Time
-	UpdatedAt           time.Time
 }
 
 type UserDTO struct {
@@ -75,18 +66,25 @@ func ValidateAssignedUserID(id int64) error {
 	return nil
 }
 
-func NewUser(params UserParams) (*User, error) {
-	if err := ValidateAssignedUserID(params.ID); err != nil {
+func NewUser(
+	id int64,
+	personalInformation PersonalInformation,
+	phone Phone,
+	email *Email,
+	createdAt time.Time,
+	updatedAt time.Time,
+) (*User, error) {
+	if err := ValidateAssignedUserID(id); err != nil {
 		return nil, err
 	}
 
 	return &User{
-		id:                  params.ID,
-		personalInformation: params.PersonalInformation,
-		phone:               params.Phone,
-		email:               params.Email,
-		createdAt:           params.CreatedAt,
-		updatedAt:           params.UpdatedAt,
+		id:                  id,
+		personalInformation: personalInformation,
+		phone:               phone,
+		email:               email,
+		createdAt:           createdAt,
+		updatedAt:           updatedAt,
 	}, nil
 }
 
@@ -223,17 +221,17 @@ func UserFromDTO(dto *UserDTO) (*User, error) {
 		email = &e
 	}
 
-	return NewUser(UserParams{
-		ID:                  dto.ID,
-		PersonalInformation: personalInfo,
-		Phone:               phone,
-		Email:               email,
-		CreatedAt:           dto.CreatedAt,
-		UpdatedAt:           dto.UpdatedAt,
-	})
+	return NewUser(
+		dto.ID,
+		personalInfo,
+		phone,
+		email,
+		dto.CreatedAt,
+		dto.UpdatedAt,
+	)
 }
 
-func (u *User) WithPersonalInformation(info PersonalInformation) *User {
+func (u *User) UpdatePersonalInformation(info PersonalInformation) *User {
 	return &User{
 		id:                  u.id,
 		personalInformation: info,
@@ -244,7 +242,7 @@ func (u *User) WithPersonalInformation(info PersonalInformation) *User {
 	}
 }
 
-func (u *User) WithPhone(phone Phone) *User {
+func (u *User) ChangePhone(phone Phone) *User {
 	return &User{
 		id:                  u.id,
 		personalInformation: u.personalInformation,
@@ -255,7 +253,7 @@ func (u *User) WithPhone(phone Phone) *User {
 	}
 }
 
-func (u *User) WithEmail(email *Email) *User {
+func (u *User) ChangeEmail(email *Email) *User {
 	return &User{
 		id:                  u.id,
 		personalInformation: u.personalInformation,

@@ -8,17 +8,17 @@ import (
 	"jdgonzalez907/saas-api/internal/users/domain"
 )
 
-type UpdateUserPhoneController struct {
-	useCase application.UpdateUserPhoneUseCase
+type ChangeUserPhoneController struct {
+	useCase application.ChangeUserPhoneUseCase
 }
 
-func NewUpdateUserPhoneController(useCase application.UpdateUserPhoneUseCase) *UpdateUserPhoneController {
-	return &UpdateUserPhoneController{
+func NewChangeUserPhoneController(useCase application.ChangeUserPhoneUseCase) *ChangeUserPhoneController {
+	return &ChangeUserPhoneController{
 		useCase: useCase,
 	}
 }
 
-func (c *UpdateUserPhoneController) Handle(w http.ResponseWriter, r *http.Request, _ int64) {
+func (c *ChangeUserPhoneController) Handle(w http.ResponseWriter, r *http.Request, _ int64) {
 	id, err := sharedHttp.ParseRouteInt64Param(r, "id")
 	if err != nil {
 		sharedHttp.RespondWithError(w, http.StatusBadRequest, err.Error())

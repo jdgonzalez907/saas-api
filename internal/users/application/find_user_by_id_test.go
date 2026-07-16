@@ -29,14 +29,14 @@ func TestFindUserByIdUseCase(t *testing.T) {
 		&birthDate,
 	)
 
-	user, _ := domain.NewUser(domain.UserParams{
-		ID:                  int64(1),
-		PersonalInformation: personalInfo,
-		Phone:               phone,
-		Email:               &email,
-		CreatedAt:           now,
-		UpdatedAt:           now,
-	})
+	user, _ := domain.NewUser(
+		int64(1),
+		personalInfo,
+		phone,
+		&email,
+		now,
+		now,
+	)
 
 	dbErr := errors.New("db query error")
 
