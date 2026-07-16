@@ -231,7 +231,7 @@ func UserFromDTO(dto *UserDTO) (*User, error) {
 	)
 }
 
-func (u *User) WithPersonalInformation(info PersonalInformation) *User {
+func (u *User) UpdatePersonalInformation(info PersonalInformation) *User {
 	return &User{
 		id:                  u.id,
 		personalInformation: info,
@@ -242,7 +242,7 @@ func (u *User) WithPersonalInformation(info PersonalInformation) *User {
 	}
 }
 
-func (u *User) WithPhone(phone Phone) *User {
+func (u *User) ChangePhone(phone Phone) *User {
 	return &User{
 		id:                  u.id,
 		personalInformation: u.personalInformation,
@@ -253,7 +253,7 @@ func (u *User) WithPhone(phone Phone) *User {
 	}
 }
 
-func (u *User) WithEmail(email *Email) *User {
+func (u *User) ChangeEmail(email *Email) *User {
 	return &User{
 		id:                  u.id,
 		personalInformation: u.personalInformation,

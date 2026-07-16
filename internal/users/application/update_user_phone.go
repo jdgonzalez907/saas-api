@@ -45,7 +45,7 @@ func (u *updateUserPhoneUseCase) Execute(ctx context.Context, id int64, phone do
 		return domain.ErrUserPhoneAlreadyExists
 	}
 
-	updatedUser := userFound.WithPhone(phone)
+	updatedUser := userFound.ChangePhone(phone)
 
 	err = u.userRepository.Update(ctx, updatedUser)
 	if err != nil {

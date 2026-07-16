@@ -49,7 +49,7 @@ func (u *updateUserEmailUseCase) Execute(ctx context.Context, id int64, email *d
 		}
 	}
 
-	updatedUser := userFound.WithEmail(email)
+	updatedUser := userFound.ChangeEmail(email)
 
 	err = u.userRepository.Update(ctx, updatedUser)
 	if err != nil {

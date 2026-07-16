@@ -37,7 +37,7 @@ func (u *updateUserPersonalInformationUseCase) Execute(ctx context.Context, id i
 		return nil
 	}
 
-	updatedUser := userFound.WithPersonalInformation(info)
+	updatedUser := userFound.UpdatePersonalInformation(info)
 
 	err = u.userRepository.Update(ctx, updatedUser)
 	if err != nil {

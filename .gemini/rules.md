@@ -27,7 +27,7 @@ Este documento sirve como la fuente de verdad (Skill / Rules) para que cualquier
   - La función `[Entity]FromDTO(dto *[Entity]DTO) (*[Entity], error)` reconstruye la entidad desde su representación plana.
 - **Patrón Wither (Mutadores Específicos)**:
   - No se permiten actualizadores genéricos tipo `.With(...)`.
-  - Se deben definir métodos "Wither" intencionales y específicos para cada caso de uso de mutación (ej. `.WithPersonalInformation(...)`, `.WithPhone(...)`, `.WithEmail(...)`).
+  - Se deben definir métodos "Wither" intencionales y específicos para cada caso de uso de mutación con nombres que den intención de negocio (ej. `.UpdatePersonalInformation(...)`, `.ChangePhone(...)`, `.ChangeEmail(...)`).
   - Estos métodos retornan un nuevo puntero a la entidad actualizada, manteniendo la inmutabilidad y actualizando el campo `updatedAt` con `time.Now().UTC()`.
   - Las operaciones puras en memoria que no puedan fallar no deben retornar `error`.
 
