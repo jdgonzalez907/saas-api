@@ -52,16 +52,16 @@ func TestNewPost_Validation(t *testing.T) {
 	now := time.Now().UTC()
 
 	testCases := []struct {
-		name             string
-		id               int64
-		contentInfo      ContentInformation
-		status           PostStatus
-		createdAt        time.Time
-		updatedAt        time.Time
-		authorID         int64
-		lastEditorID     int64
-		publishedAt      *time.Time
-		wantErr          error
+		name         string
+		id           int64
+		contentInfo  ContentInformation
+		status       PostStatus
+		createdAt    time.Time
+		updatedAt    time.Time
+		authorID     int64
+		lastEditorID int64
+		publishedAt  *time.Time
+		wantErr      error
 	}{
 		{
 			name:         "fail - invalid ID (zero)",

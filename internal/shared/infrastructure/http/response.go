@@ -50,13 +50,13 @@ var domainErrorStatus = map[error]int{
 	usersDomain.ErrInvalidPaginationLimit:      http.StatusBadRequest,
 	usersDomain.ErrInvalidPaginationCursor:     http.StatusBadRequest,
 
-	usersDomain.ErrCreatingUser:                    http.StatusInternalServerError,
+	usersDomain.ErrCreatingUser:                http.StatusInternalServerError,
 	usersDomain.ErrChangingPersonalInformation: http.StatusInternalServerError,
 	usersDomain.ErrChangingPhone:               http.StatusInternalServerError,
 	usersDomain.ErrChangingEmail:               http.StatusInternalServerError,
-	usersDomain.ErrDeletingUser:                    http.StatusInternalServerError,
-	usersDomain.ErrFindingUsers:                    http.StatusInternalServerError,
-	usersDomain.ErrFindingUserByID:                 http.StatusInternalServerError,
+	usersDomain.ErrDeletingUser:                http.StatusInternalServerError,
+	usersDomain.ErrFindingUsers:                http.StatusInternalServerError,
+	usersDomain.ErrFindingUserByID:             http.StatusInternalServerError,
 
 	postsDomain.ErrPostNotFound: http.StatusNotFound,
 
