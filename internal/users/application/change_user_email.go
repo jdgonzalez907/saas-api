@@ -8,7 +8,7 @@ import (
 )
 
 type ChangeUserEmailUseCase interface {
-	Execute(ctx context.Context, id int64, email *domain.Email) error
+	Execute(ctx context.Context, id int64, email *domain.Email, userID int64) error
 }
 
 type changeUserEmailUseCase struct {
@@ -19,7 +19,7 @@ func NewChangeUserEmailUseCase(userRepository domain.UserRepository) ChangeUserE
 	return &changeUserEmailUseCase{userRepository: userRepository}
 }
 
-func (u *changeUserEmailUseCase) Execute(ctx context.Context, id int64, email *domain.Email) error {
+func (u *changeUserEmailUseCase) Execute(ctx context.Context, id int64, email *domain.Email, userID int64) error {
 	if err := domain.ValidateAssignedUserID(id); err != nil {
 		return err
 	}
@@ -49,7 +49,10 @@ func (u *changeUserEmailUseCase) Execute(ctx context.Context, id int64, email *d
 		}
 	}
 
-	updatedUser := userFound.ChangeEmail(email)
+	updatedUser, err := userFound.ChangeEmail(email, userID)
+	if err != nil {
+		return err
+	}
 
 	err = u.userRepository.Update(ctx, updatedUser)
 	if err != nil {

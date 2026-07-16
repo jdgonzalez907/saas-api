@@ -22,17 +22,17 @@ func (_m *MockUpdateUserPersonalInformationUseCase) EXPECT() *MockUpdateUserPers
 	return &MockUpdateUserPersonalInformationUseCase_Expecter{mock: &_m.Mock}
 }
 
-// Execute provides a mock function with given fields: ctx, id, info
-func (_m *MockUpdateUserPersonalInformationUseCase) Execute(ctx context.Context, id int64, info domain.PersonalInformation) error {
-	ret := _m.Called(ctx, id, info)
+// Execute provides a mock function with given fields: ctx, id, info, userID
+func (_m *MockUpdateUserPersonalInformationUseCase) Execute(ctx context.Context, id int64, info domain.PersonalInformation, userID int64) error {
+	ret := _m.Called(ctx, id, info, userID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Execute")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64, domain.PersonalInformation) error); ok {
-		r0 = rf(ctx, id, info)
+	if rf, ok := ret.Get(0).(func(context.Context, int64, domain.PersonalInformation, int64) error); ok {
+		r0 = rf(ctx, id, info, userID)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -49,13 +49,14 @@ type MockUpdateUserPersonalInformationUseCase_Execute_Call struct {
 //   - ctx context.Context
 //   - id int64
 //   - info domain.PersonalInformation
-func (_e *MockUpdateUserPersonalInformationUseCase_Expecter) Execute(ctx interface{}, id interface{}, info interface{}) *MockUpdateUserPersonalInformationUseCase_Execute_Call {
-	return &MockUpdateUserPersonalInformationUseCase_Execute_Call{Call: _e.mock.On("Execute", ctx, id, info)}
+//   - userID int64
+func (_e *MockUpdateUserPersonalInformationUseCase_Expecter) Execute(ctx interface{}, id interface{}, info interface{}, userID interface{}) *MockUpdateUserPersonalInformationUseCase_Execute_Call {
+	return &MockUpdateUserPersonalInformationUseCase_Execute_Call{Call: _e.mock.On("Execute", ctx, id, info, userID)}
 }
 
-func (_c *MockUpdateUserPersonalInformationUseCase_Execute_Call) Run(run func(ctx context.Context, id int64, info domain.PersonalInformation)) *MockUpdateUserPersonalInformationUseCase_Execute_Call {
+func (_c *MockUpdateUserPersonalInformationUseCase_Execute_Call) Run(run func(ctx context.Context, id int64, info domain.PersonalInformation, userID int64)) *MockUpdateUserPersonalInformationUseCase_Execute_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(int64), args[2].(domain.PersonalInformation))
+		run(args[0].(context.Context), args[1].(int64), args[2].(domain.PersonalInformation), args[3].(int64))
 	})
 	return _c
 }
@@ -65,7 +66,7 @@ func (_c *MockUpdateUserPersonalInformationUseCase_Execute_Call) Return(_a0 erro
 	return _c
 }
 
-func (_c *MockUpdateUserPersonalInformationUseCase_Execute_Call) RunAndReturn(run func(context.Context, int64, domain.PersonalInformation) error) *MockUpdateUserPersonalInformationUseCase_Execute_Call {
+func (_c *MockUpdateUserPersonalInformationUseCase_Execute_Call) RunAndReturn(run func(context.Context, int64, domain.PersonalInformation, int64) error) *MockUpdateUserPersonalInformationUseCase_Execute_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -42,14 +42,13 @@ func (r *postgresPostRepository) FindByID(ctx context.Context, id int64) (*domai
 		row.Content,
 		row.Status,
 		row.AuthorID,
-		row.LastEditorID,
 		row.PublishedAt,
 		row.CreatedAt,
 		row.UpdatedAt,
 	)
 }
 
-func (r *postgresPostRepository) FindAll(ctx context.Context, status domain.PostStatus, pagination domain.Pagination) ([]*domain.Post, error) {
+func (r *postgresPostRepository) FindAll(ctx context.Context, status domain.PostStatus, pagination domain.Pagination, authorID int64) ([]*domain.Post, error) {
 	limit := pagination.Limit()
 	var posts []*domain.Post
 
@@ -64,6 +63,7 @@ func (r *postgresPostRepository) FindAll(ctx context.Context, status domain.Post
 			LastPublishedAt: lastPublishedAt,
 			ID:              *pagination.LastID(),
 			Limit:           limit,
+			AuthorID:        authorID,
 		})
 		if err != nil {
 			return nil, err
@@ -78,7 +78,6 @@ func (r *postgresPostRepository) FindAll(ctx context.Context, status domain.Post
 				row.Content,
 				row.Status,
 				row.AuthorID,
-				row.LastEditorID,
 				row.PublishedAt,
 				row.CreatedAt,
 				row.UpdatedAt,
@@ -89,8 +88,9 @@ func (r *postgresPostRepository) FindAll(ctx context.Context, status domain.Post
 		}
 	} else {
 		dbRows, err := r.queries.FindPostsPaginatedWithoutCursor(ctx, postgres.FindPostsPaginatedWithoutCursorParams{
-			Status: string(status),
-			Limit:  limit,
+			Status:   string(status),
+			Limit:    limit,
+			AuthorID: authorID,
 		})
 		if err != nil {
 			return nil, err
@@ -105,7 +105,6 @@ func (r *postgresPostRepository) FindAll(ctx context.Context, status domain.Post
 				row.Content,
 				row.Status,
 				row.AuthorID,
-				row.LastEditorID,
 				row.PublishedAt,
 				row.CreatedAt,
 				row.UpdatedAt,
@@ -131,14 +130,13 @@ func (r *postgresPostRepository) Create(ctx context.Context, post *domain.Post) 
 	}
 
 	id, err := r.queries.CreatePost(ctx, postgres.CreatePostParams{
-		Title:        post.ContentInformation().Title(),
-		Content:      contentBytes,
-		Status:       string(post.Status()),
-		AuthorID:     post.AuthorID(),
-		LastEditorID: post.LastEditorID(),
-		PublishedAt:  publishedAt,
-		CreatedAt:    pgtype.Timestamptz{Time: post.CreatedAt(), Valid: true},
-		UpdatedAt:    pgtype.Timestamptz{Time: post.UpdatedAt(), Valid: true},
+		Title:       post.ContentInformation().Title(),
+		Content:     contentBytes,
+		Status:      string(post.Status()),
+		AuthorID:    post.AuthorID(),
+		PublishedAt: publishedAt,
+		CreatedAt:   pgtype.Timestamptz{Time: post.CreatedAt(), Valid: true},
+		UpdatedAt:   pgtype.Timestamptz{Time: post.UpdatedAt(), Valid: true},
 	})
 	if err != nil {
 		return err
@@ -160,22 +158,17 @@ func (r *postgresPostRepository) Update(ctx context.Context, post *domain.Post) 
 	}
 
 	return r.queries.UpdatePost(ctx, postgres.UpdatePostParams{
-		Title:        post.ContentInformation().Title(),
-		Content:      contentBytes,
-		Status:       string(post.Status()),
-		AuthorID:     post.AuthorID(),
-		LastEditorID: post.LastEditorID(),
-		PublishedAt:  publishedAt,
-		UpdatedAt:    pgtype.Timestamptz{Time: post.UpdatedAt(), Valid: true},
-		ID:           post.ID(),
+		Title:       post.ContentInformation().Title(),
+		Content:     contentBytes,
+		Status:      string(post.Status()),
+		PublishedAt: publishedAt,
+		UpdatedAt:   pgtype.Timestamptz{Time: post.UpdatedAt(), Valid: true},
+		ID:          post.ID(),
 	})
 }
 
-func (r *postgresPostRepository) Delete(ctx context.Context, id int64, deletedByID int64) error {
-	return r.queries.DeletePost(ctx, postgres.DeletePostParams{
-		ID:        id,
-		DeletedBy: pgtype.Int8{Int64: deletedByID, Valid: true},
-	})
+func (r *postgresPostRepository) Delete(ctx context.Context, id int64) error {
+	return r.queries.DeletePost(ctx, id)
 }
 
 func toJSONB(blocks []domain.Block) ([]byte, error) {
@@ -201,7 +194,6 @@ func mapRowToDomain(
 	content []byte,
 	status string,
 	authorID int64,
-	lastEditorID int64,
 	publishedAt pgtype.Timestamptz,
 	createdAt pgtype.Timestamptz,
 	updatedAt pgtype.Timestamptz,
@@ -237,7 +229,6 @@ func mapRowToDomain(
 		createdAt.Time.UTC(),
 		updatedAt.Time.UTC(),
 		authorID,
-		lastEditorID,
 		pubAt,
 	)
 }

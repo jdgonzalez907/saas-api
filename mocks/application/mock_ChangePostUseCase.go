@@ -22,9 +22,9 @@ func (_m *MockChangePostUseCase) EXPECT() *MockChangePostUseCase_Expecter {
 	return &MockChangePostUseCase_Expecter{mock: &_m.Mock}
 }
 
-// Execute provides a mock function with given fields: ctx, id, contentInfo, status, lastEditorID
-func (_m *MockChangePostUseCase) Execute(ctx context.Context, id int64, contentInfo domain.ContentInformation, status domain.PostStatus, lastEditorID int64) (*domain.Post, error) {
-	ret := _m.Called(ctx, id, contentInfo, status, lastEditorID)
+// Execute provides a mock function with given fields: ctx, id, contentInfo, status, authorID
+func (_m *MockChangePostUseCase) Execute(ctx context.Context, id int64, contentInfo domain.ContentInformation, status domain.PostStatus, authorID int64) (*domain.Post, error) {
+	ret := _m.Called(ctx, id, contentInfo, status, authorID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Execute")
@@ -33,10 +33,10 @@ func (_m *MockChangePostUseCase) Execute(ctx context.Context, id int64, contentI
 	var r0 *domain.Post
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context, int64, domain.ContentInformation, domain.PostStatus, int64) (*domain.Post, error)); ok {
-		return rf(ctx, id, contentInfo, status, lastEditorID)
+		return rf(ctx, id, contentInfo, status, authorID)
 	}
 	if rf, ok := ret.Get(0).(func(context.Context, int64, domain.ContentInformation, domain.PostStatus, int64) *domain.Post); ok {
-		r0 = rf(ctx, id, contentInfo, status, lastEditorID)
+		r0 = rf(ctx, id, contentInfo, status, authorID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*domain.Post)
@@ -44,7 +44,7 @@ func (_m *MockChangePostUseCase) Execute(ctx context.Context, id int64, contentI
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, int64, domain.ContentInformation, domain.PostStatus, int64) error); ok {
-		r1 = rf(ctx, id, contentInfo, status, lastEditorID)
+		r1 = rf(ctx, id, contentInfo, status, authorID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -62,12 +62,12 @@ type MockChangePostUseCase_Execute_Call struct {
 //   - id int64
 //   - contentInfo domain.ContentInformation
 //   - status domain.PostStatus
-//   - lastEditorID int64
-func (_e *MockChangePostUseCase_Expecter) Execute(ctx interface{}, id interface{}, contentInfo interface{}, status interface{}, lastEditorID interface{}) *MockChangePostUseCase_Execute_Call {
-	return &MockChangePostUseCase_Execute_Call{Call: _e.mock.On("Execute", ctx, id, contentInfo, status, lastEditorID)}
+//   - authorID int64
+func (_e *MockChangePostUseCase_Expecter) Execute(ctx interface{}, id interface{}, contentInfo interface{}, status interface{}, authorID interface{}) *MockChangePostUseCase_Execute_Call {
+	return &MockChangePostUseCase_Execute_Call{Call: _e.mock.On("Execute", ctx, id, contentInfo, status, authorID)}
 }
 
-func (_c *MockChangePostUseCase_Execute_Call) Run(run func(ctx context.Context, id int64, contentInfo domain.ContentInformation, status domain.PostStatus, lastEditorID int64)) *MockChangePostUseCase_Execute_Call {
+func (_c *MockChangePostUseCase_Execute_Call) Run(run func(ctx context.Context, id int64, contentInfo domain.ContentInformation, status domain.PostStatus, authorID int64)) *MockChangePostUseCase_Execute_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(int64), args[2].(domain.ContentInformation), args[3].(domain.PostStatus), args[4].(int64))
 	})

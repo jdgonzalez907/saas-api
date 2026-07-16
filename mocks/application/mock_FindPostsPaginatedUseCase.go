@@ -22,9 +22,9 @@ func (_m *MockFindPostsPaginatedUseCase) EXPECT() *MockFindPostsPaginatedUseCase
 	return &MockFindPostsPaginatedUseCase_Expecter{mock: &_m.Mock}
 }
 
-// Execute provides a mock function with given fields: ctx, status, pagination
-func (_m *MockFindPostsPaginatedUseCase) Execute(ctx context.Context, status domain.PostStatus, pagination domain.Pagination) (domain.PaginatedPosts, error) {
-	ret := _m.Called(ctx, status, pagination)
+// Execute provides a mock function with given fields: ctx, status, pagination, authorID
+func (_m *MockFindPostsPaginatedUseCase) Execute(ctx context.Context, status domain.PostStatus, pagination domain.Pagination, authorID int64) (domain.PaginatedPosts, error) {
+	ret := _m.Called(ctx, status, pagination, authorID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Execute")
@@ -32,17 +32,17 @@ func (_m *MockFindPostsPaginatedUseCase) Execute(ctx context.Context, status dom
 
 	var r0 domain.PaginatedPosts
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, domain.PostStatus, domain.Pagination) (domain.PaginatedPosts, error)); ok {
-		return rf(ctx, status, pagination)
+	if rf, ok := ret.Get(0).(func(context.Context, domain.PostStatus, domain.Pagination, int64) (domain.PaginatedPosts, error)); ok {
+		return rf(ctx, status, pagination, authorID)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, domain.PostStatus, domain.Pagination) domain.PaginatedPosts); ok {
-		r0 = rf(ctx, status, pagination)
+	if rf, ok := ret.Get(0).(func(context.Context, domain.PostStatus, domain.Pagination, int64) domain.PaginatedPosts); ok {
+		r0 = rf(ctx, status, pagination, authorID)
 	} else {
 		r0 = ret.Get(0).(domain.PaginatedPosts)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, domain.PostStatus, domain.Pagination) error); ok {
-		r1 = rf(ctx, status, pagination)
+	if rf, ok := ret.Get(1).(func(context.Context, domain.PostStatus, domain.Pagination, int64) error); ok {
+		r1 = rf(ctx, status, pagination, authorID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -59,13 +59,14 @@ type MockFindPostsPaginatedUseCase_Execute_Call struct {
 //   - ctx context.Context
 //   - status domain.PostStatus
 //   - pagination domain.Pagination
-func (_e *MockFindPostsPaginatedUseCase_Expecter) Execute(ctx interface{}, status interface{}, pagination interface{}) *MockFindPostsPaginatedUseCase_Execute_Call {
-	return &MockFindPostsPaginatedUseCase_Execute_Call{Call: _e.mock.On("Execute", ctx, status, pagination)}
+//   - authorID int64
+func (_e *MockFindPostsPaginatedUseCase_Expecter) Execute(ctx interface{}, status interface{}, pagination interface{}, authorID interface{}) *MockFindPostsPaginatedUseCase_Execute_Call {
+	return &MockFindPostsPaginatedUseCase_Execute_Call{Call: _e.mock.On("Execute", ctx, status, pagination, authorID)}
 }
 
-func (_c *MockFindPostsPaginatedUseCase_Execute_Call) Run(run func(ctx context.Context, status domain.PostStatus, pagination domain.Pagination)) *MockFindPostsPaginatedUseCase_Execute_Call {
+func (_c *MockFindPostsPaginatedUseCase_Execute_Call) Run(run func(ctx context.Context, status domain.PostStatus, pagination domain.Pagination, authorID int64)) *MockFindPostsPaginatedUseCase_Execute_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(domain.PostStatus), args[2].(domain.Pagination))
+		run(args[0].(context.Context), args[1].(domain.PostStatus), args[2].(domain.Pagination), args[3].(int64))
 	})
 	return _c
 }
@@ -75,7 +76,7 @@ func (_c *MockFindPostsPaginatedUseCase_Execute_Call) Return(_a0 domain.Paginate
 	return _c
 }
 
-func (_c *MockFindPostsPaginatedUseCase_Execute_Call) RunAndReturn(run func(context.Context, domain.PostStatus, domain.Pagination) (domain.PaginatedPosts, error)) *MockFindPostsPaginatedUseCase_Execute_Call {
+func (_c *MockFindPostsPaginatedUseCase_Execute_Call) RunAndReturn(run func(context.Context, domain.PostStatus, domain.Pagination, int64) (domain.PaginatedPosts, error)) *MockFindPostsPaginatedUseCase_Execute_Call {
 	_c.Call.Return(run)
 	return _c
 }

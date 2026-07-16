@@ -18,20 +18,22 @@ func TestFindPostByIDUseCase(t *testing.T) {
 	contentInfo, _ := domain.NewContentInformation("Post Title", []domain.Block{titleBlock})
 	now := time.Now().UTC()
 
-	post, _ := domain.NewPost(1, contentInfo, domain.StatusDraft, now, now, 10, 10, nil)
+	post, _ := domain.NewPost(1, contentInfo, domain.StatusDraft, now, now, 10, nil)
 
 	dbErr := errors.New("database connection error")
 
 	testCases := []struct {
 		name             string
 		inputID          int64
+		authorID         int64
 		mockExpectations func(*domainMocks.MockPostRepository)
 		expectedResult   *domain.Post
 		expectedError    error
 	}{
 		{
-			name:    "success - find post",
-			inputID: 1,
+			name:     "success - find post",
+			inputID:  1,
+			authorID: 10,
 			mockExpectations: func(m *domainMocks.MockPostRepository) {
 				m.On("FindByID", mock.Anything, int64(1)).Return(post, nil)
 			},
@@ -39,8 +41,9 @@ func TestFindPostByIDUseCase(t *testing.T) {
 			expectedError:  nil,
 		},
 		{
-			name:    "fail - post not found",
-			inputID: 1,
+			name:     "fail - post not found",
+			inputID:  1,
+			authorID: 10,
 			mockExpectations: func(m *domainMocks.MockPostRepository) {
 				m.On("FindByID", mock.Anything, int64(1)).Return(nil, nil)
 			},
@@ -48,13 +51,24 @@ func TestFindPostByIDUseCase(t *testing.T) {
 			expectedError:  domain.ErrPostNotFound,
 		},
 		{
-			name:    "fail - repository error",
-			inputID: 1,
+			name:     "fail - repository error",
+			inputID:  1,
+			authorID: 10,
 			mockExpectations: func(m *domainMocks.MockPostRepository) {
 				m.On("FindByID", mock.Anything, int64(1)).Return(nil, dbErr)
 			},
 			expectedResult: nil,
 			expectedError:  domain.ErrFindingPost,
+		},
+		{
+			name:     "fail - ownership mismatch",
+			inputID:  1,
+			authorID: 999,
+			mockExpectations: func(m *domainMocks.MockPostRepository) {
+				m.On("FindByID", mock.Anything, int64(1)).Return(post, nil)
+			},
+			expectedResult: nil,
+			expectedError:  domain.ErrPostOwnershipMismatch,
 		},
 	}
 
@@ -64,7 +78,7 @@ func TestFindPostByIDUseCase(t *testing.T) {
 			tc.mockExpectations(mockPostRepository)
 
 			useCase := application.NewFindPostByIDUseCase(mockPostRepository)
-			res, err := useCase.Execute(context.Background(), tc.inputID)
+			res, err := useCase.Execute(context.Background(), tc.inputID, tc.authorID)
 
 			if tc.expectedError != nil {
 				if err == nil {

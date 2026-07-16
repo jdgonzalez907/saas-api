@@ -9,17 +9,15 @@ import (
 )
 
 type Post struct {
-	ID           int64
-	Title        string
-	Content      []byte
-	Status       string
-	AuthorID     int64
-	LastEditorID int64
-	PublishedAt  pgtype.Timestamptz
-	CreatedAt    pgtype.Timestamptz
-	UpdatedAt    pgtype.Timestamptz
-	DeletedAt    pgtype.Timestamptz
-	DeletedBy    pgtype.Int8
+	ID          int64
+	Title       string
+	Content     []byte
+	Status      string
+	AuthorID    int64
+	PublishedAt pgtype.Timestamptz
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
+	DeletedAt   pgtype.Timestamptz
 }
 
 type User struct {

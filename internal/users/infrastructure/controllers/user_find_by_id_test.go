@@ -58,7 +58,7 @@ func TestFindUserByIDController_Handle(t *testing.T) {
 			authUserID:   int64(1),
 			routeParamID: "1",
 			setupMock: func(m *mockApp.MockFindUserByIDUseCase) {
-				m.EXPECT().Execute(mock.Anything, int64(1)).Return(validUser, nil)
+				m.EXPECT().Execute(mock.Anything, int64(1), int64(1)).Return(validUser, nil)
 			},
 			expectedStatus: http.StatusOK,
 		},
@@ -99,7 +99,7 @@ func TestFindUserByIDController_Handle(t *testing.T) {
 			authUserID:   int64(1),
 			routeParamID: "1",
 			setupMock: func(m *mockApp.MockFindUserByIDUseCase) {
-				m.EXPECT().Execute(mock.Anything, int64(1)).Return(nil, domain.ErrUserNotFound)
+				m.EXPECT().Execute(mock.Anything, int64(1), int64(1)).Return(nil, domain.ErrUserNotFound)
 			},
 			expectedStatus: http.StatusNotFound,
 			expectedBody:   domain.ErrUserNotFound.Error(),
@@ -109,7 +109,7 @@ func TestFindUserByIDController_Handle(t *testing.T) {
 			authUserID:   int64(1),
 			routeParamID: "1",
 			setupMock: func(m *mockApp.MockFindUserByIDUseCase) {
-				m.EXPECT().Execute(mock.Anything, int64(1)).Return(nil, errors.New("database connection lost"))
+				m.EXPECT().Execute(mock.Anything, int64(1), int64(1)).Return(nil, errors.New("database connection lost"))
 			},
 			expectedStatus: http.StatusInternalServerError,
 			expectedBody:   "internal server error",

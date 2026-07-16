@@ -12,7 +12,6 @@ type RouterParams struct {
 	CreateUser                *CreateUserController
 	DeleteUser                *DeleteUserController
 	UpdatePersonalInformation *UpdateUserPersonalInformationController
-	FindUsersPaginated        *FindUsersPaginatedController
 	ChangeEmail               *ChangeUserEmailController
 	ChangePhone               *ChangeUserPhoneController
 }
@@ -37,9 +36,6 @@ func NewRouter(params RouterParams) *chi.Mux {
 	}
 	if params.UpdatePersonalInformation != nil {
 		r.Put("/users/{id}", sharedHttp.Protected(params.UpdatePersonalInformation.Handle))
-	}
-	if params.FindUsersPaginated != nil {
-		r.Get("/users", sharedHttp.Protected(params.FindUsersPaginated.Handle))
 	}
 	if params.ChangeEmail != nil {
 		r.Put("/users/{id}/email", sharedHttp.Protected(params.ChangeEmail.Handle))

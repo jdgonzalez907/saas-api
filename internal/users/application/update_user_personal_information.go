@@ -8,7 +8,7 @@ import (
 )
 
 type UpdateUserPersonalInformationUseCase interface {
-	Execute(ctx context.Context, id int64, info domain.PersonalInformation) error
+	Execute(ctx context.Context, id int64, info domain.PersonalInformation, userID int64) error
 }
 
 type updateUserPersonalInformationUseCase struct {
@@ -19,7 +19,7 @@ func NewUpdateUserPersonalInformationUseCase(userRepository domain.UserRepositor
 	return &updateUserPersonalInformationUseCase{userRepository: userRepository}
 }
 
-func (u *updateUserPersonalInformationUseCase) Execute(ctx context.Context, id int64, info domain.PersonalInformation) error {
+func (u *updateUserPersonalInformationUseCase) Execute(ctx context.Context, id int64, info domain.PersonalInformation, userID int64) error {
 	if err := domain.ValidateAssignedUserID(id); err != nil {
 		return err
 	}
@@ -37,7 +37,10 @@ func (u *updateUserPersonalInformationUseCase) Execute(ctx context.Context, id i
 		return nil
 	}
 
-	updatedUser := userFound.UpdatePersonalInformation(info)
+	updatedUser, err := userFound.UpdatePersonalInformation(info, userID)
+	if err != nil {
+		return err
+	}
 
 	err = u.userRepository.Update(ctx, updatedUser)
 	if err != nil {

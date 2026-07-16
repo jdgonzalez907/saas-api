@@ -20,7 +20,7 @@ func NewUpdateUserPersonalInformationController(
 	}
 }
 
-func (c *UpdateUserPersonalInformationController) Handle(w http.ResponseWriter, r *http.Request, _ int64) {
+func (c *UpdateUserPersonalInformationController) Handle(w http.ResponseWriter, r *http.Request, userID int64) {
 	id, err := sharedHttp.ParseRouteInt64Param(r, "id")
 	if err != nil {
 		sharedHttp.RespondWithError(w, http.StatusBadRequest, err.Error())
@@ -78,7 +78,7 @@ func (c *UpdateUserPersonalInformationController) Handle(w http.ResponseWriter, 
 		return
 	}
 
-	if err := c.useCase.Execute(r.Context(), id, personalInfo); err != nil {
+	if err := c.useCase.Execute(r.Context(), id, personalInfo, userID); err != nil {
 		sharedHttp.RespondWithDomainError(w, r, err)
 		return
 	}

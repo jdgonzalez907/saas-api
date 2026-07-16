@@ -116,65 +116,6 @@ func (_c *MockUserRepository_Delete_Call) RunAndReturn(run func(context.Context,
 	return _c
 }
 
-// FindAll provides a mock function with given fields: ctx, pagination
-func (_m *MockUserRepository) FindAll(ctx context.Context, pagination domain.Pagination) ([]*domain.User, error) {
-	ret := _m.Called(ctx, pagination)
-
-	if len(ret) == 0 {
-		panic("no return value specified for FindAll")
-	}
-
-	var r0 []*domain.User
-	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, domain.Pagination) ([]*domain.User, error)); ok {
-		return rf(ctx, pagination)
-	}
-	if rf, ok := ret.Get(0).(func(context.Context, domain.Pagination) []*domain.User); ok {
-		r0 = rf(ctx, pagination)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*domain.User)
-		}
-	}
-
-	if rf, ok := ret.Get(1).(func(context.Context, domain.Pagination) error); ok {
-		r1 = rf(ctx, pagination)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// MockUserRepository_FindAll_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'FindAll'
-type MockUserRepository_FindAll_Call struct {
-	*mock.Call
-}
-
-// FindAll is a helper method to define mock.On call
-//   - ctx context.Context
-//   - pagination domain.Pagination
-func (_e *MockUserRepository_Expecter) FindAll(ctx interface{}, pagination interface{}) *MockUserRepository_FindAll_Call {
-	return &MockUserRepository_FindAll_Call{Call: _e.mock.On("FindAll", ctx, pagination)}
-}
-
-func (_c *MockUserRepository_FindAll_Call) Run(run func(ctx context.Context, pagination domain.Pagination)) *MockUserRepository_FindAll_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(domain.Pagination))
-	})
-	return _c
-}
-
-func (_c *MockUserRepository_FindAll_Call) Return(_a0 []*domain.User, _a1 error) *MockUserRepository_FindAll_Call {
-	_c.Call.Return(_a0, _a1)
-	return _c
-}
-
-func (_c *MockUserRepository_FindAll_Call) RunAndReturn(run func(context.Context, domain.Pagination) ([]*domain.User, error)) *MockUserRepository_FindAll_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // FindByEmail provides a mock function with given fields: ctx, email
 func (_m *MockUserRepository) FindByEmail(ctx context.Context, email domain.Email) (*domain.User, error) {
 	ret := _m.Called(ctx, email)

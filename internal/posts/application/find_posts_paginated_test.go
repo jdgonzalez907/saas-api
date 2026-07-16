@@ -18,7 +18,7 @@ func TestFindPostsPaginatedUseCase(t *testing.T) {
 	contentInfo, _ := domain.NewContentInformation("Post Title", []domain.Block{titleBlock})
 	now := time.Now().UTC()
 
-	post, _ := domain.NewPost(1, contentInfo, domain.StatusPublished, now, now, 10, 10, &now)
+	post, _ := domain.NewPost(1, contentInfo, domain.StatusPublished, now, now, 10, &now)
 
 	pagination, _ := domain.NewPagination(nil, nil, nil)
 	dbErr := errors.New("database connection error")
@@ -27,6 +27,7 @@ func TestFindPostsPaginatedUseCase(t *testing.T) {
 		name             string
 		status           domain.PostStatus
 		pagination       domain.Pagination
+		authorID         int64
 		mockExpectations func(*domainMocks.MockPostRepository)
 		expectedResult   domain.PaginatedPosts
 		expectedError    error
@@ -35,8 +36,9 @@ func TestFindPostsPaginatedUseCase(t *testing.T) {
 			name:       "success - paginated posts not empty",
 			status:     domain.StatusPublished,
 			pagination: pagination,
+			authorID:   10,
 			mockExpectations: func(m *domainMocks.MockPostRepository) {
-				m.On("FindAll", mock.Anything, domain.StatusPublished, pagination).Return([]*domain.Post{post}, nil)
+				m.On("FindAll", mock.Anything, domain.StatusPublished, pagination, int64(10)).Return([]*domain.Post{post}, nil)
 			},
 			expectedResult: domain.NewPaginatedPosts([]*domain.Post{post}, &now, func() *int64 { i := int64(1); return &i }()),
 			expectedError:  nil,
@@ -45,8 +47,9 @@ func TestFindPostsPaginatedUseCase(t *testing.T) {
 			name:       "success - paginated posts empty",
 			status:     domain.StatusPublished,
 			pagination: pagination,
+			authorID:   10,
 			mockExpectations: func(m *domainMocks.MockPostRepository) {
-				m.On("FindAll", mock.Anything, domain.StatusPublished, pagination).Return([]*domain.Post{}, nil)
+				m.On("FindAll", mock.Anything, domain.StatusPublished, pagination, int64(10)).Return([]*domain.Post{}, nil)
 			},
 			expectedResult: domain.NewPaginatedPosts([]*domain.Post{}, nil, nil),
 			expectedError:  nil,
@@ -55,8 +58,9 @@ func TestFindPostsPaginatedUseCase(t *testing.T) {
 			name:       "fail - repository error",
 			status:     domain.StatusPublished,
 			pagination: pagination,
+			authorID:   10,
 			mockExpectations: func(m *domainMocks.MockPostRepository) {
-				m.On("FindAll", mock.Anything, domain.StatusPublished, pagination).Return(nil, dbErr)
+				m.On("FindAll", mock.Anything, domain.StatusPublished, pagination, int64(10)).Return(nil, dbErr)
 			},
 			expectedResult: domain.PaginatedPosts{},
 			expectedError:  domain.ErrFindingPosts,
@@ -69,7 +73,7 @@ func TestFindPostsPaginatedUseCase(t *testing.T) {
 			tc.mockExpectations(mockPostRepository)
 
 			useCase := application.NewFindPostsPaginatedUseCase(mockPostRepository)
-			res, err := useCase.Execute(context.Background(), tc.status, tc.pagination)
+			res, err := useCase.Execute(context.Background(), tc.status, tc.pagination, tc.authorID)
 
 			if tc.expectedError != nil {
 				if err == nil {

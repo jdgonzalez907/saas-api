@@ -71,7 +71,6 @@ func NewApplication() (*Application, error) {
 	createUserUseCase := application.NewCreateUserUseCase(userRepository)
 	deleteUserUseCase := application.NewDeleteUserUseCase(userRepository)
 	updatePersonalInformationUseCase := application.NewUpdateUserPersonalInformationUseCase(userRepository)
-	findUsersPaginatedUseCase := application.NewFindUsersPaginatedUseCase(userRepository)
 	changeEmailUseCase := application.NewChangeUserEmailUseCase(userRepository)
 	changePhoneUseCase := application.NewChangeUserPhoneUseCase(userRepository)
 
@@ -79,7 +78,6 @@ func NewApplication() (*Application, error) {
 	createUser := controllers.NewCreateUserController(createUserUseCase)
 	deleteUser := controllers.NewDeleteUserController(deleteUserUseCase)
 	updatePersonalInformation := controllers.NewUpdateUserPersonalInformationController(updatePersonalInformationUseCase)
-	findUsersPaginated := controllers.NewFindUsersPaginatedController(findUsersPaginatedUseCase)
 	changeEmail := controllers.NewChangeUserEmailController(changeEmailUseCase)
 	changePhone := controllers.NewChangeUserPhoneController(changePhoneUseCase)
 
@@ -88,7 +86,6 @@ func NewApplication() (*Application, error) {
 		CreateUser:                createUser,
 		DeleteUser:                deleteUser,
 		UpdatePersonalInformation: updatePersonalInformation,
-		FindUsersPaginated:        findUsersPaginated,
 		ChangeEmail:               changeEmail,
 		ChangePhone:               changePhone,
 	})

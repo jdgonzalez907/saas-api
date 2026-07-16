@@ -59,7 +59,7 @@ func TestCreateUserUseCase(t *testing.T) {
 			name:  "success - create user",
 			input: *user,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindByID", mock.Anything, user.ID()).Return(nil, nil)
+				m.On("FindByID", mock.Anything, user.ID(), mock.Anything).Return(nil, nil)
 				m.On("FindByPhone", mock.Anything, phone).Return(nil, nil)
 				m.On("FindByEmail", mock.Anything, email).Return(nil, nil)
 				m.On("Create", mock.Anything, user).Return(nil)
@@ -70,7 +70,7 @@ func TestCreateUserUseCase(t *testing.T) {
 			name:  "fail - id already exists",
 			input: *user,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindByID", mock.Anything, user.ID()).Return(user, nil)
+				m.On("FindByID", mock.Anything, user.ID(), mock.Anything).Return(user, nil)
 			},
 			expectedError: domain.ErrUserIDAlreadyExists,
 		},
@@ -78,7 +78,7 @@ func TestCreateUserUseCase(t *testing.T) {
 			name:  "fail - phone already exists",
 			input: *user,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindByID", mock.Anything, user.ID()).Return(nil, nil)
+				m.On("FindByID", mock.Anything, user.ID(), mock.Anything).Return(nil, nil)
 				m.On("FindByPhone", mock.Anything, phone).Return(user, nil)
 			},
 			expectedError: domain.ErrUserPhoneAlreadyExists,
@@ -87,7 +87,7 @@ func TestCreateUserUseCase(t *testing.T) {
 			name:  "fail - email already exists",
 			input: *user,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindByID", mock.Anything, user.ID()).Return(nil, nil)
+				m.On("FindByID", mock.Anything, user.ID(), mock.Anything).Return(nil, nil)
 				m.On("FindByPhone", mock.Anything, phone).Return(nil, nil)
 				m.On("FindByEmail", mock.Anything, email).Return(user, nil)
 			},
@@ -97,7 +97,7 @@ func TestCreateUserUseCase(t *testing.T) {
 			name:  "fail - infra error on FindByID",
 			input: *user,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindByID", mock.Anything, user.ID()).Return(nil, dbErr)
+				m.On("FindByID", mock.Anything, user.ID(), mock.Anything).Return(nil, dbErr)
 			},
 			expectedError: domain.ErrCreatingUser,
 		},
@@ -105,7 +105,7 @@ func TestCreateUserUseCase(t *testing.T) {
 			name:  "fail - infra error on FindByPhone",
 			input: *user,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindByID", mock.Anything, user.ID()).Return(nil, nil)
+				m.On("FindByID", mock.Anything, user.ID(), mock.Anything).Return(nil, nil)
 				m.On("FindByPhone", mock.Anything, phone).Return(nil, dbErr)
 			},
 			expectedError: domain.ErrCreatingUser,
@@ -114,7 +114,7 @@ func TestCreateUserUseCase(t *testing.T) {
 			name:  "fail - infra error on FindByEmail",
 			input: *user,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindByID", mock.Anything, user.ID()).Return(nil, nil)
+				m.On("FindByID", mock.Anything, user.ID(), mock.Anything).Return(nil, nil)
 				m.On("FindByPhone", mock.Anything, phone).Return(nil, nil)
 				m.On("FindByEmail", mock.Anything, email).Return(nil, dbErr)
 			},
@@ -124,7 +124,7 @@ func TestCreateUserUseCase(t *testing.T) {
 			name:  "fail - repo create error",
 			input: *user,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindByID", mock.Anything, user.ID()).Return(nil, nil)
+				m.On("FindByID", mock.Anything, user.ID(), mock.Anything).Return(nil, nil)
 				m.On("FindByPhone", mock.Anything, phone).Return(nil, nil)
 				m.On("FindByEmail", mock.Anything, email).Return(nil, nil)
 				m.On("Create", mock.Anything, user).Return(dbErr)
@@ -135,7 +135,7 @@ func TestCreateUserUseCase(t *testing.T) {
 			name:  "success - nil email",
 			input: *userWithNilEmail,
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindByID", mock.Anything, userWithNilEmail.ID()).Return(nil, nil)
+				m.On("FindByID", mock.Anything, userWithNilEmail.ID(), mock.Anything).Return(nil, nil)
 				m.On("FindByPhone", mock.Anything, phone).Return(nil, nil)
 				m.On("Create", mock.Anything, userWithNilEmail).Return(nil)
 			},

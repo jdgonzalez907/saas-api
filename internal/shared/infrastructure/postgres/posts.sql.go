@@ -17,23 +17,21 @@ INSERT INTO posts (
     content,
     status,
     author_id,
-    last_editor_id,
     published_at,
     created_at,
     updated_at
-) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+) VALUES ($1, $2, $3, $4, $5, $6, $7)
 RETURNING id
 `
 
 type CreatePostParams struct {
-	Title        string
-	Content      []byte
-	Status       string
-	AuthorID     int64
-	LastEditorID int64
-	PublishedAt  pgtype.Timestamptz
-	CreatedAt    pgtype.Timestamptz
-	UpdatedAt    pgtype.Timestamptz
+	Title       string
+	Content     []byte
+	Status      string
+	AuthorID    int64
+	PublishedAt pgtype.Timestamptz
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
 }
 
 func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (int64, error) {
@@ -42,7 +40,6 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (int64, 
 		arg.Content,
 		arg.Status,
 		arg.AuthorID,
-		arg.LastEditorID,
 		arg.PublishedAt,
 		arg.CreatedAt,
 		arg.UpdatedAt,
@@ -54,37 +51,30 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (int64, 
 
 const deletePost = `-- name: DeletePost :exec
 UPDATE posts SET
-    deleted_at = NOW(),
-    deleted_by = $2
+    deleted_at = NOW()
 WHERE id = $1 AND deleted_at IS NULL
 `
 
-type DeletePostParams struct {
-	ID        int64
-	DeletedBy pgtype.Int8
-}
-
-func (q *Queries) DeletePost(ctx context.Context, arg DeletePostParams) error {
-	_, err := q.db.Exec(ctx, deletePost, arg.ID, arg.DeletedBy)
+func (q *Queries) DeletePost(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, deletePost, id)
 	return err
 }
 
 const findPostByID = `-- name: FindPostByID :one
-SELECT id, title, content, status, author_id, last_editor_id, published_at, created_at, updated_at
+SELECT id, title, content, status, author_id, published_at, created_at, updated_at
 FROM posts
 WHERE id = $1 AND deleted_at IS NULL
 `
 
 type FindPostByIDRow struct {
-	ID           int64
-	Title        string
-	Content      []byte
-	Status       string
-	AuthorID     int64
-	LastEditorID int64
-	PublishedAt  pgtype.Timestamptz
-	CreatedAt    pgtype.Timestamptz
-	UpdatedAt    pgtype.Timestamptz
+	ID          int64
+	Title       string
+	Content     []byte
+	Status      string
+	AuthorID    int64
+	PublishedAt pgtype.Timestamptz
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
 }
 
 func (q *Queries) FindPostByID(ctx context.Context, id int64) (FindPostByIDRow, error) {
@@ -96,7 +86,6 @@ func (q *Queries) FindPostByID(ctx context.Context, id int64) (FindPostByIDRow, 
 		&i.Content,
 		&i.Status,
 		&i.AuthorID,
-		&i.LastEditorID,
 		&i.PublishedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -105,12 +94,12 @@ func (q *Queries) FindPostByID(ctx context.Context, id int64) (FindPostByIDRow, 
 }
 
 const findPostsPaginatedWithCursor = `-- name: FindPostsPaginatedWithCursor :many
-SELECT id, title, content, status, author_id, last_editor_id, published_at, created_at, updated_at
+SELECT id, title, content, status, author_id, published_at, created_at, updated_at
 FROM posts
-WHERE status = $1 AND deleted_at IS NULL AND (
-    ($4::timestamptz IS NOT NULL AND published_at < $4) OR 
-    ($4::timestamptz IS NOT NULL AND published_at = $4 AND id < $2) OR
-    ($4::timestamptz IS NULL AND id < $2)
+WHERE status = $1 AND author_id = $4 AND deleted_at IS NULL AND (
+    ($5::timestamptz IS NOT NULL AND published_at < $5) OR 
+    ($5::timestamptz IS NOT NULL AND published_at = $5 AND id < $2) OR
+    ($5::timestamptz IS NULL AND id < $2)
 )
 ORDER BY published_at DESC, id DESC
 LIMIT $3
@@ -120,19 +109,19 @@ type FindPostsPaginatedWithCursorParams struct {
 	Status          string
 	ID              int64
 	Limit           int32
+	AuthorID        int64
 	LastPublishedAt pgtype.Timestamptz
 }
 
 type FindPostsPaginatedWithCursorRow struct {
-	ID           int64
-	Title        string
-	Content      []byte
-	Status       string
-	AuthorID     int64
-	LastEditorID int64
-	PublishedAt  pgtype.Timestamptz
-	CreatedAt    pgtype.Timestamptz
-	UpdatedAt    pgtype.Timestamptz
+	ID          int64
+	Title       string
+	Content     []byte
+	Status      string
+	AuthorID    int64
+	PublishedAt pgtype.Timestamptz
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
 }
 
 func (q *Queries) FindPostsPaginatedWithCursor(ctx context.Context, arg FindPostsPaginatedWithCursorParams) ([]FindPostsPaginatedWithCursorRow, error) {
@@ -140,6 +129,7 @@ func (q *Queries) FindPostsPaginatedWithCursor(ctx context.Context, arg FindPost
 		arg.Status,
 		arg.ID,
 		arg.Limit,
+		arg.AuthorID,
 		arg.LastPublishedAt,
 	)
 	if err != nil {
@@ -155,7 +145,6 @@ func (q *Queries) FindPostsPaginatedWithCursor(ctx context.Context, arg FindPost
 			&i.Content,
 			&i.Status,
 			&i.AuthorID,
-			&i.LastEditorID,
 			&i.PublishedAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -171,32 +160,32 @@ func (q *Queries) FindPostsPaginatedWithCursor(ctx context.Context, arg FindPost
 }
 
 const findPostsPaginatedWithoutCursor = `-- name: FindPostsPaginatedWithoutCursor :many
-SELECT id, title, content, status, author_id, last_editor_id, published_at, created_at, updated_at
+SELECT id, title, content, status, author_id, published_at, created_at, updated_at
 FROM posts
-WHERE status = $1 AND deleted_at IS NULL
+WHERE status = $1 AND author_id = $3 AND deleted_at IS NULL
 ORDER BY published_at DESC, id DESC
 LIMIT $2
 `
 
 type FindPostsPaginatedWithoutCursorParams struct {
-	Status string
-	Limit  int32
+	Status   string
+	Limit    int32
+	AuthorID int64
 }
 
 type FindPostsPaginatedWithoutCursorRow struct {
-	ID           int64
-	Title        string
-	Content      []byte
-	Status       string
-	AuthorID     int64
-	LastEditorID int64
-	PublishedAt  pgtype.Timestamptz
-	CreatedAt    pgtype.Timestamptz
-	UpdatedAt    pgtype.Timestamptz
+	ID          int64
+	Title       string
+	Content     []byte
+	Status      string
+	AuthorID    int64
+	PublishedAt pgtype.Timestamptz
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
 }
 
 func (q *Queries) FindPostsPaginatedWithoutCursor(ctx context.Context, arg FindPostsPaginatedWithoutCursorParams) ([]FindPostsPaginatedWithoutCursorRow, error) {
-	rows, err := q.db.Query(ctx, findPostsPaginatedWithoutCursor, arg.Status, arg.Limit)
+	rows, err := q.db.Query(ctx, findPostsPaginatedWithoutCursor, arg.Status, arg.Limit, arg.AuthorID)
 	if err != nil {
 		return nil, err
 	}
@@ -210,7 +199,6 @@ func (q *Queries) FindPostsPaginatedWithoutCursor(ctx context.Context, arg FindP
 			&i.Content,
 			&i.Status,
 			&i.AuthorID,
-			&i.LastEditorID,
 			&i.PublishedAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -230,22 +218,18 @@ UPDATE posts SET
     title = $1,
     content = $2,
     status = $3,
-    author_id = $4,
-    last_editor_id = $5,
-    published_at = $6,
-    updated_at = $7
-WHERE id = $8 AND deleted_at IS NULL
+    published_at = $4,
+    updated_at = $5
+WHERE id = $6 AND deleted_at IS NULL
 `
 
 type UpdatePostParams struct {
-	Title        string
-	Content      []byte
-	Status       string
-	AuthorID     int64
-	LastEditorID int64
-	PublishedAt  pgtype.Timestamptz
-	UpdatedAt    pgtype.Timestamptz
-	ID           int64
+	Title       string
+	Content     []byte
+	Status      string
+	PublishedAt pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
+	ID          int64
 }
 
 func (q *Queries) UpdatePost(ctx context.Context, arg UpdatePostParams) error {
@@ -253,8 +237,6 @@ func (q *Queries) UpdatePost(ctx context.Context, arg UpdatePostParams) error {
 		arg.Title,
 		arg.Content,
 		arg.Status,
-		arg.AuthorID,
-		arg.LastEditorID,
 		arg.PublishedAt,
 		arg.UpdatedAt,
 		arg.ID,

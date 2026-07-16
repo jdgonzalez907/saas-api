@@ -8,7 +8,7 @@ import (
 )
 
 type FindPostByIDUseCase interface {
-	Execute(ctx context.Context, id int64) (*domain.Post, error)
+	Execute(ctx context.Context, id int64, authorID int64) (*domain.Post, error)
 }
 
 type findPostByIDUseCase struct {
@@ -19,7 +19,7 @@ func NewFindPostByIDUseCase(postRepository domain.PostRepository) FindPostByIDUs
 	return &findPostByIDUseCase{postRepository: postRepository}
 }
 
-func (f *findPostByIDUseCase) Execute(ctx context.Context, id int64) (*domain.Post, error) {
+func (f *findPostByIDUseCase) Execute(ctx context.Context, id int64, authorID int64) (*domain.Post, error) {
 	post, err := f.postRepository.FindByID(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("%v: %w", domain.ErrFindingPost, err)
@@ -27,5 +27,10 @@ func (f *findPostByIDUseCase) Execute(ctx context.Context, id int64) (*domain.Po
 	if post == nil {
 		return nil, domain.ErrPostNotFound
 	}
+
+	if err := post.IsSameAuthor(authorID); err != nil {
+		return nil, err
+	}
+
 	return post, nil
 }

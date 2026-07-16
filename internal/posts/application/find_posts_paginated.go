@@ -9,7 +9,7 @@ import (
 )
 
 type FindPostsPaginatedUseCase interface {
-	Execute(ctx context.Context, status domain.PostStatus, pagination domain.Pagination) (domain.PaginatedPosts, error)
+	Execute(ctx context.Context, status domain.PostStatus, pagination domain.Pagination, authorID int64) (domain.PaginatedPosts, error)
 }
 
 type findPostsPaginatedUseCase struct {
@@ -20,8 +20,8 @@ func NewFindPostsPaginatedUseCase(postRepository domain.PostRepository) FindPost
 	return &findPostsPaginatedUseCase{postRepository: postRepository}
 }
 
-func (f *findPostsPaginatedUseCase) Execute(ctx context.Context, status domain.PostStatus, pagination domain.Pagination) (domain.PaginatedPosts, error) {
-	posts, err := f.postRepository.FindAll(ctx, status, pagination)
+func (f *findPostsPaginatedUseCase) Execute(ctx context.Context, status domain.PostStatus, pagination domain.Pagination, authorID int64) (domain.PaginatedPosts, error) {
+	posts, err := f.postRepository.FindAll(ctx, status, pagination, authorID)
 	if err != nil {
 		return domain.PaginatedPosts{}, fmt.Errorf("%v: %w", domain.ErrFindingPosts, err)
 	}

@@ -21,9 +21,9 @@ func (_m *MockDeletePostUseCase) EXPECT() *MockDeletePostUseCase_Expecter {
 	return &MockDeletePostUseCase_Expecter{mock: &_m.Mock}
 }
 
-// Execute provides a mock function with given fields: ctx, id, deletedByID
-func (_m *MockDeletePostUseCase) Execute(ctx context.Context, id int64, deletedByID int64) error {
-	ret := _m.Called(ctx, id, deletedByID)
+// Execute provides a mock function with given fields: ctx, id, authorID
+func (_m *MockDeletePostUseCase) Execute(ctx context.Context, id int64, authorID int64) error {
+	ret := _m.Called(ctx, id, authorID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Execute")
@@ -31,7 +31,7 @@ func (_m *MockDeletePostUseCase) Execute(ctx context.Context, id int64, deletedB
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, int64, int64) error); ok {
-		r0 = rf(ctx, id, deletedByID)
+		r0 = rf(ctx, id, authorID)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -47,12 +47,12 @@ type MockDeletePostUseCase_Execute_Call struct {
 // Execute is a helper method to define mock.On call
 //   - ctx context.Context
 //   - id int64
-//   - deletedByID int64
-func (_e *MockDeletePostUseCase_Expecter) Execute(ctx interface{}, id interface{}, deletedByID interface{}) *MockDeletePostUseCase_Execute_Call {
-	return &MockDeletePostUseCase_Execute_Call{Call: _e.mock.On("Execute", ctx, id, deletedByID)}
+//   - authorID int64
+func (_e *MockDeletePostUseCase_Expecter) Execute(ctx interface{}, id interface{}, authorID interface{}) *MockDeletePostUseCase_Execute_Call {
+	return &MockDeletePostUseCase_Execute_Call{Call: _e.mock.On("Execute", ctx, id, authorID)}
 }
 
-func (_c *MockDeletePostUseCase_Execute_Call) Run(run func(ctx context.Context, id int64, deletedByID int64)) *MockDeletePostUseCase_Execute_Call {
+func (_c *MockDeletePostUseCase_Execute_Call) Run(run func(ctx context.Context, id int64, authorID int64)) *MockDeletePostUseCase_Execute_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(int64), args[2].(int64))
 	})

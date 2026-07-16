@@ -23,7 +23,7 @@ func TestFindPostByIDController_Handle(t *testing.T) {
 	titleBlock, _ := domain.NewTitleBlock("Title")
 	contentInfo, _ := domain.NewContentInformation("Post Title", []domain.Block{titleBlock})
 	now := time.Now().UTC()
-	validPost, err := domain.NewPost(1, contentInfo, domain.StatusDraft, now, now, 2, 2, nil)
+	validPost, err := domain.NewPost(1, contentInfo, domain.StatusDraft, now, now, 2, nil)
 	assert.NoError(t, err)
 
 	testCases := []struct {
@@ -36,10 +36,10 @@ func TestFindPostByIDController_Handle(t *testing.T) {
 	}{
 		{
 			testName:     "success - post found",
-			authUserID:   int64(1),
+			authUserID:   int64(2),
 			routeParamID: "1",
 			setupMock: func(m *mockApp.MockFindPostByIDUseCase) {
-				m.EXPECT().Execute(mock.Anything, int64(1)).Return(validPost, nil)
+				m.EXPECT().Execute(mock.Anything, int64(1), int64(2)).Return(validPost, nil)
 			},
 			expectedStatus: http.StatusOK,
 			expectedBody:   `"title":"Post Title"`,
@@ -54,7 +54,7 @@ func TestFindPostByIDController_Handle(t *testing.T) {
 		},
 		{
 			testName:       "fail - route parameter is not an integer",
-			authUserID:     int64(1),
+			authUserID:     int64(2),
 			routeParamID:   "abc",
 			setupMock:      func(_ *mockApp.MockFindPostByIDUseCase) {},
 			expectedStatus: http.StatusBadRequest,
@@ -62,20 +62,30 @@ func TestFindPostByIDController_Handle(t *testing.T) {
 		},
 		{
 			testName:     "fail - post not found",
-			authUserID:   int64(1),
+			authUserID:   int64(2),
 			routeParamID: "1",
 			setupMock: func(m *mockApp.MockFindPostByIDUseCase) {
-				m.EXPECT().Execute(mock.Anything, int64(1)).Return(nil, domain.ErrPostNotFound)
+				m.EXPECT().Execute(mock.Anything, int64(1), int64(2)).Return(nil, domain.ErrPostNotFound)
 			},
 			expectedStatus: http.StatusNotFound,
 			expectedBody:   domain.ErrPostNotFound.Error(),
 		},
 		{
-			testName:     "fail - usecase execution error",
-			authUserID:   int64(1),
+			testName:     "fail - ownership mismatch",
+			authUserID:   int64(999),
 			routeParamID: "1",
 			setupMock: func(m *mockApp.MockFindPostByIDUseCase) {
-				m.EXPECT().Execute(mock.Anything, int64(1)).Return(nil, errors.New("db find failed"))
+				m.EXPECT().Execute(mock.Anything, int64(1), int64(999)).Return(nil, domain.ErrPostOwnershipMismatch)
+			},
+			expectedStatus: http.StatusForbidden,
+			expectedBody:   domain.ErrPostOwnershipMismatch.Error(),
+		},
+		{
+			testName:     "fail - usecase execution error",
+			authUserID:   int64(2),
+			routeParamID: "1",
+			setupMock: func(m *mockApp.MockFindPostByIDUseCase) {
+				m.EXPECT().Execute(mock.Anything, int64(1), int64(2)).Return(nil, errors.New("db find failed"))
 			},
 			expectedStatus: http.StatusInternalServerError,
 			expectedBody:   "internal server error",

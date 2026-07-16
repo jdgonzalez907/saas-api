@@ -80,45 +80,6 @@ func (r *postgresUserRepository) FindByEmail(ctx context.Context, email domain.E
 	)
 }
 
-func (r *postgresUserRepository) FindAll(ctx context.Context, pagination domain.Pagination) ([]*domain.User, error) {
-	limit := pagination.Limit()
-	var dbRows []postgres.FindUsersPaginatedWithCursorRow
-
-	if pagination.LastID() != nil {
-		var err error
-		dbRows, err = r.queries.FindUsersPaginatedWithCursor(ctx, postgres.FindUsersPaginatedWithCursorParams{
-			ID:    *pagination.LastID(),
-			Limit: limit,
-		})
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		rows, err := r.queries.FindUsersPaginatedWithoutCursor(ctx, limit)
-		if err != nil {
-			return nil, err
-		}
-		dbRows = make([]postgres.FindUsersPaginatedWithCursorRow, len(rows))
-		for i, row := range rows {
-			dbRows[i] = postgres.FindUsersPaginatedWithCursorRow(row)
-		}
-	}
-
-	users := make([]*domain.User, len(dbRows))
-	for i, row := range dbRows {
-		var err error
-		users[i], err = mapToDomain(
-			row.ID, row.IdentificationType, row.IdentificationNumber, row.FirstName, row.LastName,
-			row.BirthDate, row.Address, row.PhoneCountryCode, row.PhoneNumber, row.Email,
-			row.CreatedAt, row.UpdatedAt,
-		)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return users, nil
-}
-
 func (r *postgresUserRepository) Create(ctx context.Context, user *domain.User) error {
 	addressBytes, err := toJSONB(user.Address())
 	if err != nil {
