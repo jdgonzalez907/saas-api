@@ -35,8 +35,8 @@ func TestRouterAndMiddleware(t *testing.T) {
 		DeleteUser:                deleteController,
 		UpdatePersonalInformation: updatePIController,
 		FindUsersPaginated:        findPaginatedController,
-		UpdateEmail:               updateEmailController,
-		UpdatePhone:               updatePhoneController,
+		ChangeEmail:               updateEmailController,
+		ChangePhone:               updatePhoneController,
 	})
 
 	t.Run("JSONContentTypeMiddleware sets header", func(t *testing.T) {
