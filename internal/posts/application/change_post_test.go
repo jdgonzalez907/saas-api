@@ -13,21 +13,13 @@ import (
 	domainMocks "jdgonzalez907/saas-api/mocks/domain"
 )
 
-func TestUpdatePostUseCase(t *testing.T) {
+func TestChangePostUseCase(t *testing.T) {
 	titleBlock, _ := domain.NewTitleBlock("Title")
 	contentInfo, _ := domain.NewContentInformation("Post Title", []domain.Block{titleBlock})
 	contentInfoUpdated, _ := domain.NewContentInformation("Updated Title", []domain.Block{titleBlock})
 	now := time.Now().UTC()
 
-	post, _ := domain.NewPost(domain.PostParams{
-		ID:                 1,
-		ContentInformation: contentInfo,
-		Status:             domain.StatusDraft,
-		CreatedAt:          now,
-		UpdatedAt:          now,
-		AuthorID:           10,
-		LastEditorID:       10,
-	})
+	post, _ := domain.NewPost(1, contentInfo, domain.StatusDraft, now, now, 10, 10, nil)
 
 	dbErr := errors.New("database connection error")
 
@@ -41,7 +33,7 @@ func TestUpdatePostUseCase(t *testing.T) {
 		expectedError    error
 	}{
 		{
-			name:         "success - update post",
+			name:         "success - change post",
 			postID:       1,
 			contentInfo:  contentInfoUpdated,
 			status:       domain.StatusPublished,
@@ -109,7 +101,7 @@ func TestUpdatePostUseCase(t *testing.T) {
 			mockPostRepository := new(domainMocks.MockPostRepository)
 			tc.mockExpectations(mockPostRepository)
 
-			useCase := application.NewUpdatePostUseCase(mockPostRepository)
+			useCase := application.NewChangePostUseCase(mockPostRepository)
 			_, err := useCase.Execute(context.Background(), tc.postID, tc.contentInfo, tc.status, tc.lastEditorID)
 
 			if tc.expectedError != nil {

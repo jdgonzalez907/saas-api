@@ -18,15 +18,7 @@ func TestDeletePostUseCase(t *testing.T) {
 	contentInfo, _ := domain.NewContentInformation("Post Title", []domain.Block{titleBlock})
 	now := time.Now().UTC()
 
-	post, _ := domain.NewPost(domain.PostParams{
-		ID:                 1,
-		ContentInformation: contentInfo,
-		Status:             domain.StatusDraft,
-		CreatedAt:          now,
-		UpdatedAt:          now,
-		AuthorID:           10,
-		LastEditorID:       10,
-	})
+	post, _ := domain.NewPost(1, contentInfo, domain.StatusDraft, now, now, 10, 10, nil)
 
 	dbErr := errors.New("database connection error")
 

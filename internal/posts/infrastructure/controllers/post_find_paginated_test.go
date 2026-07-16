@@ -21,16 +21,7 @@ func TestFindPostsPaginatedController_Handle(t *testing.T) {
 	titleBlock, _ := domain.NewTitleBlock("Title")
 	contentInfo, _ := domain.NewContentInformation("Post Title", []domain.Block{titleBlock})
 	now := time.Now().UTC()
-	post, err := domain.NewPost(domain.PostParams{
-		ID:                 1,
-		ContentInformation: contentInfo,
-		Status:             domain.StatusPublished,
-		CreatedAt:          now,
-		UpdatedAt:          now,
-		AuthorID:           2,
-		LastEditorID:       2,
-		PublishedAt:        &now,
-	})
+	post, err := domain.NewPost(1, contentInfo, domain.StatusPublished, now, now, 2, 2, &now)
 	assert.NoError(t, err)
 
 	nextID := int64(1)

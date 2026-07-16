@@ -52,123 +52,114 @@ func TestNewPost_Validation(t *testing.T) {
 	now := time.Now().UTC()
 
 	testCases := []struct {
-		name    string
-		params  PostParams
-		wantErr error
+		name             string
+		id               int64
+		contentInfo      ContentInformation
+		status           PostStatus
+		createdAt        time.Time
+		updatedAt        time.Time
+		authorID         int64
+		lastEditorID     int64
+		publishedAt      *time.Time
+		wantErr          error
 	}{
 		{
-			name: "fail - invalid ID (zero)",
-			params: PostParams{
-				ID:                 0,
-				ContentInformation: contentInfo,
-				Status:             StatusDraft,
-				CreatedAt:          now,
-				UpdatedAt:          now,
-				AuthorID:           1,
-				LastEditorID:       1,
-			},
-			wantErr: ErrInvalidPostID,
+			name:         "fail - invalid ID (zero)",
+			id:           0,
+			contentInfo:  contentInfo,
+			status:       StatusDraft,
+			createdAt:    now,
+			updatedAt:    now,
+			authorID:     1,
+			lastEditorID: 1,
+			wantErr:      ErrInvalidPostID,
 		},
 		{
-			name: "fail - invalid ID (negative)",
-			params: PostParams{
-				ID:                 -5,
-				ContentInformation: contentInfo,
-				Status:             StatusDraft,
-				CreatedAt:          now,
-				UpdatedAt:          now,
-				AuthorID:           1,
-				LastEditorID:       1,
-			},
-			wantErr: ErrInvalidPostID,
+			name:         "fail - invalid ID (negative)",
+			id:           -5,
+			contentInfo:  contentInfo,
+			status:       StatusDraft,
+			createdAt:    now,
+			updatedAt:    now,
+			authorID:     1,
+			lastEditorID: 1,
+			wantErr:      ErrInvalidPostID,
 		},
 		{
-			name: "fail - invalid AuthorID",
-			params: PostParams{
-				ID:                 1,
-				ContentInformation: contentInfo,
-				Status:             StatusDraft,
-				CreatedAt:          now,
-				UpdatedAt:          now,
-				AuthorID:           0,
-				LastEditorID:       1,
-			},
-			wantErr: ErrInvalidAuthorID,
+			name:         "fail - invalid AuthorID",
+			id:           1,
+			contentInfo:  contentInfo,
+			status:       StatusDraft,
+			createdAt:    now,
+			updatedAt:    now,
+			authorID:     0,
+			lastEditorID: 1,
+			wantErr:      ErrInvalidAuthorID,
 		},
 		{
-			name: "fail - invalid LastEditorID",
-			params: PostParams{
-				ID:                 1,
-				ContentInformation: contentInfo,
-				Status:             StatusDraft,
-				CreatedAt:          now,
-				UpdatedAt:          now,
-				AuthorID:           1,
-				LastEditorID:       -1,
-			},
-			wantErr: ErrInvalidLastEditorID,
+			name:         "fail - invalid LastEditorID",
+			id:           1,
+			contentInfo:  contentInfo,
+			status:       StatusDraft,
+			createdAt:    now,
+			updatedAt:    now,
+			authorID:     1,
+			lastEditorID: -1,
+			wantErr:      ErrInvalidLastEditorID,
 		},
 		{
-			name: "fail - draft with publication date",
-			params: PostParams{
-				ID:                 1,
-				ContentInformation: contentInfo,
-				Status:             StatusDraft,
-				CreatedAt:          now,
-				UpdatedAt:          now,
-				AuthorID:           1,
-				LastEditorID:       1,
-				PublishedAt:        &now,
-			},
-			wantErr: ErrDraftCannotHavePublicationDate,
+			name:         "fail - draft with publication date",
+			id:           1,
+			contentInfo:  contentInfo,
+			status:       StatusDraft,
+			createdAt:    now,
+			updatedAt:    now,
+			authorID:     1,
+			lastEditorID: 1,
+			publishedAt:  &now,
+			wantErr:      ErrDraftCannotHavePublicationDate,
 		},
 		{
-			name: "fail - published without publication date",
-			params: PostParams{
-				ID:                 1,
-				ContentInformation: contentInfo,
-				Status:             StatusPublished,
-				CreatedAt:          now,
-				UpdatedAt:          now,
-				AuthorID:           1,
-				LastEditorID:       1,
-				PublishedAt:        nil,
-			},
-			wantErr: ErrPublishedMustHavePublicationDate,
+			name:         "fail - published without publication date",
+			id:           1,
+			contentInfo:  contentInfo,
+			status:       StatusPublished,
+			createdAt:    now,
+			updatedAt:    now,
+			authorID:     1,
+			lastEditorID: 1,
+			publishedAt:  nil,
+			wantErr:      ErrPublishedMustHavePublicationDate,
 		},
 		{
-			name: "success - valid draft",
-			params: PostParams{
-				ID:                 1,
-				ContentInformation: contentInfo,
-				Status:             StatusDraft,
-				CreatedAt:          now,
-				UpdatedAt:          now,
-				AuthorID:           1,
-				LastEditorID:       1,
-				PublishedAt:        nil,
-			},
-			wantErr: nil,
+			name:         "success - valid draft",
+			id:           1,
+			contentInfo:  contentInfo,
+			status:       StatusDraft,
+			createdAt:    now,
+			updatedAt:    now,
+			authorID:     1,
+			lastEditorID: 1,
+			publishedAt:  nil,
+			wantErr:      nil,
 		},
 		{
-			name: "success - valid published",
-			params: PostParams{
-				ID:                 1,
-				ContentInformation: contentInfo,
-				Status:             StatusPublished,
-				CreatedAt:          now,
-				UpdatedAt:          now,
-				AuthorID:           1,
-				LastEditorID:       1,
-				PublishedAt:        &now,
-			},
-			wantErr: nil,
+			name:         "success - valid published",
+			id:           1,
+			contentInfo:  contentInfo,
+			status:       StatusPublished,
+			createdAt:    now,
+			updatedAt:    now,
+			authorID:     1,
+			lastEditorID: 1,
+			publishedAt:  &now,
+			wantErr:      nil,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := NewPost(tc.params)
+			_, err := NewPost(tc.id, tc.contentInfo, tc.status, tc.createdAt, tc.updatedAt, tc.authorID, tc.lastEditorID, tc.publishedAt)
 			if !errors.Is(err, tc.wantErr) {
 				t.Errorf("expected error %v, got %v", tc.wantErr, err)
 			}
@@ -228,16 +219,7 @@ func TestPost_Getters(t *testing.T) {
 	contentInfo, _ := NewContentInformation("Post A", []Block{titleBlock})
 	now := time.Now().UTC()
 
-	post, err := NewPost(PostParams{
-		ID:                 1,
-		ContentInformation: contentInfo,
-		Status:             StatusDraft,
-		CreatedAt:          now,
-		UpdatedAt:          now,
-		AuthorID:           10,
-		LastEditorID:       12,
-		PublishedAt:        nil,
-	})
+	post, err := NewPost(1, contentInfo, StatusDraft, now, now, 10, 12, nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -277,131 +259,29 @@ func TestPost_Equals(t *testing.T) {
 	now := time.Now().UTC()
 	anotherTime := now.Add(time.Second)
 
-	post1, _ := NewPost(PostParams{
-		ID:                 1,
-		ContentInformation: contentInfo1,
-		Status:             StatusDraft,
-		CreatedAt:          now,
-		UpdatedAt:          now,
-		AuthorID:           10,
-		LastEditorID:       10,
-		PublishedAt:        nil,
-	})
+	post1, _ := NewPost(1, contentInfo1, StatusDraft, now, now, 10, 10, nil)
 
-	post2, _ := NewPost(PostParams{
-		ID:                 1,
-		ContentInformation: contentInfo1,
-		Status:             StatusDraft,
-		CreatedAt:          now,
-		UpdatedAt:          now,
-		AuthorID:           10,
-		LastEditorID:       10,
-		PublishedAt:        nil,
-	})
+	post2, _ := NewPost(1, contentInfo1, StatusDraft, now, now, 10, 10, nil)
 
-	postDifferentID, _ := NewPost(PostParams{
-		ID:                 2,
-		ContentInformation: contentInfo1,
-		Status:             StatusDraft,
-		CreatedAt:          now,
-		UpdatedAt:          now,
-		AuthorID:           10,
-		LastEditorID:       10,
-	})
+	postDifferentID, _ := NewPost(2, contentInfo1, StatusDraft, now, now, 10, 10, nil)
 
-	postDifferentStatus, _ := NewPost(PostParams{
-		ID:                 1,
-		ContentInformation: contentInfo1,
-		Status:             StatusPublished,
-		CreatedAt:          now,
-		UpdatedAt:          now,
-		AuthorID:           10,
-		LastEditorID:       10,
-		PublishedAt:        &now,
-	})
+	postDifferentStatus, _ := NewPost(1, contentInfo1, StatusPublished, now, now, 10, 10, &now)
 
-	postDifferentAuthorID, _ := NewPost(PostParams{
-		ID:                 1,
-		ContentInformation: contentInfo1,
-		Status:             StatusDraft,
-		CreatedAt:          now,
-		UpdatedAt:          now,
-		AuthorID:           11,
-		LastEditorID:       10,
-	})
+	postDifferentAuthorID, _ := NewPost(1, contentInfo1, StatusDraft, now, now, 11, 10, nil)
 
-	postDifferentLastEditorID, _ := NewPost(PostParams{
-		ID:                 1,
-		ContentInformation: contentInfo1,
-		Status:             StatusDraft,
-		CreatedAt:          now,
-		UpdatedAt:          now,
-		AuthorID:           10,
-		LastEditorID:       11,
-	})
+	postDifferentLastEditorID, _ := NewPost(1, contentInfo1, StatusDraft, now, now, 10, 11, nil)
 
-	postDifferentCreatedAt, _ := NewPost(PostParams{
-		ID:                 1,
-		ContentInformation: contentInfo1,
-		Status:             StatusDraft,
-		CreatedAt:          now.Add(time.Second),
-		UpdatedAt:          now,
-		AuthorID:           10,
-		LastEditorID:       10,
-	})
+	postDifferentCreatedAt, _ := NewPost(1, contentInfo1, StatusDraft, now.Add(time.Second), now, 10, 10, nil)
 
-	postDifferentUpdatedAt, _ := NewPost(PostParams{
-		ID:                 1,
-		ContentInformation: contentInfo1,
-		Status:             StatusDraft,
-		CreatedAt:          now,
-		UpdatedAt:          now.Add(time.Second),
-		AuthorID:           10,
-		LastEditorID:       10,
-	})
+	postDifferentUpdatedAt, _ := NewPost(1, contentInfo1, StatusDraft, now, now.Add(time.Second), 10, 10, nil)
 
-	postDifferentContentInfo, _ := NewPost(PostParams{
-		ID:                 1,
-		ContentInformation: contentInfo2,
-		Status:             StatusDraft,
-		CreatedAt:          now,
-		UpdatedAt:          now,
-		AuthorID:           10,
-		LastEditorID:       10,
-	})
+	postDifferentContentInfo, _ := NewPost(1, contentInfo2, StatusDraft, now, now, 10, 10, nil)
 
-	postPublishedBase, _ := NewPost(PostParams{
-		ID:                 1,
-		ContentInformation: contentInfo1,
-		Status:             StatusPublished,
-		CreatedAt:          now,
-		UpdatedAt:          now,
-		AuthorID:           10,
-		LastEditorID:       10,
-		PublishedAt:        &now,
-	})
+	postPublishedBase, _ := NewPost(1, contentInfo1, StatusPublished, now, now, 10, 10, &now)
 
-	postPublishedDiffTime, _ := NewPost(PostParams{
-		ID:                 1,
-		ContentInformation: contentInfo1,
-		Status:             StatusPublished,
-		CreatedAt:          now,
-		UpdatedAt:          now,
-		AuthorID:           10,
-		LastEditorID:       10,
-		PublishedAt:        &anotherTime,
-	})
+	postPublishedDiffTime, _ := NewPost(1, contentInfo1, StatusPublished, now, now, 10, 10, &anotherTime)
 
-	postPublishedDiffContent, _ := NewPost(PostParams{
-		ID:                 1,
-		ContentInformation: contentInfo2,
-		Status:             StatusPublished,
-		CreatedAt:          now,
-		UpdatedAt:          now,
-		AuthorID:           10,
-		LastEditorID:       10,
-		PublishedAt:        &now,
-	})
+	postPublishedDiffContent, _ := NewPost(1, contentInfo2, StatusPublished, now, now, 10, 10, &now)
 
 	// Bypassing constructor to test direct Equals boundary checks for coverage
 	postMismatchedPublishedAt1 := &Post{
@@ -523,33 +403,24 @@ func TestPost_Equals(t *testing.T) {
 	}
 }
 
-func TestPost_Wither(t *testing.T) {
+func TestPost_UpdateContentAndStatus(t *testing.T) {
 	titleBlock, _ := NewTitleBlock("Title")
 	contentInfo1, _ := NewContentInformation("Original", []Block{titleBlock})
 	contentInfo2, _ := NewContentInformation("Updated", []Block{titleBlock})
 	now := time.Now().UTC()
 
-	post, _ := NewPost(PostParams{
-		ID:                 1,
-		ContentInformation: contentInfo1,
-		Status:             StatusDraft,
-		CreatedAt:          now,
-		UpdatedAt:          now,
-		AuthorID:           5,
-		LastEditorID:       5,
-		PublishedAt:        nil,
-	})
+	post, _ := NewPost(1, contentInfo1, StatusDraft, now, now, 5, 5, nil)
 
 	t.Run("fail - invalid lastEditorID", func(t *testing.T) {
-		_, err := post.WithContentAndStatus(contentInfo2, StatusPublished, 0)
+		_, err := post.UpdateContentAndStatus(contentInfo2, StatusPublished, 0)
 		if !errors.Is(err, ErrInvalidLastEditorID) {
 			t.Errorf("expected ErrInvalidLastEditorID, got %v", err)
 		}
 	})
 
 	t.Run("success - draft to published", func(t *testing.T) {
-		time.Sleep(10 * time.Millisecond) // Ensure time moves forward
-		updated, err := post.WithContentAndStatus(contentInfo2, StatusPublished, 6)
+		time.Sleep(10 * time.Millisecond)
+		updated, err := post.UpdateContentAndStatus(contentInfo2, StatusPublished, 6)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -583,18 +454,9 @@ func TestPost_Wither(t *testing.T) {
 
 	t.Run("success - published remains published (preserves publishedAt)", func(t *testing.T) {
 		pubTime := now.Add(-time.Hour)
-		pubPost, _ := NewPost(PostParams{
-			ID:                 1,
-			ContentInformation: contentInfo1,
-			Status:             StatusPublished,
-			CreatedAt:          now,
-			UpdatedAt:          now,
-			AuthorID:           5,
-			LastEditorID:       5,
-			PublishedAt:        &pubTime,
-		})
+		pubPost, _ := NewPost(1, contentInfo1, StatusPublished, now, now, 5, 5, &pubTime)
 
-		updated, err := pubPost.WithContentAndStatus(contentInfo2, StatusPublished, 6)
+		updated, err := pubPost.UpdateContentAndStatus(contentInfo2, StatusPublished, 6)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -605,18 +467,9 @@ func TestPost_Wither(t *testing.T) {
 	})
 
 	t.Run("success - published to draft (clears publishedAt)", func(t *testing.T) {
-		pubPost, _ := NewPost(PostParams{
-			ID:                 1,
-			ContentInformation: contentInfo1,
-			Status:             StatusPublished,
-			CreatedAt:          now,
-			UpdatedAt:          now,
-			AuthorID:           5,
-			LastEditorID:       5,
-			PublishedAt:        &now,
-		})
+		pubPost, _ := NewPost(1, contentInfo1, StatusPublished, now, now, 5, 5, &now)
 
-		updated, err := pubPost.WithContentAndStatus(contentInfo2, StatusDraft, 6)
+		updated, err := pubPost.UpdateContentAndStatus(contentInfo2, StatusDraft, 6)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -635,16 +488,7 @@ func TestPostDTO_Mapping(t *testing.T) {
 	contentInfo, _ := NewContentInformation("My Header", []Block{titleBlock})
 	now := time.Now().UTC()
 
-	post, _ := NewPost(PostParams{
-		ID:                 15,
-		ContentInformation: contentInfo,
-		Status:             StatusPublished,
-		CreatedAt:          now,
-		UpdatedAt:          now,
-		AuthorID:           8,
-		LastEditorID:       9,
-		PublishedAt:        &now,
-	})
+	post, _ := NewPost(15, contentInfo, StatusPublished, now, now, 8, 9, &now)
 
 	dto := post.ToDTO()
 
