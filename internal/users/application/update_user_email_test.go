@@ -30,23 +30,23 @@ func TestUpdateUserEmailUseCase(t *testing.T) {
 		&birthDate,
 	)
 
-	existingUser, _ := domain.NewUser(domain.UserParams{
-		ID:                  userID,
-		PersonalInformation: personalInfo,
-		Phone:               phone,
-		Email:               &email,
-		CreatedAt:           now,
-		UpdatedAt:           now,
-	})
+	existingUser, _ := domain.NewUser(
+		userID,
+		personalInfo,
+		phone,
+		&email,
+		now,
+		now,
+	)
 
-	existingUserWithNilEmail, _ := domain.NewUser(domain.UserParams{
-		ID:                  userID,
-		PersonalInformation: personalInfo,
-		Phone:               phone,
-		Email:               nil,
-		CreatedAt:           now,
-		UpdatedAt:           now,
-	})
+	existingUserWithNilEmail, _ := domain.NewUser(
+		userID,
+		personalInfo,
+		phone,
+		nil,
+		now,
+		now,
+	)
 
 	otherEmail, _ := domain.NewEmail("other.email@example.com")
 	dbErr := errors.New("database connection error")

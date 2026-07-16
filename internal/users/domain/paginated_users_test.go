@@ -16,24 +16,24 @@ func TestPaginatedUsersVO(t *testing.T) {
 	birthDate, _ := domain.NewBirthDate(now.AddDate(-18, 0, -1).Format("2006-01-02"))
 
 	firstPersonalInfo, _ := domain.NewPersonalInformation(identification, "John", "Doe", &address, &birthDate)
-	firstUser, _ := domain.NewUser(domain.UserParams{
-		ID:                  1,
-		PersonalInformation: firstPersonalInfo,
-		Phone:               phone,
-		Email:               &email,
-		CreatedAt:           now,
-		UpdatedAt:           now,
-	})
+	firstUser, _ := domain.NewUser(
+		1,
+		firstPersonalInfo,
+		phone,
+		&email,
+		now,
+		now,
+	)
 
 	secondPersonalInfo, _ := domain.NewPersonalInformation(identification, "Jane", "Smith", &address, &birthDate)
-	secondUser, _ := domain.NewUser(domain.UserParams{
-		ID:                  2,
-		PersonalInformation: secondPersonalInfo,
-		Phone:               phone,
-		Email:               &email,
-		CreatedAt:           now,
-		UpdatedAt:           now,
-	})
+	secondUser, _ := domain.NewUser(
+		2,
+		secondPersonalInfo,
+		phone,
+		&email,
+		now,
+		now,
+	)
 
 	nextCursor := int64(2)
 

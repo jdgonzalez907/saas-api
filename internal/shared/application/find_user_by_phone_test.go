@@ -31,14 +31,14 @@ func TestExecute(t *testing.T) {
 	)
 	now := time.Now().UTC()
 
-	userFound, err := domainUser.NewUser(domainUser.UserParams{
-		ID:                  1,
-		PersonalInformation: personalInfo,
-		Phone:               phone,
-		Email:               &email,
-		CreatedAt:           now,
-		UpdatedAt:           now,
-	})
+	userFound, err := domainUser.NewUser(
+		1,
+		personalInfo,
+		phone,
+		&email,
+		now,
+		now,
+	)
 	assert.NoError(t, err)
 
 	var emailVal string

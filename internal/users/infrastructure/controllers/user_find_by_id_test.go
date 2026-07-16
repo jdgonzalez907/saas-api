@@ -35,14 +35,14 @@ func TestFindUserByIDController_Handle(t *testing.T) {
 		&birthDate,
 	)
 
-	validUser, err := domain.NewUser(domain.UserParams{
-		ID:                  1,
-		PersonalInformation: personalInfo,
-		Phone:               phone,
-		Email:               &email,
-		CreatedAt:           time.Now(),
-		UpdatedAt:           time.Now(),
-	})
+	validUser, err := domain.NewUser(
+		1,
+		personalInfo,
+		phone,
+		&email,
+		time.Now(),
+		time.Now(),
+	)
 	assert.NoError(t, err)
 
 	testCases := []struct {

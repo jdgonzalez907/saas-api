@@ -30,14 +30,14 @@ func TestUpdateUserPersonalInformationUseCase(t *testing.T) {
 		&birthDate,
 	)
 
-	existingUser, _ := domain.NewUser(domain.UserParams{
-		ID:                  userID,
-		PersonalInformation: existingPersonalInfo,
-		Phone:               phone,
-		Email:               &email,
-		CreatedAt:           now,
-		UpdatedAt:           now,
-	})
+	existingUser, _ := domain.NewUser(
+		userID,
+		existingPersonalInfo,
+		phone,
+		&email,
+		now,
+		now,
+	)
 
 	otherIdentification, _ := domain.NewIdentification(domain.IDTypeCC, "2222")
 	personalInfo, _ := domain.NewPersonalInformation(
