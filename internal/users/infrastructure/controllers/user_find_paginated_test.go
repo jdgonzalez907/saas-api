@@ -31,15 +31,14 @@ func TestFindUsersPaginatedController_Handle(t *testing.T) {
 		&birthDate,
 	)
 
-	userParams := domain.UserParams{
-		ID:                  int64(1),
-		PersonalInformation: personalInfo,
-		Phone:               phone,
-		Email:               &email,
-		CreatedAt:           time.Now(),
-		UpdatedAt:           time.Now(),
-	}
-	u, err := domain.NewUser(userParams)
+	u, err := domain.NewUser(
+		int64(1),
+		personalInfo,
+		phone,
+		&email,
+		time.Now(),
+		time.Now(),
+	)
 	assert.NoError(t, err)
 
 	nextCursor := int64(1)

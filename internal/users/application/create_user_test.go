@@ -29,23 +29,23 @@ func TestCreateUserUseCase(t *testing.T) {
 		&birthDate,
 	)
 
-	user, _ := domain.NewUser(domain.UserParams{
-		ID:                  1,
-		PersonalInformation: personalInfo,
-		Phone:               phone,
-		Email:               &email,
-		CreatedAt:           now,
-		UpdatedAt:           now,
-	})
+	user, _ := domain.NewUser(
+		1,
+		personalInfo,
+		phone,
+		&email,
+		now,
+		now,
+	)
 
-	userWithNilEmail, _ := domain.NewUser(domain.UserParams{
-		ID:                  2,
-		PersonalInformation: personalInfo,
-		Phone:               phone,
-		Email:               nil,
-		CreatedAt:           now,
-		UpdatedAt:           now,
-	})
+	userWithNilEmail, _ := domain.NewUser(
+		2,
+		personalInfo,
+		phone,
+		nil,
+		now,
+		now,
+	)
 
 	dbErr := errors.New("database connection error")
 

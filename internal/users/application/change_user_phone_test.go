@@ -13,7 +13,7 @@ import (
 	domainMocks "jdgonzalez907/saas-api/mocks/domain"
 )
 
-func TestUpdateUserPhoneUseCase(t *testing.T) {
+func TestChangeUserPhoneUseCase(t *testing.T) {
 	userID := int64(1)
 	identification, _ := domain.NewIdentification(domain.IDTypeCC, "1111")
 	phone, _ := domain.NewPhone("57", "123456789")
@@ -30,14 +30,14 @@ func TestUpdateUserPhoneUseCase(t *testing.T) {
 		&birthDate,
 	)
 
-	existingUser, _ := domain.NewUser(domain.UserParams{
-		ID:                  userID,
-		PersonalInformation: personalInfo,
-		Phone:               phone,
-		Email:               &email,
-		CreatedAt:           now,
-		UpdatedAt:           now,
-	})
+	existingUser, _ := domain.NewUser(
+		userID,
+		personalInfo,
+		phone,
+		&email,
+		now,
+		now,
+	)
 
 	otherPhone, _ := domain.NewPhone("57", "987654321")
 	dbErr := errors.New("database connection error")
@@ -104,7 +104,7 @@ func TestUpdateUserPhoneUseCase(t *testing.T) {
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindByID", mock.Anything, userID).Return(nil, dbErr)
 			},
-			expectedError: domain.ErrUpdatingUserPhone,
+			expectedError: domain.ErrChangingUserPhone,
 		},
 		{
 			testName:   "fail - infra error on FindByPhone",
@@ -114,7 +114,7 @@ func TestUpdateUserPhoneUseCase(t *testing.T) {
 				m.On("FindByID", mock.Anything, userID).Return(existingUser, nil)
 				m.On("FindByPhone", mock.Anything, otherPhone).Return(nil, dbErr)
 			},
-			expectedError: domain.ErrUpdatingUserPhone,
+			expectedError: domain.ErrChangingUserPhone,
 		},
 		{
 			testName:   "fail - repo update error",
@@ -125,7 +125,7 @@ func TestUpdateUserPhoneUseCase(t *testing.T) {
 				m.On("FindByPhone", mock.Anything, otherPhone).Return(nil, nil)
 				m.On("Update", mock.Anything, mock.Anything).Return(dbErr)
 			},
-			expectedError: domain.ErrUpdatingUserPhone,
+			expectedError: domain.ErrChangingUserPhone,
 		},
 	}
 
@@ -134,7 +134,7 @@ func TestUpdateUserPhoneUseCase(t *testing.T) {
 			mockUserRepository := new(domainMocks.MockUserRepository)
 			tc.mockExpectations(mockUserRepository)
 
-			useCase := application.NewUpdateUserPhoneUseCase(mockUserRepository)
+			useCase := application.NewChangeUserPhoneUseCase(mockUserRepository)
 			err := useCase.Execute(context.Background(), tc.inputID, tc.inputPhone)
 
 			if tc.expectedError != nil {
@@ -142,7 +142,7 @@ func TestUpdateUserPhoneUseCase(t *testing.T) {
 					t.Fatalf("expected error: %v, got nil", tc.expectedError)
 				}
 				if !errors.Is(err, tc.expectedError) {
-					if !(tc.expectedError == domain.ErrUpdatingUserPhone && errors.Unwrap(err) != nil) {
+					if !(tc.expectedError == domain.ErrChangingUserPhone && errors.Unwrap(err) != nil) {
 						t.Errorf("expected error: %v, got %v", tc.expectedError, err)
 					}
 				}

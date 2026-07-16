@@ -30,14 +30,14 @@ func TestDeleteUserUseCase(t *testing.T) {
 		&birthDate,
 	)
 
-	existingUser, _ := domain.NewUser(domain.UserParams{
-		ID:                  userID,
-		PersonalInformation: personalInfo,
-		Phone:               phone,
-		Email:               &email,
-		CreatedAt:           now,
-		UpdatedAt:           now,
-	})
+	existingUser, _ := domain.NewUser(
+		userID,
+		personalInfo,
+		phone,
+		&email,
+		now,
+		now,
+	)
 
 	dbErr := errors.New("database connection error")
 

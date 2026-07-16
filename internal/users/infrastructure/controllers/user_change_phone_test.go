@@ -20,7 +20,7 @@ import (
 	mockApp "jdgonzalez907/saas-api/mocks/application"
 )
 
-func TestUpdateUserPhoneController_Handle(t *testing.T) {
+func TestChangeUserPhoneController_Handle(t *testing.T) {
 	validBody := domain.PhoneDTO{CountryCode: "57", Number: "987654321"}
 
 	testCases := []struct {
@@ -28,7 +28,7 @@ func TestUpdateUserPhoneController_Handle(t *testing.T) {
 		authUserID     any
 		routeParamID   string
 		requestBody    any
-		setupMock      func(m *mockApp.MockUpdateUserPhoneUseCase)
+		setupMock      func(m *mockApp.MockChangeUserPhoneUseCase)
 		expectedStatus int
 		expectedBody   string
 	}{
@@ -37,7 +37,7 @@ func TestUpdateUserPhoneController_Handle(t *testing.T) {
 			authUserID:   int64(1),
 			routeParamID: "1",
 			requestBody:  validBody,
-			setupMock: func(m *mockApp.MockUpdateUserPhoneUseCase) {
+			setupMock: func(m *mockApp.MockChangeUserPhoneUseCase) {
 				m.EXPECT().Execute(mock.Anything, int64(1), mock.MatchedBy(func(p domain.Phone) bool {
 					return p.CountryCode() == "57" && p.Number() == "987654321"
 				})).Return(nil)
@@ -49,7 +49,7 @@ func TestUpdateUserPhoneController_Handle(t *testing.T) {
 			authUserID:     nil,
 			routeParamID:   "1",
 			requestBody:    validBody,
-			setupMock:      func(_ *mockApp.MockUpdateUserPhoneUseCase) {},
+			setupMock:      func(_ *mockApp.MockChangeUserPhoneUseCase) {},
 			expectedStatus: http.StatusUnauthorized,
 			expectedBody:   sharedHttp.ErrUnauthenticated.Error(),
 		},
@@ -58,7 +58,7 @@ func TestUpdateUserPhoneController_Handle(t *testing.T) {
 			authUserID:     int64(1),
 			routeParamID:   "abc",
 			requestBody:    validBody,
-			setupMock:      func(_ *mockApp.MockUpdateUserPhoneUseCase) {},
+			setupMock:      func(_ *mockApp.MockChangeUserPhoneUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   "parameter id must be a positive integer",
 		},
@@ -67,7 +67,7 @@ func TestUpdateUserPhoneController_Handle(t *testing.T) {
 			authUserID:     int64(1),
 			routeParamID:   "1",
 			requestBody:    "{invalid json}",
-			setupMock:      func(_ *mockApp.MockUpdateUserPhoneUseCase) {},
+			setupMock:      func(_ *mockApp.MockChangeUserPhoneUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   sharedHttp.ErrInvalidRequestBody.Error(),
 		},
@@ -76,7 +76,7 @@ func TestUpdateUserPhoneController_Handle(t *testing.T) {
 			authUserID:     int64(1),
 			routeParamID:   "1",
 			requestBody:    nil,
-			setupMock:      func(_ *mockApp.MockUpdateUserPhoneUseCase) {},
+			setupMock:      func(_ *mockApp.MockChangeUserPhoneUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   sharedHttp.ErrInvalidRequestBody.Error(),
 		},
@@ -87,7 +87,7 @@ func TestUpdateUserPhoneController_Handle(t *testing.T) {
 			requestBody: domain.PhoneDTO{
 				CountryCode: "", Number: "987654321",
 			},
-			setupMock:      func(_ *mockApp.MockUpdateUserPhoneUseCase) {},
+			setupMock:      func(_ *mockApp.MockChangeUserPhoneUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   domain.ErrInvalidPhone.Error(),
 		},
@@ -98,7 +98,7 @@ func TestUpdateUserPhoneController_Handle(t *testing.T) {
 			requestBody: domain.PhoneDTO{
 				CountryCode: "57", Number: "",
 			},
-			setupMock:      func(_ *mockApp.MockUpdateUserPhoneUseCase) {},
+			setupMock:      func(_ *mockApp.MockChangeUserPhoneUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   domain.ErrInvalidPhone.Error(),
 		},
@@ -107,7 +107,7 @@ func TestUpdateUserPhoneController_Handle(t *testing.T) {
 			authUserID:   int64(1),
 			routeParamID: "1",
 			requestBody:  validBody,
-			setupMock: func(m *mockApp.MockUpdateUserPhoneUseCase) {
+			setupMock: func(m *mockApp.MockChangeUserPhoneUseCase) {
 				m.EXPECT().Execute(mock.Anything, int64(1), mock.Anything).Return(domain.ErrUserNotFound)
 			},
 			expectedStatus: http.StatusNotFound,
@@ -118,7 +118,7 @@ func TestUpdateUserPhoneController_Handle(t *testing.T) {
 			authUserID:   int64(1),
 			routeParamID: "1",
 			requestBody:  validBody,
-			setupMock: func(m *mockApp.MockUpdateUserPhoneUseCase) {
+			setupMock: func(m *mockApp.MockChangeUserPhoneUseCase) {
 				m.EXPECT().Execute(mock.Anything, int64(1), mock.Anything).Return(domain.ErrUserPhoneAlreadyExists)
 			},
 			expectedStatus: http.StatusConflict,
@@ -129,7 +129,7 @@ func TestUpdateUserPhoneController_Handle(t *testing.T) {
 			authUserID:   int64(1),
 			routeParamID: "1",
 			requestBody:  validBody,
-			setupMock: func(m *mockApp.MockUpdateUserPhoneUseCase) {
+			setupMock: func(m *mockApp.MockChangeUserPhoneUseCase) {
 				m.EXPECT().Execute(mock.Anything, int64(1), mock.Anything).Return(errors.New("db failed"))
 			},
 			expectedStatus: http.StatusInternalServerError,
@@ -139,10 +139,10 @@ func TestUpdateUserPhoneController_Handle(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.testName, func(t *testing.T) {
-			mockUseCase := mockApp.NewMockUpdateUserPhoneUseCase(t)
+			mockUseCase := mockApp.NewMockChangeUserPhoneUseCase(t)
 			tc.setupMock(mockUseCase)
 
-			controller := controllers.NewUpdateUserPhoneController(mockUseCase)
+			controller := controllers.NewChangeUserPhoneController(mockUseCase)
 
 			var req *http.Request
 			if tc.requestBody == nil {
