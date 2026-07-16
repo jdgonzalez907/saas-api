@@ -51,17 +51,6 @@ type Post struct {
 	publishedAt        *time.Time
 }
 
-type PostParams struct {
-	ID                 int64
-	ContentInformation ContentInformation
-	Status             PostStatus
-	CreatedAt          time.Time
-	UpdatedAt          time.Time
-	AuthorID           int64
-	LastEditorID       int64
-	PublishedAt        *time.Time
-}
-
 type PostDTO struct {
 	ID int64 `json:"id"`
 	ContentInformationDTO
@@ -92,20 +81,29 @@ func (p *Post) ensureInvariants() error {
 	return nil
 }
 
-func NewPost(params PostParams) (*Post, error) {
-	if params.ID <= 0 {
+func NewPost(
+	id int64,
+	contentInformation ContentInformation,
+	status PostStatus,
+	createdAt time.Time,
+	updatedAt time.Time,
+	authorID int64,
+	lastEditorID int64,
+	publishedAt *time.Time,
+) (*Post, error) {
+	if id <= 0 {
 		return nil, ErrInvalidPostID
 	}
 
 	post := &Post{
-		id:                 params.ID,
-		contentInformation: params.ContentInformation,
-		status:             params.Status,
-		createdAt:          params.CreatedAt.UTC(),
-		updatedAt:          params.UpdatedAt.UTC(),
-		authorID:           params.AuthorID,
-		lastEditorID:       params.LastEditorID,
-		publishedAt:        params.PublishedAt,
+		id:                 id,
+		contentInformation: contentInformation,
+		status:             status,
+		createdAt:          createdAt.UTC(),
+		updatedAt:          updatedAt.UTC(),
+		authorID:           authorID,
+		lastEditorID:       lastEditorID,
+		publishedAt:        publishedAt,
 	}
 
 	if err := post.ensureInvariants(); err != nil {
@@ -177,7 +175,7 @@ func (p *Post) PublishedAt() *time.Time {
 	return p.publishedAt
 }
 
-func (p *Post) WithContentAndStatus(contentInformation ContentInformation, status PostStatus, lastEditorID int64) (*Post, error) {
+func (p *Post) UpdateContentAndStatus(contentInformation ContentInformation, status PostStatus, lastEditorID int64) (*Post, error) {
 	var publishedAt *time.Time
 	if status == StatusPublished {
 		if p.status == StatusPublished {
@@ -286,14 +284,14 @@ func PostFromDTO(dto *PostDTO) (*Post, error) {
 		return post, nil
 	}
 
-	return NewPost(PostParams{
-		ID:                 dto.ID,
-		ContentInformation: contentInfo,
-		Status:             status,
-		CreatedAt:          dto.CreatedAt.UTC(),
-		UpdatedAt:          dto.UpdatedAt.UTC(),
-		AuthorID:           dto.AuthorID,
-		LastEditorID:       dto.LastEditorID,
-		PublishedAt:        dto.PublishedAt,
-	})
+	return NewPost(
+		dto.ID,
+		contentInfo,
+		status,
+		dto.CreatedAt.UTC(),
+		dto.UpdatedAt.UTC(),
+		dto.AuthorID,
+		dto.LastEditorID,
+		dto.PublishedAt,
+	)
 }

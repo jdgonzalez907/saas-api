@@ -7,19 +7,19 @@ import (
 	"jdgonzalez907/saas-api/internal/posts/domain"
 )
 
-type UpdatePostUseCase interface {
+type ChangePostUseCase interface {
 	Execute(ctx context.Context, id int64, contentInfo domain.ContentInformation, status domain.PostStatus, lastEditorID int64) (*domain.Post, error)
 }
 
-type updatePostUseCase struct {
+type changePostUseCase struct {
 	postRepository domain.PostRepository
 }
 
-func NewUpdatePostUseCase(postRepository domain.PostRepository) UpdatePostUseCase {
-	return &updatePostUseCase{postRepository: postRepository}
+func NewChangePostUseCase(postRepository domain.PostRepository) ChangePostUseCase {
+	return &changePostUseCase{postRepository: postRepository}
 }
 
-func (u *updatePostUseCase) Execute(ctx context.Context, id int64, contentInfo domain.ContentInformation, status domain.PostStatus, lastEditorID int64) (*domain.Post, error) {
+func (u *changePostUseCase) Execute(ctx context.Context, id int64, contentInfo domain.ContentInformation, status domain.PostStatus, lastEditorID int64) (*domain.Post, error) {
 	post, err := u.postRepository.FindByID(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("%v: %w", domain.ErrUpdatingPost, err)
@@ -28,7 +28,7 @@ func (u *updatePostUseCase) Execute(ctx context.Context, id int64, contentInfo d
 		return nil, domain.ErrPostNotFound
 	}
 
-	updatedPost, err := post.WithContentAndStatus(contentInfo, status, lastEditorID)
+	updatedPost, err := post.UpdateContentAndStatus(contentInfo, status, lastEditorID)
 	if err != nil {
 		return nil, err
 	}
