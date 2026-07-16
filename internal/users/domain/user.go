@@ -23,6 +23,7 @@ var (
 	ErrDeletingUser                = errors.New("could not complete user deletion process")
 	ErrFindingUsers                = errors.New("could not retrieve the users listing")
 	ErrFindingUserByID             = errors.New("could not retrieve user by identification")
+	ErrUserOwnershipMismatch       = errors.New("the authenticated user cannot modify another user's data")
 )
 
 type User struct {
@@ -140,6 +141,13 @@ func (u *User) FullName() string {
 	return u.personalInformation.firstName + " " + u.personalInformation.lastName
 }
 
+func (u *User) IsSame(userID int64) error {
+	if u.id != userID {
+		return ErrUserOwnershipMismatch
+	}
+	return nil
+}
+
 func (u *User) ToDTO() *UserDTO {
 	if u == nil {
 		return nil
@@ -231,7 +239,11 @@ func UserFromDTO(dto *UserDTO) (*User, error) {
 	)
 }
 
-func (u *User) UpdatePersonalInformation(info PersonalInformation) *User {
+func (u *User) UpdatePersonalInformation(info PersonalInformation, userID int64) (*User, error) {
+	if err := u.IsSame(userID); err != nil {
+		return nil, err
+	}
+
 	return &User{
 		id:                  u.id,
 		personalInformation: info,
@@ -239,10 +251,14 @@ func (u *User) UpdatePersonalInformation(info PersonalInformation) *User {
 		email:               u.email,
 		createdAt:           u.createdAt,
 		updatedAt:           time.Now().UTC(),
-	}
+	}, nil
 }
 
-func (u *User) ChangePhone(phone Phone) *User {
+func (u *User) ChangePhone(phone Phone, userID int64) (*User, error) {
+	if err := u.IsSame(userID); err != nil {
+		return nil, err
+	}
+
 	return &User{
 		id:                  u.id,
 		personalInformation: u.personalInformation,
@@ -250,10 +266,14 @@ func (u *User) ChangePhone(phone Phone) *User {
 		email:               u.email,
 		createdAt:           u.createdAt,
 		updatedAt:           time.Now().UTC(),
-	}
+	}, nil
 }
 
-func (u *User) ChangeEmail(email *Email) *User {
+func (u *User) ChangeEmail(email *Email, userID int64) (*User, error) {
+	if err := u.IsSame(userID); err != nil {
+		return nil, err
+	}
+
 	return &User{
 		id:                  u.id,
 		personalInformation: u.personalInformation,
@@ -261,5 +281,5 @@ func (u *User) ChangeEmail(email *Email) *User {
 		email:               email,
 		createdAt:           u.createdAt,
 		updatedAt:           time.Now().UTC(),
-	}
+	}, nil
 }
