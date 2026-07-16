@@ -20,12 +20,12 @@ import (
 	mockApp "jdgonzalez907/saas-api/mocks/application"
 )
 
-func TestUpdateUserEmailController_Handle(t *testing.T) {
+func TestChangeUserEmailController_Handle(t *testing.T) {
 	newEmail := "new@example.com"
 	emptyEmail := ""
 	invalidEmail := "invalid-email"
 
-	validBody := controllers.UpdateEmailRequest{
+	validBody := controllers.ChangeEmailRequest{
 		Email: &newEmail,
 	}
 
@@ -34,7 +34,7 @@ func TestUpdateUserEmailController_Handle(t *testing.T) {
 		authUserID     any
 		routeParamID   string
 		requestBody    any
-		setupMock      func(m *mockApp.MockUpdateUserEmailUseCase)
+		setupMock      func(m *mockApp.MockChangeUserEmailUseCase)
 		expectedStatus int
 		expectedBody   string
 	}{
@@ -43,7 +43,7 @@ func TestUpdateUserEmailController_Handle(t *testing.T) {
 			authUserID:   int64(1),
 			routeParamID: "1",
 			requestBody:  validBody,
-			setupMock: func(m *mockApp.MockUpdateUserEmailUseCase) {
+			setupMock: func(m *mockApp.MockChangeUserEmailUseCase) {
 				m.EXPECT().Execute(mock.Anything, int64(1), mock.MatchedBy(func(e *domain.Email) bool {
 					return e != nil && e.Value() == "new@example.com"
 				})).Return(nil)
@@ -54,10 +54,10 @@ func TestUpdateUserEmailController_Handle(t *testing.T) {
 			testName:     "success - email set to nil",
 			authUserID:   int64(1),
 			routeParamID: "1",
-			requestBody: controllers.UpdateEmailRequest{
+			requestBody: controllers.ChangeEmailRequest{
 				Email: &emptyEmail,
 			},
-			setupMock: func(m *mockApp.MockUpdateUserEmailUseCase) {
+			setupMock: func(m *mockApp.MockChangeUserEmailUseCase) {
 				m.EXPECT().Execute(mock.Anything, int64(1), (*domain.Email)(nil)).Return(nil)
 			},
 			expectedStatus: http.StatusNoContent,
@@ -67,7 +67,7 @@ func TestUpdateUserEmailController_Handle(t *testing.T) {
 			authUserID:     nil,
 			routeParamID:   "1",
 			requestBody:    validBody,
-			setupMock:      func(_ *mockApp.MockUpdateUserEmailUseCase) {},
+			setupMock:      func(_ *mockApp.MockChangeUserEmailUseCase) {},
 			expectedStatus: http.StatusUnauthorized,
 			expectedBody:   sharedHttp.ErrUnauthenticated.Error(),
 		},
@@ -76,7 +76,7 @@ func TestUpdateUserEmailController_Handle(t *testing.T) {
 			authUserID:     int64(1),
 			routeParamID:   "abc",
 			requestBody:    validBody,
-			setupMock:      func(_ *mockApp.MockUpdateUserEmailUseCase) {},
+			setupMock:      func(_ *mockApp.MockChangeUserEmailUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   "parameter id must be a positive integer",
 		},
@@ -85,7 +85,7 @@ func TestUpdateUserEmailController_Handle(t *testing.T) {
 			authUserID:     int64(1),
 			routeParamID:   "1",
 			requestBody:    "{invalid json}",
-			setupMock:      func(_ *mockApp.MockUpdateUserEmailUseCase) {},
+			setupMock:      func(_ *mockApp.MockChangeUserEmailUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   sharedHttp.ErrInvalidRequestBody.Error(),
 		},
@@ -94,7 +94,7 @@ func TestUpdateUserEmailController_Handle(t *testing.T) {
 			authUserID:     int64(1),
 			routeParamID:   "1",
 			requestBody:    nil,
-			setupMock:      func(_ *mockApp.MockUpdateUserEmailUseCase) {},
+			setupMock:      func(_ *mockApp.MockChangeUserEmailUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   sharedHttp.ErrInvalidRequestBody.Error(),
 		},
@@ -102,10 +102,10 @@ func TestUpdateUserEmailController_Handle(t *testing.T) {
 			testName:     "fail - invalid email format",
 			authUserID:   int64(1),
 			routeParamID: "1",
-			requestBody: controllers.UpdateEmailRequest{
+			requestBody: controllers.ChangeEmailRequest{
 				Email: &invalidEmail,
 			},
-			setupMock:      func(_ *mockApp.MockUpdateUserEmailUseCase) {},
+			setupMock:      func(_ *mockApp.MockChangeUserEmailUseCase) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   domain.ErrInvalidEmail.Error(),
 		},
@@ -114,7 +114,7 @@ func TestUpdateUserEmailController_Handle(t *testing.T) {
 			authUserID:   int64(1),
 			routeParamID: "1",
 			requestBody:  validBody,
-			setupMock: func(m *mockApp.MockUpdateUserEmailUseCase) {
+			setupMock: func(m *mockApp.MockChangeUserEmailUseCase) {
 				m.EXPECT().Execute(mock.Anything, int64(1), mock.Anything).Return(domain.ErrUserNotFound)
 			},
 			expectedStatus: http.StatusNotFound,
@@ -125,7 +125,7 @@ func TestUpdateUserEmailController_Handle(t *testing.T) {
 			authUserID:   int64(1),
 			routeParamID: "1",
 			requestBody:  validBody,
-			setupMock: func(m *mockApp.MockUpdateUserEmailUseCase) {
+			setupMock: func(m *mockApp.MockChangeUserEmailUseCase) {
 				m.EXPECT().Execute(mock.Anything, int64(1), mock.Anything).Return(domain.ErrUserEmailAlreadyExists)
 			},
 			expectedStatus: http.StatusConflict,
@@ -136,7 +136,7 @@ func TestUpdateUserEmailController_Handle(t *testing.T) {
 			authUserID:   int64(1),
 			routeParamID: "1",
 			requestBody:  validBody,
-			setupMock: func(m *mockApp.MockUpdateUserEmailUseCase) {
+			setupMock: func(m *mockApp.MockChangeUserEmailUseCase) {
 				m.EXPECT().Execute(mock.Anything, int64(1), mock.Anything).Return(errors.New("db failed"))
 			},
 			expectedStatus: http.StatusInternalServerError,
@@ -146,10 +146,10 @@ func TestUpdateUserEmailController_Handle(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.testName, func(t *testing.T) {
-			mockUseCase := mockApp.NewMockUpdateUserEmailUseCase(t)
+			mockUseCase := mockApp.NewMockChangeUserEmailUseCase(t)
 			tc.setupMock(mockUseCase)
 
-			controller := controllers.NewUpdateUserEmailController(mockUseCase)
+			controller := controllers.NewChangeUserEmailController(mockUseCase)
 
 			var req *http.Request
 			if tc.requestBody == nil {

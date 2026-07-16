@@ -18,16 +18,16 @@ func TestRouterAndMiddleware(t *testing.T) {
 	mockDeleteUseCase := mockApp.NewMockDeleteUserUseCase(t)
 	mockUpdatePIUseCase := mockApp.NewMockUpdateUserPersonalInformationUseCase(t)
 	mockFindPaginatedUseCase := mockApp.NewMockFindUsersPaginatedUseCase(t)
-	mockUpdateEmailUseCase := mockApp.NewMockUpdateUserEmailUseCase(t)
-	mockUpdatePhoneUseCase := mockApp.NewMockUpdateUserPhoneUseCase(t)
+	mockUpdateEmailUseCase := mockApp.NewMockChangeUserEmailUseCase(t)
+	mockUpdatePhoneUseCase := mockApp.NewMockChangeUserPhoneUseCase(t)
 
 	findController := controllers.NewFindUserByIDController(mockFindUseCase)
 	createController := controllers.NewCreateUserController(mockCreateUseCase)
 	deleteController := controllers.NewDeleteUserController(mockDeleteUseCase)
 	updatePIController := controllers.NewUpdateUserPersonalInformationController(mockUpdatePIUseCase)
 	findPaginatedController := controllers.NewFindUsersPaginatedController(mockFindPaginatedUseCase)
-	updateEmailController := controllers.NewUpdateUserEmailController(mockUpdateEmailUseCase)
-	updatePhoneController := controllers.NewUpdateUserPhoneController(mockUpdatePhoneUseCase)
+	updateEmailController := controllers.NewChangeUserEmailController(mockUpdateEmailUseCase)
+	updatePhoneController := controllers.NewChangeUserPhoneController(mockUpdatePhoneUseCase)
 
 	router := controllers.NewRouter(controllers.RouterParams{
 		FindUserByID:              findController,

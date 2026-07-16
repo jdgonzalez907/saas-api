@@ -13,7 +13,7 @@ import (
 	domainMocks "jdgonzalez907/saas-api/mocks/domain"
 )
 
-func TestUpdateUserEmailUseCase(t *testing.T) {
+func TestChangeUserEmailUseCase(t *testing.T) {
 	userID := int64(1)
 	identification, _ := domain.NewIdentification(domain.IDTypeCC, "1111")
 	phone, _ := domain.NewPhone("57", "123456789")
@@ -132,7 +132,7 @@ func TestUpdateUserEmailUseCase(t *testing.T) {
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindByID", mock.Anything, userID).Return(nil, dbErr)
 			},
-			expectedError: domain.ErrUpdatingUserEmail,
+			expectedError: domain.ErrChangingUserEmail,
 		},
 		{
 			testName:   "fail - infra error on FindByEmail",
@@ -142,7 +142,7 @@ func TestUpdateUserEmailUseCase(t *testing.T) {
 				m.On("FindByID", mock.Anything, userID).Return(existingUser, nil)
 				m.On("FindByEmail", mock.Anything, otherEmail).Return(nil, dbErr)
 			},
-			expectedError: domain.ErrUpdatingUserEmail,
+			expectedError: domain.ErrChangingUserEmail,
 		},
 		{
 			testName:   "fail - repo update error",
@@ -153,7 +153,7 @@ func TestUpdateUserEmailUseCase(t *testing.T) {
 				m.On("FindByEmail", mock.Anything, otherEmail).Return(nil, nil)
 				m.On("Update", mock.Anything, mock.Anything).Return(dbErr)
 			},
-			expectedError: domain.ErrUpdatingUserEmail,
+			expectedError: domain.ErrChangingUserEmail,
 		},
 	}
 
@@ -162,7 +162,7 @@ func TestUpdateUserEmailUseCase(t *testing.T) {
 			mockUserRepository := new(domainMocks.MockUserRepository)
 			tc.mockExpectations(mockUserRepository)
 
-			useCase := application.NewUpdateUserEmailUseCase(mockUserRepository)
+			useCase := application.NewChangeUserEmailUseCase(mockUserRepository)
 			err := useCase.Execute(context.Background(), tc.inputID, tc.inputEmail)
 
 			if tc.expectedError != nil {
@@ -170,7 +170,7 @@ func TestUpdateUserEmailUseCase(t *testing.T) {
 					t.Fatalf("expected error: %v, got nil", tc.expectedError)
 				}
 				if !errors.Is(err, tc.expectedError) {
-					if !(tc.expectedError == domain.ErrUpdatingUserEmail && errors.Unwrap(err) != nil) {
+					if !(tc.expectedError == domain.ErrChangingUserEmail && errors.Unwrap(err) != nil) {
 						t.Errorf("expected error: %v, got %v", tc.expectedError, err)
 					}
 				}
