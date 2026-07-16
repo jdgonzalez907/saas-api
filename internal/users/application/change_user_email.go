@@ -26,7 +26,7 @@ func (u *changeUserEmailUseCase) Execute(ctx context.Context, id int64, email *d
 
 	userFound, err := u.userRepository.FindByID(ctx, id)
 	if err != nil {
-		return fmt.Errorf("%v: %w", domain.ErrChangingUserEmail, err)
+		return fmt.Errorf("%v: %w", domain.ErrChangingEmail, err)
 	}
 
 	if userFound == nil {
@@ -42,7 +42,7 @@ func (u *changeUserEmailUseCase) Execute(ctx context.Context, id int64, email *d
 	if email != nil {
 		foundEmail, err := u.userRepository.FindByEmail(ctx, *email)
 		if err != nil {
-			return fmt.Errorf("%v: %w", domain.ErrChangingUserEmail, err)
+			return fmt.Errorf("%v: %w", domain.ErrChangingEmail, err)
 		}
 		if foundEmail != nil {
 			return domain.ErrUserEmailAlreadyExists
@@ -53,7 +53,7 @@ func (u *changeUserEmailUseCase) Execute(ctx context.Context, id int64, email *d
 
 	err = u.userRepository.Update(ctx, updatedUser)
 	if err != nil {
-		return fmt.Errorf("%v: %w", domain.ErrChangingUserEmail, err)
+		return fmt.Errorf("%v: %w", domain.ErrChangingEmail, err)
 	}
 
 	return nil

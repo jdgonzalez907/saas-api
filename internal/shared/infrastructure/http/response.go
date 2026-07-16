@@ -51,9 +51,9 @@ var domainErrorStatus = map[error]int{
 	usersDomain.ErrInvalidPaginationCursor:     http.StatusBadRequest,
 
 	usersDomain.ErrCreatingUser:                    http.StatusInternalServerError,
-	usersDomain.ErrUpdatingUserPersonalInformation: http.StatusInternalServerError,
-	usersDomain.ErrChangingUserPhone:               http.StatusInternalServerError,
-	usersDomain.ErrChangingUserEmail:               http.StatusInternalServerError,
+	usersDomain.ErrChangingPersonalInformation: http.StatusInternalServerError,
+	usersDomain.ErrChangingPhone:               http.StatusInternalServerError,
+	usersDomain.ErrChangingEmail:               http.StatusInternalServerError,
 	usersDomain.ErrDeletingUser:                    http.StatusInternalServerError,
 	usersDomain.ErrFindingUsers:                    http.StatusInternalServerError,
 	usersDomain.ErrFindingUserByID:                 http.StatusInternalServerError,
@@ -75,7 +75,7 @@ var domainErrorStatus = map[error]int{
 
 	postsDomain.ErrCreatingPost: http.StatusInternalServerError,
 	postsDomain.ErrFindingPost:  http.StatusInternalServerError,
-	postsDomain.ErrUpdatingPost: http.StatusInternalServerError,
+	postsDomain.ErrChangingPost: http.StatusInternalServerError,
 	postsDomain.ErrDeletingPost: http.StatusInternalServerError,
 	postsDomain.ErrFindingPosts: http.StatusInternalServerError,
 }

@@ -26,7 +26,7 @@ func (u *changeUserPhoneUseCase) Execute(ctx context.Context, id int64, phone do
 
 	userFound, err := u.userRepository.FindByID(ctx, id)
 	if err != nil {
-		return fmt.Errorf("%v: %w", domain.ErrChangingUserPhone, err)
+		return fmt.Errorf("%v: %w", domain.ErrChangingPhone, err)
 	}
 
 	if userFound == nil {
@@ -39,7 +39,7 @@ func (u *changeUserPhoneUseCase) Execute(ctx context.Context, id int64, phone do
 
 	foundPhone, err := u.userRepository.FindByPhone(ctx, phone)
 	if err != nil {
-		return fmt.Errorf("%v: %w", domain.ErrChangingUserPhone, err)
+		return fmt.Errorf("%v: %w", domain.ErrChangingPhone, err)
 	}
 	if foundPhone != nil {
 		return domain.ErrUserPhoneAlreadyExists
@@ -49,7 +49,7 @@ func (u *changeUserPhoneUseCase) Execute(ctx context.Context, id int64, phone do
 
 	err = u.userRepository.Update(ctx, updatedUser)
 	if err != nil {
-		return fmt.Errorf("%v: %w", domain.ErrChangingUserPhone, err)
+		return fmt.Errorf("%v: %w", domain.ErrChangingPhone, err)
 	}
 
 	return nil

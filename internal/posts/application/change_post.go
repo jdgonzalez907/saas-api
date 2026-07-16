@@ -22,7 +22,7 @@ func NewChangePostUseCase(postRepository domain.PostRepository) ChangePostUseCas
 func (u *changePostUseCase) Execute(ctx context.Context, id int64, contentInfo domain.ContentInformation, status domain.PostStatus, lastEditorID int64) (*domain.Post, error) {
 	post, err := u.postRepository.FindByID(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("%v: %w", domain.ErrUpdatingPost, err)
+		return nil, fmt.Errorf("%v: %w", domain.ErrChangingPost, err)
 	}
 	if post == nil {
 		return nil, domain.ErrPostNotFound
@@ -35,7 +35,7 @@ func (u *changePostUseCase) Execute(ctx context.Context, id int64, contentInfo d
 
 	err = u.postRepository.Update(ctx, updatedPost)
 	if err != nil {
-		return nil, fmt.Errorf("%v: %w", domain.ErrUpdatingPost, err)
+		return nil, fmt.Errorf("%v: %w", domain.ErrChangingPost, err)
 	}
 
 	return updatedPost, nil

@@ -24,7 +24,7 @@ var (
 	ErrPostNotFound                     = errors.New("the requested post was not found")
 	ErrCreatingPost                     = errors.New("error creating post")
 	ErrFindingPost                      = errors.New("error finding post")
-	ErrUpdatingPost                     = errors.New("error updating post")
+	ErrChangingPost                     = errors.New("error updating post")
 	ErrDeletingPost                     = errors.New("error deleting post")
 	ErrFindingPosts                     = errors.New("error finding posts")
 	ErrPostIDAlreadyExists              = errors.New("post ID already exists")
