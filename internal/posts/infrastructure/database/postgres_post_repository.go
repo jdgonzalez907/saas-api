@@ -230,14 +230,14 @@ func mapRowToDomain(
 		pubAt = &t
 	}
 
-	return domain.NewPost(domain.PostParams{
-		ID:                 id,
-		ContentInformation: contentInfo,
-		Status:             statusVO,
-		CreatedAt:          createdAt.Time.UTC(),
-		UpdatedAt:          updatedAt.Time.UTC(),
-		AuthorID:           authorID,
-		LastEditorID:       lastEditorID,
-		PublishedAt:        pubAt,
-	})
+	return domain.NewPost(
+		id,
+		contentInfo,
+		statusVO,
+		createdAt.Time.UTC(),
+		updatedAt.Time.UTC(),
+		authorID,
+		lastEditorID,
+		pubAt,
+	)
 }

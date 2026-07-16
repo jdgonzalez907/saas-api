@@ -18,16 +18,7 @@ func TestFindPostsPaginatedUseCase(t *testing.T) {
 	contentInfo, _ := domain.NewContentInformation("Post Title", []domain.Block{titleBlock})
 	now := time.Now().UTC()
 
-	post, _ := domain.NewPost(domain.PostParams{
-		ID:                 1,
-		ContentInformation: contentInfo,
-		Status:             domain.StatusPublished,
-		CreatedAt:          now,
-		UpdatedAt:          now,
-		AuthorID:           10,
-		LastEditorID:       10,
-		PublishedAt:        &now,
-	})
+	post, _ := domain.NewPost(1, contentInfo, domain.StatusPublished, now, now, 10, 10, &now)
 
 	pagination, _ := domain.NewPagination(nil, nil, nil)
 	dbErr := errors.New("database connection error")

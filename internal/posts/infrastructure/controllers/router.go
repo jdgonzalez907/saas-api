@@ -10,7 +10,7 @@ import (
 type RouterParams struct {
 	CreatePost         *CreatePostController
 	FindPostByID       *FindPostByIDController
-	UpdatePost         *UpdatePostController
+	ChangePost         *ChangePostController
 	DeletePost         *DeletePostController
 	FindPostsPaginated *FindPostsPaginatedController
 }
@@ -30,8 +30,8 @@ func NewRouter(params RouterParams) *chi.Mux {
 	if params.FindPostByID != nil {
 		r.Get("/posts/{id}", sharedHttp.Protected(params.FindPostByID.Handle))
 	}
-	if params.UpdatePost != nil {
-		r.Put("/posts/{id}", sharedHttp.Protected(params.UpdatePost.Handle))
+	if params.ChangePost != nil {
+		r.Put("/posts/{id}", sharedHttp.Protected(params.ChangePost.Handle))
 	}
 	if params.DeletePost != nil {
 		r.Delete("/posts/{id}", sharedHttp.Protected(params.DeletePost.Handle))

@@ -19,7 +19,7 @@ func TestNewRouter(t *testing.T) {
 		params := controllers.RouterParams{
 			CreatePost:         controllers.NewCreatePostController(nil),
 			FindPostByID:       controllers.NewFindPostByIDController(nil),
-			UpdatePost:         controllers.NewUpdatePostController(nil),
+			ChangePost:         controllers.NewChangePostController(nil),
 			DeletePost:         controllers.NewDeletePostController(nil),
 			FindPostsPaginated: controllers.NewFindPostsPaginatedController(nil),
 		}

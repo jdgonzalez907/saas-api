@@ -8,29 +8,29 @@ import (
 	sharedHttp "jdgonzalez907/saas-api/internal/shared/infrastructure/http"
 )
 
-type UpdatePostController struct {
-	useCase application.UpdatePostUseCase
+type ChangePostController struct {
+	useCase application.ChangePostUseCase
 }
 
-func NewUpdatePostController(useCase application.UpdatePostUseCase) *UpdatePostController {
-	return &UpdatePostController{
+func NewChangePostController(useCase application.ChangePostUseCase) *ChangePostController {
+	return &ChangePostController{
 		useCase: useCase,
 	}
 }
 
-type UpdatePostRequest struct {
+type ChangePostRequest struct {
 	domain.ContentInformationDTO
 	Status string `json:"status"`
 }
 
-func (c *UpdatePostController) Handle(w http.ResponseWriter, r *http.Request, userID int64) {
+func (c *ChangePostController) Handle(w http.ResponseWriter, r *http.Request, userID int64) {
 	id, err := sharedHttp.ParseRouteInt64Param(r, "id")
 	if err != nil {
 		sharedHttp.RespondWithError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	var req UpdatePostRequest
+	var req ChangePostRequest
 	if err := sharedHttp.DecodeJSON(r, &req); err != nil {
 		sharedHttp.RespondWithError(w, http.StatusBadRequest, err.Error())
 		return

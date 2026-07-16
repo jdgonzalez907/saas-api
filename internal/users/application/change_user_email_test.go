@@ -132,7 +132,7 @@ func TestChangeUserEmailUseCase(t *testing.T) {
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindByID", mock.Anything, userID).Return(nil, dbErr)
 			},
-			expectedError: domain.ErrChangingUserEmail,
+			expectedError: domain.ErrChangingEmail,
 		},
 		{
 			testName:   "fail - infra error on FindByEmail",
@@ -142,7 +142,7 @@ func TestChangeUserEmailUseCase(t *testing.T) {
 				m.On("FindByID", mock.Anything, userID).Return(existingUser, nil)
 				m.On("FindByEmail", mock.Anything, otherEmail).Return(nil, dbErr)
 			},
-			expectedError: domain.ErrChangingUserEmail,
+			expectedError: domain.ErrChangingEmail,
 		},
 		{
 			testName:   "fail - repo update error",
@@ -153,7 +153,7 @@ func TestChangeUserEmailUseCase(t *testing.T) {
 				m.On("FindByEmail", mock.Anything, otherEmail).Return(nil, nil)
 				m.On("Update", mock.Anything, mock.Anything).Return(dbErr)
 			},
-			expectedError: domain.ErrChangingUserEmail,
+			expectedError: domain.ErrChangingEmail,
 		},
 	}
 
@@ -170,7 +170,7 @@ func TestChangeUserEmailUseCase(t *testing.T) {
 					t.Fatalf("expected error: %v, got nil", tc.expectedError)
 				}
 				if !errors.Is(err, tc.expectedError) {
-					if !(tc.expectedError == domain.ErrChangingUserEmail && errors.Unwrap(err) != nil) {
+					if !(tc.expectedError == domain.ErrChangingEmail && errors.Unwrap(err) != nil) {
 						t.Errorf("expected error: %v, got %v", tc.expectedError, err)
 					}
 				}

@@ -104,7 +104,7 @@ func TestChangeUserPhoneUseCase(t *testing.T) {
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
 				m.On("FindByID", mock.Anything, userID).Return(nil, dbErr)
 			},
-			expectedError: domain.ErrChangingUserPhone,
+			expectedError: domain.ErrChangingPhone,
 		},
 		{
 			testName:   "fail - infra error on FindByPhone",
@@ -114,7 +114,7 @@ func TestChangeUserPhoneUseCase(t *testing.T) {
 				m.On("FindByID", mock.Anything, userID).Return(existingUser, nil)
 				m.On("FindByPhone", mock.Anything, otherPhone).Return(nil, dbErr)
 			},
-			expectedError: domain.ErrChangingUserPhone,
+			expectedError: domain.ErrChangingPhone,
 		},
 		{
 			testName:   "fail - repo update error",
@@ -125,7 +125,7 @@ func TestChangeUserPhoneUseCase(t *testing.T) {
 				m.On("FindByPhone", mock.Anything, otherPhone).Return(nil, nil)
 				m.On("Update", mock.Anything, mock.Anything).Return(dbErr)
 			},
-			expectedError: domain.ErrChangingUserPhone,
+			expectedError: domain.ErrChangingPhone,
 		},
 	}
 
@@ -142,7 +142,7 @@ func TestChangeUserPhoneUseCase(t *testing.T) {
 					t.Fatalf("expected error: %v, got nil", tc.expectedError)
 				}
 				if !errors.Is(err, tc.expectedError) {
-					if !(tc.expectedError == domain.ErrChangingUserPhone && errors.Unwrap(err) != nil) {
+					if !(tc.expectedError == domain.ErrChangingPhone && errors.Unwrap(err) != nil) {
 						t.Errorf("expected error: %v, got %v", tc.expectedError, err)
 					}
 				}
