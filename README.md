@@ -75,7 +75,7 @@ HTTP Request
 ### Decisiones de Diseño
 
 - **Value Objects inmutables**: Ningún campo es exportado directamente. Se crean con constructores que validan las reglas de negocio.
-- **Entities con Patrón Params**: `NewUser(UserParams{...})` evita constructores con muchos argumentos posicionales.
+- **Entities con Parámetros Individuales**: `NewUser(id, personalInformation, phone, email, createdAt, updatedAt)` recibe los parámetros uno por uno.
 - **Mutadores Wither**: Los métodos de actualización retornan una nueva instancia (`WithPhone`, `WithEmail`, etc.) sin mutar el estado original y actualizan `updatedAt` a `time.Now().UTC()`.
 - **DTOs separados**: El dominio nunca expone sus internos directamente. La serialización pasa siempre por `.ToDTO()`.
 - **UTC en todo el stack**: `time.Now().UTC()` en Go, `PGTZ=UTC` en Postgres, `TZ=UTC` en el contenedor.

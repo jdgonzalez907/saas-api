@@ -34,15 +34,6 @@ type User struct {
 	updatedAt           time.Time
 }
 
-type UserParams struct {
-	ID                  int64
-	PersonalInformation PersonalInformation
-	Phone               Phone
-	Email               *Email
-	CreatedAt           time.Time
-	UpdatedAt           time.Time
-}
-
 type UserDTO struct {
 	ID                     int64     `json:"id"`
 	PersonalInformationDTO           // Embedded
@@ -75,18 +66,25 @@ func ValidateAssignedUserID(id int64) error {
 	return nil
 }
 
-func NewUser(params UserParams) (*User, error) {
-	if err := ValidateAssignedUserID(params.ID); err != nil {
+func NewUser(
+	id int64,
+	personalInformation PersonalInformation,
+	phone Phone,
+	email *Email,
+	createdAt time.Time,
+	updatedAt time.Time,
+) (*User, error) {
+	if err := ValidateAssignedUserID(id); err != nil {
 		return nil, err
 	}
 
 	return &User{
-		id:                  params.ID,
-		personalInformation: params.PersonalInformation,
-		phone:               params.Phone,
-		email:               params.Email,
-		createdAt:           params.CreatedAt,
-		updatedAt:           params.UpdatedAt,
+		id:                  id,
+		personalInformation: personalInformation,
+		phone:               phone,
+		email:               email,
+		createdAt:           createdAt,
+		updatedAt:           updatedAt,
 	}, nil
 }
 
@@ -223,14 +221,14 @@ func UserFromDTO(dto *UserDTO) (*User, error) {
 		email = &e
 	}
 
-	return NewUser(UserParams{
-		ID:                  dto.ID,
-		PersonalInformation: personalInfo,
-		Phone:               phone,
-		Email:               email,
-		CreatedAt:           dto.CreatedAt,
-		UpdatedAt:           dto.UpdatedAt,
-	})
+	return NewUser(
+		dto.ID,
+		personalInfo,
+		phone,
+		email,
+		dto.CreatedAt,
+		dto.UpdatedAt,
+	)
 }
 
 func (u *User) WithPersonalInformation(info PersonalInformation) *User {
