@@ -14,6 +14,87 @@ import (
 	usersDomain "jdgonzalez907/saas-api/internal/users/domain"
 )
 
+func TestProtected(t *testing.T) {
+	testCases := []struct {
+		testName       string
+		authHeader     string
+		expectedStatus int
+		expectedUserID int64
+	}{
+		{
+			testName:       "success - plain numeric token",
+			authHeader:     "42",
+			expectedStatus: http.StatusOK,
+			expectedUserID: 42,
+		},
+		{
+			testName:       "success - bearer prefix",
+			authHeader:     "Bearer 42",
+			expectedStatus: http.StatusOK,
+			expectedUserID: 42,
+		},
+		{
+			testName:       "success - bearer prefix lowercase",
+			authHeader:     "bearer 42",
+			expectedStatus: http.StatusOK,
+			expectedUserID: 42,
+		},
+		{
+			testName:       "success - bearer prefix with spaces",
+			authHeader:     "Bearer  42 ",
+			expectedStatus: http.StatusOK,
+			expectedUserID: 42,
+		},
+		{
+			testName:       "fail - empty authorization header",
+			authHeader:     "",
+			expectedStatus: http.StatusUnauthorized,
+			expectedUserID: 0,
+		},
+		{
+			testName:       "fail - non-numeric token",
+			authHeader:     "abc",
+			expectedStatus: http.StatusUnauthorized,
+			expectedUserID: 0,
+		},
+		{
+			testName:       "fail - bearer with non-numeric token",
+			authHeader:     "Bearer abc",
+			expectedStatus: http.StatusUnauthorized,
+			expectedUserID: 0,
+		},
+		{
+			testName:       "success - negative number is valid token",
+			authHeader:     "-1",
+			expectedStatus: http.StatusOK,
+			expectedUserID: -1,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			var capturedUserID int64
+			nextHandler := sharedHttp.Protected(func(w http.ResponseWriter, r *http.Request, userID int64) {
+				capturedUserID = userID
+				w.WriteHeader(http.StatusOK)
+			})
+
+			req := httptest.NewRequest("GET", "/", nil)
+			if tc.authHeader != "" {
+				req.Header.Set("Authorization", tc.authHeader)
+			}
+			rec := httptest.NewRecorder()
+
+			nextHandler.ServeHTTP(rec, req)
+
+			assert.Equal(t, tc.expectedStatus, rec.Code)
+			if tc.expectedStatus == http.StatusOK {
+				assert.Equal(t, tc.expectedUserID, capturedUserID)
+			}
+		})
+	}
+}
+
 func TestResponseHelpers(t *testing.T) {
 	t.Run("RespondWithJSON - nil data", func(t *testing.T) {
 		rec := httptest.NewRecorder()
