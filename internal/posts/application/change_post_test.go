@@ -19,7 +19,7 @@ func TestChangePostUseCase(t *testing.T) {
 	contentInfoUpdated, _ := domain.NewContentInformation("Updated Title", []domain.Block{titleBlock})
 	now := time.Now().UTC()
 
-	post, _ := domain.NewPost(1, contentInfo, domain.StatusDraft, now, now, 10, 10, nil)
+	post, _ := domain.NewPost(1, contentInfo, domain.StatusDraft, now, now, 10, nil)
 
 	dbErr := errors.New("database connection error")
 
@@ -28,71 +28,71 @@ func TestChangePostUseCase(t *testing.T) {
 		postID           int64
 		contentInfo      domain.ContentInformation
 		status           domain.PostStatus
-		lastEditorID     int64
+		authorID         int64
 		mockExpectations func(*domainMocks.MockPostRepository)
 		expectedError    error
 	}{
 		{
-			name:         "success - change post",
-			postID:       1,
-			contentInfo:  contentInfoUpdated,
-			status:       domain.StatusPublished,
-			lastEditorID: 11,
+			name:        "success - change post",
+			postID:      1,
+			contentInfo: contentInfoUpdated,
+			status:      domain.StatusPublished,
+			authorID:    10,
 			mockExpectations: func(m *domainMocks.MockPostRepository) {
 				m.On("FindByID", mock.Anything, int64(1)).Return(post, nil)
 				m.On("Update", mock.Anything, mock.MatchedBy(func(p *domain.Post) bool {
 					return p.ID() == 1 &&
 						p.ContentInformation().Equals(contentInfoUpdated) &&
 						p.Status() == domain.StatusPublished &&
-						p.LastEditorID() == 11
+						p.AuthorID() == 10
 				})).Return(nil)
 			},
 			expectedError: nil,
 		},
 		{
-			name:         "fail - post not found",
-			postID:       1,
-			contentInfo:  contentInfoUpdated,
-			status:       domain.StatusPublished,
-			lastEditorID: 11,
+			name:        "fail - post not found",
+			postID:      1,
+			contentInfo: contentInfoUpdated,
+			status:      domain.StatusPublished,
+			authorID:    10,
 			mockExpectations: func(m *domainMocks.MockPostRepository) {
 				m.On("FindByID", mock.Anything, int64(1)).Return(nil, nil)
 			},
 			expectedError: domain.ErrPostNotFound,
 		},
 		{
-			name:         "fail - repository find error",
-			postID:       1,
-			contentInfo:  contentInfoUpdated,
-			status:       domain.StatusPublished,
-			lastEditorID: 11,
+			name:        "fail - repository find error",
+			postID:      1,
+			contentInfo: contentInfoUpdated,
+			status:      domain.StatusPublished,
+			authorID:    10,
 			mockExpectations: func(m *domainMocks.MockPostRepository) {
 				m.On("FindByID", mock.Anything, int64(1)).Return(nil, dbErr)
 			},
 			expectedError: domain.ErrChangingPost,
 		},
 		{
-			name:         "fail - domain validation error (invalid editor ID)",
-			postID:       1,
-			contentInfo:  contentInfoUpdated,
-			status:       domain.StatusPublished,
-			lastEditorID: 0,
-			mockExpectations: func(m *domainMocks.MockPostRepository) {
-				m.On("FindByID", mock.Anything, int64(1)).Return(post, nil)
-			},
-			expectedError: domain.ErrInvalidLastEditorID,
-		},
-		{
-			name:         "fail - repository update error",
-			postID:       1,
-			contentInfo:  contentInfoUpdated,
-			status:       domain.StatusPublished,
-			lastEditorID: 11,
+			name:        "fail - repository update error",
+			postID:      1,
+			contentInfo: contentInfoUpdated,
+			status:      domain.StatusPublished,
+			authorID:    10,
 			mockExpectations: func(m *domainMocks.MockPostRepository) {
 				m.On("FindByID", mock.Anything, int64(1)).Return(post, nil)
 				m.On("Update", mock.Anything, mock.Anything).Return(dbErr)
 			},
 			expectedError: domain.ErrChangingPost,
+		},
+		{
+			name:        "fail - ownership mismatch",
+			postID:      1,
+			contentInfo: contentInfoUpdated,
+			status:      domain.StatusPublished,
+			authorID:    999,
+			mockExpectations: func(m *domainMocks.MockPostRepository) {
+				m.On("FindByID", mock.Anything, int64(1)).Return(post, nil)
+			},
+			expectedError: domain.ErrPostOwnershipMismatch,
 		},
 	}
 
@@ -102,7 +102,7 @@ func TestChangePostUseCase(t *testing.T) {
 			tc.mockExpectations(mockPostRepository)
 
 			useCase := application.NewChangePostUseCase(mockPostRepository)
-			_, err := useCase.Execute(context.Background(), tc.postID, tc.contentInfo, tc.status, tc.lastEditorID)
+			_, err := useCase.Execute(context.Background(), tc.postID, tc.contentInfo, tc.status, tc.authorID)
 
 			if tc.expectedError != nil {
 				if err == nil {

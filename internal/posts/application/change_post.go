@@ -8,7 +8,7 @@ import (
 )
 
 type ChangePostUseCase interface {
-	Execute(ctx context.Context, id int64, contentInfo domain.ContentInformation, status domain.PostStatus, lastEditorID int64) (*domain.Post, error)
+	Execute(ctx context.Context, id int64, contentInfo domain.ContentInformation, status domain.PostStatus, authorID int64) (*domain.Post, error)
 }
 
 type changePostUseCase struct {
@@ -19,7 +19,7 @@ func NewChangePostUseCase(postRepository domain.PostRepository) ChangePostUseCas
 	return &changePostUseCase{postRepository: postRepository}
 }
 
-func (u *changePostUseCase) Execute(ctx context.Context, id int64, contentInfo domain.ContentInformation, status domain.PostStatus, lastEditorID int64) (*domain.Post, error) {
+func (u *changePostUseCase) Execute(ctx context.Context, id int64, contentInfo domain.ContentInformation, status domain.PostStatus, authorID int64) (*domain.Post, error) {
 	post, err := u.postRepository.FindByID(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("%v: %w", domain.ErrChangingPost, err)
@@ -28,7 +28,7 @@ func (u *changePostUseCase) Execute(ctx context.Context, id int64, contentInfo d
 		return nil, domain.ErrPostNotFound
 	}
 
-	updatedPost, err := post.UpdateContentAndStatus(contentInfo, status, lastEditorID)
+	updatedPost, err := post.UpdateContentAndStatus(contentInfo, status, authorID)
 	if err != nil {
 		return nil, err
 	}

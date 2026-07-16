@@ -18,7 +18,7 @@ func NewFindPostsPaginatedController(useCase application.FindPostsPaginatedUseCa
 	}
 }
 
-func (c *FindPostsPaginatedController) Handle(w http.ResponseWriter, r *http.Request, _ int64) {
+func (c *FindPostsPaginatedController) Handle(w http.ResponseWriter, r *http.Request, userID int64) {
 	statusStr := r.URL.Query().Get("status")
 	status, err := domain.NewPostStatus(statusStr)
 	if err != nil {
@@ -50,7 +50,7 @@ func (c *FindPostsPaginatedController) Handle(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	paginatedPosts, err := c.useCase.Execute(r.Context(), status, pagination)
+	paginatedPosts, err := c.useCase.Execute(r.Context(), status, pagination, userID)
 	if err != nil {
 		sharedHttp.RespondWithDomainError(w, r, err)
 		return

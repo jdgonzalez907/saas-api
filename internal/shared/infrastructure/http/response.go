@@ -28,6 +28,8 @@ var domainErrorStatus = map[error]int{
 
 	usersDomain.ErrUserNotFound: http.StatusNotFound,
 
+	usersDomain.ErrUserOwnershipMismatch: http.StatusForbidden,
+
 	usersDomain.ErrUserIDAlreadyExists:    http.StatusConflict,
 	usersDomain.ErrUserPhoneAlreadyExists: http.StatusConflict,
 	usersDomain.ErrUserEmailAlreadyExists: http.StatusConflict,
@@ -60,12 +62,13 @@ var domainErrorStatus = map[error]int{
 
 	postsDomain.ErrPostNotFound: http.StatusNotFound,
 
+	postsDomain.ErrPostOwnershipMismatch: http.StatusForbidden,
+
 	postsDomain.ErrPostIDAlreadyExists: http.StatusConflict,
 
 	postsDomain.ErrInvalidPostID:                    http.StatusBadRequest,
 	postsDomain.ErrInvalidPostStatus:                http.StatusBadRequest,
 	postsDomain.ErrInvalidAuthorID:                  http.StatusBadRequest,
-	postsDomain.ErrInvalidLastEditorID:              http.StatusBadRequest,
 	postsDomain.ErrDraftCannotHavePublicationDate:   http.StatusBadRequest,
 	postsDomain.ErrPublishedMustHavePublicationDate: http.StatusBadRequest,
 	postsDomain.ErrEmptyPostTitle:                   http.StatusBadRequest,

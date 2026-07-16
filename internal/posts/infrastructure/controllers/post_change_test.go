@@ -25,7 +25,7 @@ func TestChangePostController_Handle(t *testing.T) {
 	titleBlock, _ := domain.NewTitleBlock("Title")
 	contentInfo, _ := domain.NewContentInformation("Post Title", []domain.Block{titleBlock})
 	now := time.Now().UTC()
-	validPost, err := domain.NewPost(1, contentInfo, domain.StatusPublished, now, now, 2, 3, &now)
+	validPost, err := domain.NewPost(1, contentInfo, domain.StatusPublished, now, now, 2, &now)
 	assert.NoError(t, err)
 
 	validBody := controllers.ChangePostRequest{

@@ -55,105 +55,127 @@ func TestChangeUserEmailUseCase(t *testing.T) {
 		testName         string
 		inputID          int64
 		inputEmail       *domain.Email
+		executeUserID    int64
 		mockExpectations func(*domainMocks.MockUserRepository)
 		expectedError    error
 	}{
 		{
-			testName:   "success - no changes to email",
-			inputID:    userID,
-			inputEmail: &email,
+			testName:      "success - no changes to email",
+			inputID:       userID,
+			inputEmail:    &email,
+			executeUserID: int64(1),
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindByID", mock.Anything, userID).Return(existingUser, nil)
+				m.On("FindByID", mock.Anything, userID, mock.Anything).Return(existingUser, nil)
 			},
 			expectedError: nil,
 		},
 		{
-			testName:   "success - no changes to email (both nil)",
-			inputID:    userID,
-			inputEmail: nil,
+			testName:      "success - no changes to email (both nil)",
+			inputID:       userID,
+			inputEmail:    nil,
+			executeUserID: int64(1),
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindByID", mock.Anything, userID).Return(existingUserWithNilEmail, nil)
+				m.On("FindByID", mock.Anything, userID, mock.Anything).Return(existingUserWithNilEmail, nil)
 			},
 			expectedError: nil,
 		},
 		{
-			testName:   "success - with email change",
-			inputID:    userID,
-			inputEmail: &otherEmail,
+			testName:      "success - with email change",
+			inputID:       userID,
+			inputEmail:    &otherEmail,
+			executeUserID: int64(1),
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindByID", mock.Anything, userID).Return(existingUser, nil)
+				m.On("FindByID", mock.Anything, userID, mock.Anything).Return(existingUser, nil)
 				m.On("FindByEmail", mock.Anything, otherEmail).Return(nil, nil)
-				m.On("Update", mock.Anything, mock.Anything).Return(nil)
+				m.On("Update", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
 			expectedError: nil,
 		},
 		{
-			testName:   "success - nil email",
-			inputID:    userID,
-			inputEmail: nil,
+			testName:      "success - nil email",
+			inputID:       userID,
+			inputEmail:    nil,
+			executeUserID: int64(1),
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindByID", mock.Anything, userID).Return(existingUser, nil)
-				m.On("Update", mock.Anything, mock.Anything).Return(nil)
+				m.On("FindByID", mock.Anything, userID, mock.Anything).Return(existingUser, nil)
+				m.On("Update", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
 			expectedError: nil,
 		},
 		{
-			testName:   "fail - email already exists",
-			inputID:    userID,
-			inputEmail: &otherEmail,
+			testName:      "fail - email already exists",
+			inputID:       userID,
+			inputEmail:    &otherEmail,
+			executeUserID: int64(1),
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindByID", mock.Anything, userID).Return(existingUser, nil)
+				m.On("FindByID", mock.Anything, userID, mock.Anything).Return(existingUser, nil)
 				m.On("FindByEmail", mock.Anything, otherEmail).Return(existingUser, nil)
 			},
 			expectedError: domain.ErrUserEmailAlreadyExists,
 		},
 		{
-			testName:   "fail - invalid user id",
-			inputID:    int64(0),
-			inputEmail: &email,
+			testName:      "fail - invalid user id",
+			inputID:       int64(0),
+			inputEmail:    &email,
+			executeUserID: int64(1),
 			mockExpectations: func(_ *domainMocks.MockUserRepository) {
 				// No expectations
 			},
 			expectedError: domain.ErrInvalidUserID,
 		},
 		{
-			testName:   "fail - user not found",
-			inputID:    userID,
-			inputEmail: &email,
+			testName:      "fail - user not found",
+			inputID:       userID,
+			inputEmail:    &email,
+			executeUserID: int64(1),
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindByID", mock.Anything, userID).Return(nil, nil)
+				m.On("FindByID", mock.Anything, userID, mock.Anything).Return(nil, nil)
 			},
 			expectedError: domain.ErrUserNotFound,
 		},
 		{
-			testName:   "fail - infra error on FindByID",
-			inputID:    userID,
-			inputEmail: &email,
+			testName:      "fail - infra error on FindByID",
+			inputID:       userID,
+			inputEmail:    &email,
+			executeUserID: int64(1),
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindByID", mock.Anything, userID).Return(nil, dbErr)
+				m.On("FindByID", mock.Anything, userID, mock.Anything).Return(nil, dbErr)
 			},
 			expectedError: domain.ErrChangingEmail,
 		},
 		{
-			testName:   "fail - infra error on FindByEmail",
-			inputID:    userID,
-			inputEmail: &otherEmail,
+			testName:      "fail - infra error on FindByEmail",
+			inputID:       userID,
+			inputEmail:    &otherEmail,
+			executeUserID: int64(1),
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindByID", mock.Anything, userID).Return(existingUser, nil)
+				m.On("FindByID", mock.Anything, userID, mock.Anything).Return(existingUser, nil)
 				m.On("FindByEmail", mock.Anything, otherEmail).Return(nil, dbErr)
 			},
 			expectedError: domain.ErrChangingEmail,
 		},
 		{
-			testName:   "fail - repo update error",
-			inputID:    userID,
-			inputEmail: &otherEmail,
+			testName:      "fail - repo update error",
+			inputID:       userID,
+			inputEmail:    &otherEmail,
+			executeUserID: int64(1),
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindByID", mock.Anything, userID).Return(existingUser, nil)
+				m.On("FindByID", mock.Anything, userID, mock.Anything).Return(existingUser, nil)
 				m.On("FindByEmail", mock.Anything, otherEmail).Return(nil, nil)
-				m.On("Update", mock.Anything, mock.Anything).Return(dbErr)
+				m.On("Update", mock.Anything, mock.Anything, mock.Anything).Return(dbErr)
 			},
 			expectedError: domain.ErrChangingEmail,
+		},
+		{
+			testName:      "fail - user ownership mismatch",
+			inputID:       userID,
+			inputEmail:    &otherEmail,
+			executeUserID: int64(999),
+			mockExpectations: func(m *domainMocks.MockUserRepository) {
+				m.On("FindByID", mock.Anything, userID, mock.Anything).Return(existingUser, nil)
+				m.On("FindByEmail", mock.Anything, otherEmail).Return(nil, nil)
+			},
+			expectedError: domain.ErrUserOwnershipMismatch,
 		},
 	}
 
@@ -163,7 +185,7 @@ func TestChangeUserEmailUseCase(t *testing.T) {
 			tc.mockExpectations(mockUserRepository)
 
 			useCase := application.NewChangeUserEmailUseCase(mockUserRepository)
-			err := useCase.Execute(context.Background(), tc.inputID, tc.inputEmail)
+			err := useCase.Execute(context.Background(), tc.inputID, tc.inputEmail, tc.executeUserID)
 
 			if tc.expectedError != nil {
 				if err == nil {

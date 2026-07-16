@@ -54,64 +54,81 @@ func TestUpdateUserPersonalInformationUseCase(t *testing.T) {
 		testName         string
 		id               int64
 		info             domain.PersonalInformation
+		executeUserID    int64
 		mockExpectations func(*domainMocks.MockUserRepository)
 		expectedError    error
 	}{
 		{
-			testName: "success - update personal info",
-			id:       userID,
-			info:     personalInfo,
+			testName:      "success - update personal info",
+			id:            userID,
+			info:          personalInfo,
+			executeUserID: int64(1),
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindByID", mock.Anything, userID).Return(existingUser, nil)
-				m.On("Update", mock.Anything, mock.Anything).Return(nil)
+				m.On("FindByID", mock.Anything, userID, mock.Anything).Return(existingUser, nil)
+				m.On("Update", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
 			expectedError: nil,
 		},
 		{
-			testName: "success - no changes to personal info",
-			id:       userID,
-			info:     existingPersonalInfo,
+			testName:      "success - no changes to personal info",
+			id:            userID,
+			info:          existingPersonalInfo,
+			executeUserID: int64(1),
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindByID", mock.Anything, userID).Return(existingUser, nil)
+				m.On("FindByID", mock.Anything, userID, mock.Anything).Return(existingUser, nil)
 			},
 			expectedError: nil,
 		},
 		{
-			testName: "fail - invalid user id",
-			id:       int64(0),
-			info:     personalInfo,
+			testName:      "fail - invalid user id",
+			id:            int64(0),
+			info:          personalInfo,
+			executeUserID: int64(1),
 			mockExpectations: func(_ *domainMocks.MockUserRepository) {
 				// No expectations
 			},
 			expectedError: domain.ErrInvalidUserID,
 		},
 		{
-			testName: "fail - user not found",
-			id:       userID,
-			info:     personalInfo,
+			testName:      "fail - user not found",
+			id:            userID,
+			info:          personalInfo,
+			executeUserID: int64(1),
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindByID", mock.Anything, userID).Return(nil, nil)
+				m.On("FindByID", mock.Anything, userID, mock.Anything).Return(nil, nil)
 			},
 			expectedError: domain.ErrUserNotFound,
 		},
 		{
-			testName: "fail - infra error on FindByID",
-			id:       userID,
-			info:     personalInfo,
+			testName:      "fail - infra error on FindByID",
+			id:            userID,
+			info:          personalInfo,
+			executeUserID: int64(1),
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindByID", mock.Anything, userID).Return(nil, dbErr)
+				m.On("FindByID", mock.Anything, userID, mock.Anything).Return(nil, dbErr)
 			},
 			expectedError: domain.ErrChangingPersonalInformation,
 		},
 		{
-			testName: "fail - repo update error",
-			id:       userID,
-			info:     personalInfo,
+			testName:      "fail - repo update error",
+			id:            userID,
+			info:          personalInfo,
+			executeUserID: int64(1),
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindByID", mock.Anything, userID).Return(existingUser, nil)
-				m.On("Update", mock.Anything, mock.Anything).Return(dbErr)
+				m.On("FindByID", mock.Anything, userID, mock.Anything).Return(existingUser, nil)
+				m.On("Update", mock.Anything, mock.Anything, mock.Anything).Return(dbErr)
 			},
 			expectedError: domain.ErrChangingPersonalInformation,
+		},
+		{
+			testName:      "fail - user ownership mismatch",
+			id:            userID,
+			info:          personalInfo,
+			executeUserID: int64(999),
+			mockExpectations: func(m *domainMocks.MockUserRepository) {
+				m.On("FindByID", mock.Anything, userID, mock.Anything).Return(existingUser, nil)
+			},
+			expectedError: domain.ErrUserOwnershipMismatch,
 		},
 	}
 
@@ -121,7 +138,7 @@ func TestUpdateUserPersonalInformationUseCase(t *testing.T) {
 			tc.mockExpectations(mockUserRepository)
 
 			useCase := application.NewUpdateUserPersonalInformationUseCase(mockUserRepository)
-			err := useCase.Execute(context.Background(), tc.id, tc.info)
+			err := useCase.Execute(context.Background(), tc.id, tc.info, tc.executeUserID)
 
 			if tc.expectedError != nil {
 				if err == nil {

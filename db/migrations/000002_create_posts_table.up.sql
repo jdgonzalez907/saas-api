@@ -4,12 +4,10 @@ CREATE TABLE posts (
     content JSONB NOT NULL,
     status VARCHAR(50) NOT NULL,
     author_id BIGINT NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
-    last_editor_id BIGINT NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
     published_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    deleted_at TIMESTAMPTZ,
-    deleted_by BIGINT REFERENCES users(id) ON DELETE SET NULL
+    deleted_at TIMESTAMPTZ
 );
 
 CREATE INDEX idx_posts_query

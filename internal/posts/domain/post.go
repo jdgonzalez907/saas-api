@@ -18,7 +18,6 @@ var (
 	ErrInvalidPostID                    = errors.New("invalid post identification")
 	ErrInvalidPostStatus                = errors.New("invalid post status")
 	ErrInvalidAuthorID                  = errors.New("invalid author identification")
-	ErrInvalidLastEditorID              = errors.New("invalid editor identification")
 	ErrDraftCannotHavePublicationDate   = errors.New("a draft post cannot have a publication date")
 	ErrPublishedMustHavePublicationDate = errors.New("a published post must have a publication date")
 	ErrPostNotFound                     = errors.New("the requested post was not found")
@@ -28,6 +27,7 @@ var (
 	ErrDeletingPost                     = errors.New("error deleting post")
 	ErrFindingPosts                     = errors.New("error finding posts")
 	ErrPostIDAlreadyExists              = errors.New("post ID already exists")
+	ErrPostOwnershipMismatch            = errors.New("the authenticated user cannot modify another user's post")
 )
 
 func NewPostStatus(s string) (PostStatus, error) {
@@ -47,19 +47,17 @@ type Post struct {
 	createdAt          time.Time
 	updatedAt          time.Time
 	authorID           int64
-	lastEditorID       int64
 	publishedAt        *time.Time
 }
 
 type PostDTO struct {
 	ID int64 `json:"id"`
 	ContentInformationDTO
-	Status       string     `json:"status"`
-	CreatedAt    time.Time  `json:"created_at"`
-	UpdatedAt    time.Time  `json:"updated_at"`
-	AuthorID     int64      `json:"author_id"`
-	LastEditorID int64      `json:"last_editor_id"`
-	PublishedAt  *time.Time `json:"published_at"`
+	Status      string     `json:"status"`
+	CreatedAt   time.Time  `json:"created_at"`
+	UpdatedAt   time.Time  `json:"updated_at"`
+	AuthorID    int64      `json:"author_id"`
+	PublishedAt *time.Time `json:"published_at"`
 }
 
 func (p *Post) ensureInvariants() error {
@@ -68,9 +66,6 @@ func (p *Post) ensureInvariants() error {
 	}
 	if p.authorID <= 0 {
 		return ErrInvalidAuthorID
-	}
-	if p.lastEditorID <= 0 {
-		return ErrInvalidLastEditorID
 	}
 	if p.status == StatusDraft && p.publishedAt != nil {
 		return ErrDraftCannotHavePublicationDate
@@ -88,7 +83,6 @@ func NewPost(
 	createdAt time.Time,
 	updatedAt time.Time,
 	authorID int64,
-	lastEditorID int64,
 	publishedAt *time.Time,
 ) (*Post, error) {
 	if id <= 0 {
@@ -102,7 +96,6 @@ func NewPost(
 		createdAt:          createdAt.UTC(),
 		updatedAt:          updatedAt.UTC(),
 		authorID:           authorID,
-		lastEditorID:       lastEditorID,
 		publishedAt:        publishedAt,
 	}
 
@@ -128,7 +121,6 @@ func NewPostWithoutID(contentInformation ContentInformation, status PostStatus, 
 		createdAt:          now,
 		updatedAt:          now,
 		authorID:           authorID,
-		lastEditorID:       authorID,
 		publishedAt:        publishedAt,
 	}
 
@@ -167,15 +159,22 @@ func (p *Post) AuthorID() int64 {
 	return p.authorID
 }
 
-func (p *Post) LastEditorID() int64 {
-	return p.lastEditorID
-}
-
 func (p *Post) PublishedAt() *time.Time {
 	return p.publishedAt
 }
 
-func (p *Post) UpdateContentAndStatus(contentInformation ContentInformation, status PostStatus, lastEditorID int64) (*Post, error) {
+func (p *Post) IsSameAuthor(authorID int64) error {
+	if p.authorID != authorID {
+		return ErrPostOwnershipMismatch
+	}
+	return nil
+}
+
+func (p *Post) UpdateContentAndStatus(contentInformation ContentInformation, status PostStatus, authorID int64) (*Post, error) {
+	if err := p.IsSameAuthor(authorID); err != nil {
+		return nil, err
+	}
+
 	var publishedAt *time.Time
 	if status == StatusPublished {
 		if p.status == StatusPublished {
@@ -193,7 +192,6 @@ func (p *Post) UpdateContentAndStatus(contentInformation ContentInformation, sta
 		createdAt:          p.createdAt,
 		updatedAt:          time.Now().UTC(),
 		authorID:           p.authorID,
-		lastEditorID:       lastEditorID,
 		publishedAt:        publishedAt,
 	}
 
@@ -215,9 +213,6 @@ func (p *Post) Equals(other *Post) bool {
 		return false
 	}
 	if p.authorID != other.authorID {
-		return false
-	}
-	if p.lastEditorID != other.lastEditorID {
 		return false
 	}
 	if !p.createdAt.Equal(other.createdAt) {
@@ -249,7 +244,6 @@ func (p *Post) ToDTO() *PostDTO {
 		CreatedAt:             p.createdAt,
 		UpdatedAt:             p.updatedAt,
 		AuthorID:              p.authorID,
-		LastEditorID:          p.lastEditorID,
 		PublishedAt:           publishedAt,
 	}
 }
@@ -275,7 +269,6 @@ func PostFromDTO(dto *PostDTO) (*Post, error) {
 			createdAt:          dto.CreatedAt.UTC(),
 			updatedAt:          dto.UpdatedAt.UTC(),
 			authorID:           dto.AuthorID,
-			lastEditorID:       dto.LastEditorID,
 			publishedAt:        dto.PublishedAt,
 		}
 		if err := post.ensureInvariants(); err != nil {
@@ -291,7 +284,6 @@ func PostFromDTO(dto *PostDTO) (*Post, error) {
 		dto.CreatedAt.UTC(),
 		dto.UpdatedAt.UTC(),
 		dto.AuthorID,
-		dto.LastEditorID,
 		dto.PublishedAt,
 	)
 }

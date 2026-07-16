@@ -285,26 +285,45 @@ func TestUpdatePersonalInformation(t *testing.T) {
 	testCases := []struct {
 		testName        string
 		info            domain.PersonalInformation
+		userID          int64
 		expectedAddress *domain.Address
 		expectedBD      *domain.BirthDate
+		expectedError   error
 	}{
 		{
 			testName:        "success - with valid personal information",
 			info:            validInfo,
+			userID:          1,
 			expectedAddress: &newAddress,
 			expectedBD:      &newBirthDate,
+			expectedError:   nil,
 		},
 		{
 			testName:        "success - with nil fields",
 			info:            validInfoWithNil,
+			userID:          1,
 			expectedAddress: nil,
 			expectedBD:      nil,
+			expectedError:   nil,
+		},
+		{
+			testName:      "fail - ownership mismatch",
+			info:          validInfo,
+			userID:        2,
+			expectedError: domain.ErrUserOwnershipMismatch,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.testName, func(t *testing.T) {
-			updatedUser := user.UpdatePersonalInformation(tc.info)
+			updatedUser, err := user.UpdatePersonalInformation(tc.info, tc.userID)
+			if err != tc.expectedError {
+				t.Fatalf("expected error %v, got %v", tc.expectedError, err)
+			}
+			if tc.expectedError != nil {
+				return
+			}
+
 			dto := updatedUser.ToDTO()
 
 			if dto.ID != 1 {
@@ -363,18 +382,34 @@ func TestChangePhone(t *testing.T) {
 	}
 
 	newPhone, _ := domain.NewPhone("57", "987654321")
-	updatedUser := user.ChangePhone(newPhone)
 
-	dto := updatedUser.ToDTO()
-	if dto.Phone != newPhone.ToDTO() {
-		t.Errorf("expected Phone to be updated, got %v", dto.Phone)
-	}
-	if dto.FirstName != "John" {
-		t.Errorf("expected FirstName to remain unchanged")
-	}
-	if dto.UpdatedAt.Before(now) {
-		t.Errorf("expected UpdatedAt to be updated")
-	}
+	t.Run("success - same user changes phone", func(t *testing.T) {
+		updatedUser, err := user.ChangePhone(newPhone, 1)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		dto := updatedUser.ToDTO()
+		if dto.Phone != newPhone.ToDTO() {
+			t.Errorf("expected Phone to be updated, got %v", dto.Phone)
+		}
+		if dto.FirstName != "John" {
+			t.Errorf("expected FirstName to remain unchanged")
+		}
+		if dto.UpdatedAt.Before(now) {
+			t.Errorf("expected UpdatedAt to be updated")
+		}
+	})
+
+	t.Run("fail - different user tries to change phone", func(t *testing.T) {
+		updatedUser, err := user.ChangePhone(newPhone, 2)
+		if err != domain.ErrUserOwnershipMismatch {
+			t.Fatalf("expected ErrUserOwnershipMismatch, got %v", err)
+		}
+		if updatedUser != nil {
+			t.Errorf("expected nil user on error")
+		}
+	})
 }
 
 func TestChangeEmail(t *testing.T) {
@@ -393,18 +428,34 @@ func TestChangeEmail(t *testing.T) {
 	}
 
 	newEmail, _ := domain.NewEmail("new@domain.com")
-	updatedUser := user.ChangeEmail(&newEmail)
 
-	dto := updatedUser.ToDTO()
-	if dto.Email == nil || *dto.Email != newEmail.ToDTO() {
-		t.Errorf("expected Email to be updated")
-	}
-	if dto.FirstName != "John" {
-		t.Errorf("expected FirstName to remain unchanged")
-	}
-	if dto.UpdatedAt.Before(now) {
-		t.Errorf("expected UpdatedAt to be updated")
-	}
+	t.Run("success - same user changes email", func(t *testing.T) {
+		updatedUser, err := user.ChangeEmail(&newEmail, 1)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		dto := updatedUser.ToDTO()
+		if dto.Email == nil || *dto.Email != newEmail.ToDTO() {
+			t.Errorf("expected Email to be updated")
+		}
+		if dto.FirstName != "John" {
+			t.Errorf("expected FirstName to remain unchanged")
+		}
+		if dto.UpdatedAt.Before(now) {
+			t.Errorf("expected UpdatedAt to be updated")
+		}
+	})
+
+	t.Run("fail - different user tries to change email", func(t *testing.T) {
+		updatedUser, err := user.ChangeEmail(&newEmail, 2)
+		if err != domain.ErrUserOwnershipMismatch {
+			t.Fatalf("expected ErrUserOwnershipMismatch, got %v", err)
+		}
+		if updatedUser != nil {
+			t.Errorf("expected nil user on error")
+		}
+	})
 }
 
 func TestUserGetters(t *testing.T) {
@@ -515,4 +566,34 @@ func TestValidateAssignedUserID(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestIsSame(t *testing.T) {
+	now := time.Now()
+
+	user, err := domain.NewUser(
+		1,
+		personalInfo,
+		phone,
+		&email,
+		now,
+		now,
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	t.Run("success - same user id", func(t *testing.T) {
+		err := user.IsSame(1)
+		if err != nil {
+			t.Errorf("expected nil error, got %v", err)
+		}
+	})
+
+	t.Run("fail - different user id", func(t *testing.T) {
+		err := user.IsSame(2)
+		if err != domain.ErrUserOwnershipMismatch {
+			t.Errorf("expected ErrUserOwnershipMismatch, got %v", err)
+		}
+	})
 }

@@ -8,7 +8,7 @@ import (
 )
 
 type DeleteUserUseCase interface {
-	Execute(ctx context.Context, id int64) error
+	Execute(ctx context.Context, id int64, userID int64) error
 }
 
 type deleteUserUseCase struct {
@@ -19,7 +19,7 @@ func NewDeleteUserUseCase(userRepository domain.UserRepository) DeleteUserUseCas
 	return &deleteUserUseCase{userRepository: userRepository}
 }
 
-func (d *deleteUserUseCase) Execute(ctx context.Context, id int64) error {
+func (d *deleteUserUseCase) Execute(ctx context.Context, id int64, userID int64) error {
 	if err := domain.ValidateAssignedUserID(id); err != nil {
 		return err
 	}
@@ -31,6 +31,10 @@ func (d *deleteUserUseCase) Execute(ctx context.Context, id int64) error {
 
 	if userFound == nil {
 		return domain.ErrUserNotFound
+	}
+
+	if err := userFound.IsSame(userID); err != nil {
+		return err
 	}
 
 	err = d.userRepository.Delete(ctx, id)

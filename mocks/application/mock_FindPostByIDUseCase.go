@@ -22,9 +22,9 @@ func (_m *MockFindPostByIDUseCase) EXPECT() *MockFindPostByIDUseCase_Expecter {
 	return &MockFindPostByIDUseCase_Expecter{mock: &_m.Mock}
 }
 
-// Execute provides a mock function with given fields: ctx, id
-func (_m *MockFindPostByIDUseCase) Execute(ctx context.Context, id int64) (*domain.Post, error) {
-	ret := _m.Called(ctx, id)
+// Execute provides a mock function with given fields: ctx, id, authorID
+func (_m *MockFindPostByIDUseCase) Execute(ctx context.Context, id int64, authorID int64) (*domain.Post, error) {
+	ret := _m.Called(ctx, id, authorID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Execute")
@@ -32,19 +32,19 @@ func (_m *MockFindPostByIDUseCase) Execute(ctx context.Context, id int64) (*doma
 
 	var r0 *domain.Post
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64) (*domain.Post, error)); ok {
-		return rf(ctx, id)
+	if rf, ok := ret.Get(0).(func(context.Context, int64, int64) (*domain.Post, error)); ok {
+		return rf(ctx, id, authorID)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, int64) *domain.Post); ok {
-		r0 = rf(ctx, id)
+	if rf, ok := ret.Get(0).(func(context.Context, int64, int64) *domain.Post); ok {
+		r0 = rf(ctx, id, authorID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*domain.Post)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, int64) error); ok {
-		r1 = rf(ctx, id)
+	if rf, ok := ret.Get(1).(func(context.Context, int64, int64) error); ok {
+		r1 = rf(ctx, id, authorID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -60,13 +60,14 @@ type MockFindPostByIDUseCase_Execute_Call struct {
 // Execute is a helper method to define mock.On call
 //   - ctx context.Context
 //   - id int64
-func (_e *MockFindPostByIDUseCase_Expecter) Execute(ctx interface{}, id interface{}) *MockFindPostByIDUseCase_Execute_Call {
-	return &MockFindPostByIDUseCase_Execute_Call{Call: _e.mock.On("Execute", ctx, id)}
+//   - authorID int64
+func (_e *MockFindPostByIDUseCase_Expecter) Execute(ctx interface{}, id interface{}, authorID interface{}) *MockFindPostByIDUseCase_Execute_Call {
+	return &MockFindPostByIDUseCase_Execute_Call{Call: _e.mock.On("Execute", ctx, id, authorID)}
 }
 
-func (_c *MockFindPostByIDUseCase_Execute_Call) Run(run func(ctx context.Context, id int64)) *MockFindPostByIDUseCase_Execute_Call {
+func (_c *MockFindPostByIDUseCase_Execute_Call) Run(run func(ctx context.Context, id int64, authorID int64)) *MockFindPostByIDUseCase_Execute_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(int64))
+		run(args[0].(context.Context), args[1].(int64), args[2].(int64))
 	})
 	return _c
 }
@@ -76,7 +77,7 @@ func (_c *MockFindPostByIDUseCase_Execute_Call) Return(_a0 *domain.Post, _a1 err
 	return _c
 }
 
-func (_c *MockFindPostByIDUseCase_Execute_Call) RunAndReturn(run func(context.Context, int64) (*domain.Post, error)) *MockFindPostByIDUseCase_Execute_Call {
+func (_c *MockFindPostByIDUseCase_Execute_Call) RunAndReturn(run func(context.Context, int64, int64) (*domain.Post, error)) *MockFindPostByIDUseCase_Execute_Call {
 	_c.Call.Return(run)
 	return _c
 }

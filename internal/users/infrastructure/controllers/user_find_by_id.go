@@ -17,14 +17,14 @@ func NewFindUserByIDController(useCase application.FindUserByIDUseCase) *FindUse
 	}
 }
 
-func (c *FindUserByIDController) Handle(w http.ResponseWriter, r *http.Request, _ int64) {
+func (c *FindUserByIDController) Handle(w http.ResponseWriter, r *http.Request, userID int64) {
 	id, err := sharedHttp.ParseRouteInt64Param(r, "id")
 	if err != nil {
 		sharedHttp.RespondWithError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	user, err := c.useCase.Execute(r.Context(), id)
+	user, err := c.useCase.Execute(r.Context(), id, userID)
 	if err != nil {
 		sharedHttp.RespondWithDomainError(w, r, err)
 		return

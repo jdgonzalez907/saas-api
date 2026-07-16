@@ -69,17 +69,17 @@ func (_c *MockPostRepository_Create_Call) RunAndReturn(run func(context.Context,
 	return _c
 }
 
-// Delete provides a mock function with given fields: ctx, id, deletedByID
-func (_m *MockPostRepository) Delete(ctx context.Context, id int64, deletedByID int64) error {
-	ret := _m.Called(ctx, id, deletedByID)
+// Delete provides a mock function with given fields: ctx, id
+func (_m *MockPostRepository) Delete(ctx context.Context, id int64) error {
+	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Delete")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64, int64) error); ok {
-		r0 = rf(ctx, id, deletedByID)
+	if rf, ok := ret.Get(0).(func(context.Context, int64) error); ok {
+		r0 = rf(ctx, id)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -95,14 +95,13 @@ type MockPostRepository_Delete_Call struct {
 // Delete is a helper method to define mock.On call
 //   - ctx context.Context
 //   - id int64
-//   - deletedByID int64
-func (_e *MockPostRepository_Expecter) Delete(ctx interface{}, id interface{}, deletedByID interface{}) *MockPostRepository_Delete_Call {
-	return &MockPostRepository_Delete_Call{Call: _e.mock.On("Delete", ctx, id, deletedByID)}
+func (_e *MockPostRepository_Expecter) Delete(ctx interface{}, id interface{}) *MockPostRepository_Delete_Call {
+	return &MockPostRepository_Delete_Call{Call: _e.mock.On("Delete", ctx, id)}
 }
 
-func (_c *MockPostRepository_Delete_Call) Run(run func(ctx context.Context, id int64, deletedByID int64)) *MockPostRepository_Delete_Call {
+func (_c *MockPostRepository_Delete_Call) Run(run func(ctx context.Context, id int64)) *MockPostRepository_Delete_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(int64), args[2].(int64))
+		run(args[0].(context.Context), args[1].(int64))
 	})
 	return _c
 }
@@ -112,14 +111,14 @@ func (_c *MockPostRepository_Delete_Call) Return(_a0 error) *MockPostRepository_
 	return _c
 }
 
-func (_c *MockPostRepository_Delete_Call) RunAndReturn(run func(context.Context, int64, int64) error) *MockPostRepository_Delete_Call {
+func (_c *MockPostRepository_Delete_Call) RunAndReturn(run func(context.Context, int64) error) *MockPostRepository_Delete_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// FindAll provides a mock function with given fields: ctx, status, pagination
-func (_m *MockPostRepository) FindAll(ctx context.Context, status domain.PostStatus, pagination domain.Pagination) ([]*domain.Post, error) {
-	ret := _m.Called(ctx, status, pagination)
+// FindAll provides a mock function with given fields: ctx, status, pagination, authorID
+func (_m *MockPostRepository) FindAll(ctx context.Context, status domain.PostStatus, pagination domain.Pagination, authorID int64) ([]*domain.Post, error) {
+	ret := _m.Called(ctx, status, pagination, authorID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for FindAll")
@@ -127,19 +126,19 @@ func (_m *MockPostRepository) FindAll(ctx context.Context, status domain.PostSta
 
 	var r0 []*domain.Post
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, domain.PostStatus, domain.Pagination) ([]*domain.Post, error)); ok {
-		return rf(ctx, status, pagination)
+	if rf, ok := ret.Get(0).(func(context.Context, domain.PostStatus, domain.Pagination, int64) ([]*domain.Post, error)); ok {
+		return rf(ctx, status, pagination, authorID)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, domain.PostStatus, domain.Pagination) []*domain.Post); ok {
-		r0 = rf(ctx, status, pagination)
+	if rf, ok := ret.Get(0).(func(context.Context, domain.PostStatus, domain.Pagination, int64) []*domain.Post); ok {
+		r0 = rf(ctx, status, pagination, authorID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*domain.Post)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, domain.PostStatus, domain.Pagination) error); ok {
-		r1 = rf(ctx, status, pagination)
+	if rf, ok := ret.Get(1).(func(context.Context, domain.PostStatus, domain.Pagination, int64) error); ok {
+		r1 = rf(ctx, status, pagination, authorID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -156,13 +155,14 @@ type MockPostRepository_FindAll_Call struct {
 //   - ctx context.Context
 //   - status domain.PostStatus
 //   - pagination domain.Pagination
-func (_e *MockPostRepository_Expecter) FindAll(ctx interface{}, status interface{}, pagination interface{}) *MockPostRepository_FindAll_Call {
-	return &MockPostRepository_FindAll_Call{Call: _e.mock.On("FindAll", ctx, status, pagination)}
+//   - authorID int64
+func (_e *MockPostRepository_Expecter) FindAll(ctx interface{}, status interface{}, pagination interface{}, authorID interface{}) *MockPostRepository_FindAll_Call {
+	return &MockPostRepository_FindAll_Call{Call: _e.mock.On("FindAll", ctx, status, pagination, authorID)}
 }
 
-func (_c *MockPostRepository_FindAll_Call) Run(run func(ctx context.Context, status domain.PostStatus, pagination domain.Pagination)) *MockPostRepository_FindAll_Call {
+func (_c *MockPostRepository_FindAll_Call) Run(run func(ctx context.Context, status domain.PostStatus, pagination domain.Pagination, authorID int64)) *MockPostRepository_FindAll_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(domain.PostStatus), args[2].(domain.Pagination))
+		run(args[0].(context.Context), args[1].(domain.PostStatus), args[2].(domain.Pagination), args[3].(int64))
 	})
 	return _c
 }
@@ -172,7 +172,7 @@ func (_c *MockPostRepository_FindAll_Call) Return(_a0 []*domain.Post, _a1 error)
 	return _c
 }
 
-func (_c *MockPostRepository_FindAll_Call) RunAndReturn(run func(context.Context, domain.PostStatus, domain.Pagination) ([]*domain.Post, error)) *MockPostRepository_FindAll_Call {
+func (_c *MockPostRepository_FindAll_Call) RunAndReturn(run func(context.Context, domain.PostStatus, domain.Pagination, int64) ([]*domain.Post, error)) *MockPostRepository_FindAll_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -21,7 +21,7 @@ func TestFindPostsPaginatedController_Handle(t *testing.T) {
 	titleBlock, _ := domain.NewTitleBlock("Title")
 	contentInfo, _ := domain.NewContentInformation("Post Title", []domain.Block{titleBlock})
 	now := time.Now().UTC()
-	post, err := domain.NewPost(1, contentInfo, domain.StatusPublished, now, now, 2, 2, &now)
+	post, err := domain.NewPost(1, contentInfo, domain.StatusPublished, now, now, 2, &now)
 	assert.NoError(t, err)
 
 	nextID := int64(1)
@@ -42,7 +42,7 @@ func TestFindPostsPaginatedController_Handle(t *testing.T) {
 			setupMock: func(m *mockApp.MockFindPostsPaginatedUseCase) {
 				m.EXPECT().Execute(mock.Anything, domain.StatusPublished, mock.MatchedBy(func(p domain.Pagination) bool {
 					return p.LastID() == nil && p.LastPublishedAt() == nil && p.Limit() == 10
-				})).Return(paginatedPosts, nil)
+				}), int64(1)).Return(paginatedPosts, nil)
 			},
 			expectedStatus: http.StatusOK,
 			expectedBody:   `"posts"`,
@@ -55,7 +55,7 @@ func TestFindPostsPaginatedController_Handle(t *testing.T) {
 				m.EXPECT().Execute(mock.Anything, domain.StatusPublished, mock.MatchedBy(func(p domain.Pagination) bool {
 					return p.LastID() != nil && *p.LastID() == 5 &&
 						p.LastPublishedAt() != nil && p.Limit() == 25
-				})).Return(paginatedPosts, nil)
+				}), int64(1)).Return(paginatedPosts, nil)
 			},
 			expectedStatus: http.StatusOK,
 			expectedBody:   `"posts"`,
@@ -113,7 +113,7 @@ func TestFindPostsPaginatedController_Handle(t *testing.T) {
 			authUserID: int64(1),
 			urlQuery:   "?status=published",
 			setupMock: func(m *mockApp.MockFindPostsPaginatedUseCase) {
-				m.EXPECT().Execute(mock.Anything, mock.Anything, mock.Anything).Return(domain.PaginatedPosts{}, errors.New("db find failed"))
+				m.EXPECT().Execute(mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(domain.PaginatedPosts{}, errors.New("db find failed"))
 			},
 			expectedStatus: http.StatusInternalServerError,
 			expectedBody:   "internal server error",

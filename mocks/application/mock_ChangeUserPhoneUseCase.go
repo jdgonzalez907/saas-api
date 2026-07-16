@@ -22,17 +22,17 @@ func (_m *MockChangeUserPhoneUseCase) EXPECT() *MockChangeUserPhoneUseCase_Expec
 	return &MockChangeUserPhoneUseCase_Expecter{mock: &_m.Mock}
 }
 
-// Execute provides a mock function with given fields: ctx, id, phone
-func (_m *MockChangeUserPhoneUseCase) Execute(ctx context.Context, id int64, phone domain.Phone) error {
-	ret := _m.Called(ctx, id, phone)
+// Execute provides a mock function with given fields: ctx, id, phone, userID
+func (_m *MockChangeUserPhoneUseCase) Execute(ctx context.Context, id int64, phone domain.Phone, userID int64) error {
+	ret := _m.Called(ctx, id, phone, userID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Execute")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64, domain.Phone) error); ok {
-		r0 = rf(ctx, id, phone)
+	if rf, ok := ret.Get(0).(func(context.Context, int64, domain.Phone, int64) error); ok {
+		r0 = rf(ctx, id, phone, userID)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -49,13 +49,14 @@ type MockChangeUserPhoneUseCase_Execute_Call struct {
 //   - ctx context.Context
 //   - id int64
 //   - phone domain.Phone
-func (_e *MockChangeUserPhoneUseCase_Expecter) Execute(ctx interface{}, id interface{}, phone interface{}) *MockChangeUserPhoneUseCase_Execute_Call {
-	return &MockChangeUserPhoneUseCase_Execute_Call{Call: _e.mock.On("Execute", ctx, id, phone)}
+//   - userID int64
+func (_e *MockChangeUserPhoneUseCase_Expecter) Execute(ctx interface{}, id interface{}, phone interface{}, userID interface{}) *MockChangeUserPhoneUseCase_Execute_Call {
+	return &MockChangeUserPhoneUseCase_Execute_Call{Call: _e.mock.On("Execute", ctx, id, phone, userID)}
 }
 
-func (_c *MockChangeUserPhoneUseCase_Execute_Call) Run(run func(ctx context.Context, id int64, phone domain.Phone)) *MockChangeUserPhoneUseCase_Execute_Call {
+func (_c *MockChangeUserPhoneUseCase_Execute_Call) Run(run func(ctx context.Context, id int64, phone domain.Phone, userID int64)) *MockChangeUserPhoneUseCase_Execute_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(int64), args[2].(domain.Phone))
+		run(args[0].(context.Context), args[1].(int64), args[2].(domain.Phone), args[3].(int64))
 	})
 	return _c
 }
@@ -65,7 +66,7 @@ func (_c *MockChangeUserPhoneUseCase_Execute_Call) Return(_a0 error) *MockChange
 	return _c
 }
 
-func (_c *MockChangeUserPhoneUseCase_Execute_Call) RunAndReturn(run func(context.Context, int64, domain.Phone) error) *MockChangeUserPhoneUseCase_Execute_Call {
+func (_c *MockChangeUserPhoneUseCase_Execute_Call) RunAndReturn(run func(context.Context, int64, domain.Phone, int64) error) *MockChangeUserPhoneUseCase_Execute_Call {
 	_c.Call.Return(run)
 	return _c
 }

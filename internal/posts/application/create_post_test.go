@@ -18,7 +18,7 @@ func TestCreatePostUseCase(t *testing.T) {
 	contentInfo, _ := domain.NewContentInformation("Post Title", []domain.Block{titleBlock})
 	now := time.Now().UTC()
 
-	post, _ := domain.NewPost(1, contentInfo, domain.StatusDraft, now, now, 10, 10, nil)
+	post, _ := domain.NewPost(1, contentInfo, domain.StatusDraft, now, now, 10, nil)
 
 	dbErr := errors.New("database connection error")
 

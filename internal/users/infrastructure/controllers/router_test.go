@@ -17,7 +17,6 @@ func TestRouterAndMiddleware(t *testing.T) {
 	mockCreateUseCase := mockApp.NewMockCreateUserUseCase(t)
 	mockDeleteUseCase := mockApp.NewMockDeleteUserUseCase(t)
 	mockUpdatePIUseCase := mockApp.NewMockUpdateUserPersonalInformationUseCase(t)
-	mockFindPaginatedUseCase := mockApp.NewMockFindUsersPaginatedUseCase(t)
 	mockChangeEmailUseCase := mockApp.NewMockChangeUserEmailUseCase(t)
 	mockChangePhoneUseCase := mockApp.NewMockChangeUserPhoneUseCase(t)
 
@@ -25,7 +24,6 @@ func TestRouterAndMiddleware(t *testing.T) {
 	createController := controllers.NewCreateUserController(mockCreateUseCase)
 	deleteController := controllers.NewDeleteUserController(mockDeleteUseCase)
 	updatePIController := controllers.NewUpdateUserPersonalInformationController(mockUpdatePIUseCase)
-	findPaginatedController := controllers.NewFindUsersPaginatedController(mockFindPaginatedUseCase)
 	changeEmailController := controllers.NewChangeUserEmailController(mockChangeEmailUseCase)
 	changePhoneController := controllers.NewChangeUserPhoneController(mockChangePhoneUseCase)
 
@@ -34,7 +32,6 @@ func TestRouterAndMiddleware(t *testing.T) {
 		CreateUser:                createController,
 		DeleteUser:                deleteController,
 		UpdatePersonalInformation: updatePIController,
-		FindUsersPaginated:        findPaginatedController,
 		ChangeEmail:               changeEmailController,
 		ChangePhone:               changePhoneController,
 	})
@@ -44,7 +41,7 @@ func TestRouterAndMiddleware(t *testing.T) {
 		req.Header.Set("Authorization", "1")
 		rec := httptest.NewRecorder()
 
-		mockFindUseCase.EXPECT().Execute(mock.Anything, int64(1)).Return(nil, http.ErrNoLocation).Once()
+		mockFindUseCase.EXPECT().Execute(mock.Anything, int64(1), int64(1)).Return(nil, http.ErrNoLocation).Once()
 
 		router.ServeHTTP(rec, req)
 

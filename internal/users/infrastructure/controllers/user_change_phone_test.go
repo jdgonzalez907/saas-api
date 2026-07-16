@@ -40,7 +40,7 @@ func TestChangeUserPhoneController_Handle(t *testing.T) {
 			setupMock: func(m *mockApp.MockChangeUserPhoneUseCase) {
 				m.EXPECT().Execute(mock.Anything, int64(1), mock.MatchedBy(func(p domain.Phone) bool {
 					return p.CountryCode() == "57" && p.Number() == "987654321"
-				})).Return(nil)
+				}), int64(1)).Return(nil)
 			},
 			expectedStatus: http.StatusNoContent,
 		},
@@ -108,7 +108,7 @@ func TestChangeUserPhoneController_Handle(t *testing.T) {
 			routeParamID: "1",
 			requestBody:  validBody,
 			setupMock: func(m *mockApp.MockChangeUserPhoneUseCase) {
-				m.EXPECT().Execute(mock.Anything, int64(1), mock.Anything).Return(domain.ErrUserNotFound)
+				m.EXPECT().Execute(mock.Anything, int64(1), mock.Anything, int64(1)).Return(domain.ErrUserNotFound)
 			},
 			expectedStatus: http.StatusNotFound,
 			expectedBody:   domain.ErrUserNotFound.Error(),
@@ -119,7 +119,7 @@ func TestChangeUserPhoneController_Handle(t *testing.T) {
 			routeParamID: "1",
 			requestBody:  validBody,
 			setupMock: func(m *mockApp.MockChangeUserPhoneUseCase) {
-				m.EXPECT().Execute(mock.Anything, int64(1), mock.Anything).Return(domain.ErrUserPhoneAlreadyExists)
+				m.EXPECT().Execute(mock.Anything, int64(1), mock.Anything, int64(1)).Return(domain.ErrUserPhoneAlreadyExists)
 			},
 			expectedStatus: http.StatusConflict,
 			expectedBody:   domain.ErrUserPhoneAlreadyExists.Error(),
@@ -130,7 +130,7 @@ func TestChangeUserPhoneController_Handle(t *testing.T) {
 			routeParamID: "1",
 			requestBody:  validBody,
 			setupMock: func(m *mockApp.MockChangeUserPhoneUseCase) {
-				m.EXPECT().Execute(mock.Anything, int64(1), mock.Anything).Return(errors.New("db failed"))
+				m.EXPECT().Execute(mock.Anything, int64(1), mock.Anything, int64(1)).Return(errors.New("db failed"))
 			},
 			expectedStatus: http.StatusInternalServerError,
 			expectedBody:   "internal server error",

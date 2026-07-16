@@ -52,114 +52,95 @@ func TestNewPost_Validation(t *testing.T) {
 	now := time.Now().UTC()
 
 	testCases := []struct {
-		name         string
-		id           int64
-		contentInfo  ContentInformation
-		status       PostStatus
-		createdAt    time.Time
-		updatedAt    time.Time
-		authorID     int64
-		lastEditorID int64
-		publishedAt  *time.Time
-		wantErr      error
+		name        string
+		id          int64
+		contentInfo ContentInformation
+		status      PostStatus
+		createdAt   time.Time
+		updatedAt   time.Time
+		authorID    int64
+		publishedAt *time.Time
+		wantErr     error
 	}{
 		{
-			name:         "fail - invalid ID (zero)",
-			id:           0,
-			contentInfo:  contentInfo,
-			status:       StatusDraft,
-			createdAt:    now,
-			updatedAt:    now,
-			authorID:     1,
-			lastEditorID: 1,
-			wantErr:      ErrInvalidPostID,
+			name:        "fail - invalid ID (zero)",
+			id:          0,
+			contentInfo: contentInfo,
+			status:      StatusDraft,
+			createdAt:   now,
+			updatedAt:   now,
+			authorID:    1,
+			wantErr:     ErrInvalidPostID,
 		},
 		{
-			name:         "fail - invalid ID (negative)",
-			id:           -5,
-			contentInfo:  contentInfo,
-			status:       StatusDraft,
-			createdAt:    now,
-			updatedAt:    now,
-			authorID:     1,
-			lastEditorID: 1,
-			wantErr:      ErrInvalidPostID,
+			name:        "fail - invalid ID (negative)",
+			id:          -5,
+			contentInfo: contentInfo,
+			status:      StatusDraft,
+			createdAt:   now,
+			updatedAt:   now,
+			authorID:    1,
+			wantErr:     ErrInvalidPostID,
 		},
 		{
-			name:         "fail - invalid AuthorID",
-			id:           1,
-			contentInfo:  contentInfo,
-			status:       StatusDraft,
-			createdAt:    now,
-			updatedAt:    now,
-			authorID:     0,
-			lastEditorID: 1,
-			wantErr:      ErrInvalidAuthorID,
+			name:        "fail - invalid AuthorID",
+			id:          1,
+			contentInfo: contentInfo,
+			status:      StatusDraft,
+			createdAt:   now,
+			updatedAt:   now,
+			authorID:    0,
+			wantErr:     ErrInvalidAuthorID,
 		},
 		{
-			name:         "fail - invalid LastEditorID",
-			id:           1,
-			contentInfo:  contentInfo,
-			status:       StatusDraft,
-			createdAt:    now,
-			updatedAt:    now,
-			authorID:     1,
-			lastEditorID: -1,
-			wantErr:      ErrInvalidLastEditorID,
+			name:        "fail - draft with publication date",
+			id:          1,
+			contentInfo: contentInfo,
+			status:      StatusDraft,
+			createdAt:   now,
+			updatedAt:   now,
+			authorID:    1,
+			publishedAt: &now,
+			wantErr:     ErrDraftCannotHavePublicationDate,
 		},
 		{
-			name:         "fail - draft with publication date",
-			id:           1,
-			contentInfo:  contentInfo,
-			status:       StatusDraft,
-			createdAt:    now,
-			updatedAt:    now,
-			authorID:     1,
-			lastEditorID: 1,
-			publishedAt:  &now,
-			wantErr:      ErrDraftCannotHavePublicationDate,
+			name:        "fail - published without publication date",
+			id:          1,
+			contentInfo: contentInfo,
+			status:      StatusPublished,
+			createdAt:   now,
+			updatedAt:   now,
+			authorID:    1,
+			publishedAt: nil,
+			wantErr:     ErrPublishedMustHavePublicationDate,
 		},
 		{
-			name:         "fail - published without publication date",
-			id:           1,
-			contentInfo:  contentInfo,
-			status:       StatusPublished,
-			createdAt:    now,
-			updatedAt:    now,
-			authorID:     1,
-			lastEditorID: 1,
-			publishedAt:  nil,
-			wantErr:      ErrPublishedMustHavePublicationDate,
+			name:        "success - valid draft",
+			id:          1,
+			contentInfo: contentInfo,
+			status:      StatusDraft,
+			createdAt:   now,
+			updatedAt:   now,
+			authorID:    1,
+			publishedAt: nil,
+			wantErr:     nil,
 		},
 		{
-			name:         "success - valid draft",
-			id:           1,
-			contentInfo:  contentInfo,
-			status:       StatusDraft,
-			createdAt:    now,
-			updatedAt:    now,
-			authorID:     1,
-			lastEditorID: 1,
-			publishedAt:  nil,
-			wantErr:      nil,
-		},
-		{
-			name:         "success - valid published",
-			id:           1,
-			contentInfo:  contentInfo,
-			status:       StatusPublished,
-			createdAt:    now,
-			updatedAt:    now,
-			authorID:     1,
-			lastEditorID: 1,
-			publishedAt:  &now,
-			wantErr:      nil,
+			name:        "success - valid published",
+			id:          1,
+			contentInfo: contentInfo,
+			status:      StatusPublished,
+			createdAt:   now,
+			updatedAt:   now,
+			authorID:    1,
+			publishedAt: &now,
+			wantErr:     nil,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := NewPost(tc.id, tc.contentInfo, tc.status, tc.createdAt, tc.updatedAt, tc.authorID, tc.lastEditorID, tc.publishedAt)
+			_, err := NewPost(tc.id, tc.contentInfo, tc.status, tc.createdAt, tc.updatedAt, tc.authorID, tc.publishedAt)
 			if !errors.Is(err, tc.wantErr) {
 				t.Errorf("expected error %v, got %v", tc.wantErr, err)
 			}
@@ -189,9 +170,6 @@ func TestNewPostWithoutID_Validation(t *testing.T) {
 		if post.AuthorID() != 5 {
 			t.Errorf("expected AuthorID 5, got %d", post.AuthorID())
 		}
-		if post.LastEditorID() != 5 {
-			t.Errorf("expected LastEditorID 5, got %d", post.LastEditorID())
-		}
 		if post.PublishedAt() != nil {
 			t.Error("expected publishedAt to be nil for draft")
 		}
@@ -219,7 +197,7 @@ func TestPost_Getters(t *testing.T) {
 	contentInfo, _ := NewContentInformation("Post A", []Block{titleBlock})
 	now := time.Now().UTC()
 
-	post, err := NewPost(1, contentInfo, StatusDraft, now, now, 10, 12, nil)
+	post, err := NewPost(1, contentInfo, StatusDraft, now, now, 10, nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -242,9 +220,6 @@ func TestPost_Getters(t *testing.T) {
 	if post.AuthorID() != 10 {
 		t.Errorf("expected AuthorID 10, got %d", post.AuthorID())
 	}
-	if post.LastEditorID() != 12 {
-		t.Errorf("expected LastEditorID 12, got %d", post.LastEditorID())
-	}
 	if post.PublishedAt() != nil {
 		t.Errorf("expected PublishedAt to be nil, got %v", post.PublishedAt())
 	}
@@ -259,29 +234,27 @@ func TestPost_Equals(t *testing.T) {
 	now := time.Now().UTC()
 	anotherTime := now.Add(time.Second)
 
-	post1, _ := NewPost(1, contentInfo1, StatusDraft, now, now, 10, 10, nil)
+	post1, _ := NewPost(1, contentInfo1, StatusDraft, now, now, 10, nil)
 
-	post2, _ := NewPost(1, contentInfo1, StatusDraft, now, now, 10, 10, nil)
+	post2, _ := NewPost(1, contentInfo1, StatusDraft, now, now, 10, nil)
 
-	postDifferentID, _ := NewPost(2, contentInfo1, StatusDraft, now, now, 10, 10, nil)
+	postDifferentID, _ := NewPost(2, contentInfo1, StatusDraft, now, now, 10, nil)
 
-	postDifferentStatus, _ := NewPost(1, contentInfo1, StatusPublished, now, now, 10, 10, &now)
+	postDifferentStatus, _ := NewPost(1, contentInfo1, StatusPublished, now, now, 10, &now)
 
-	postDifferentAuthorID, _ := NewPost(1, contentInfo1, StatusDraft, now, now, 11, 10, nil)
+	postDifferentAuthorID, _ := NewPost(1, contentInfo1, StatusDraft, now, now, 11, nil)
 
-	postDifferentLastEditorID, _ := NewPost(1, contentInfo1, StatusDraft, now, now, 10, 11, nil)
+	postDifferentCreatedAt, _ := NewPost(1, contentInfo1, StatusDraft, now.Add(time.Second), now, 10, nil)
 
-	postDifferentCreatedAt, _ := NewPost(1, contentInfo1, StatusDraft, now.Add(time.Second), now, 10, 10, nil)
+	postDifferentUpdatedAt, _ := NewPost(1, contentInfo1, StatusDraft, now, now.Add(time.Second), 10, nil)
 
-	postDifferentUpdatedAt, _ := NewPost(1, contentInfo1, StatusDraft, now, now.Add(time.Second), 10, 10, nil)
+	postDifferentContentInfo, _ := NewPost(1, contentInfo2, StatusDraft, now, now, 10, nil)
 
-	postDifferentContentInfo, _ := NewPost(1, contentInfo2, StatusDraft, now, now, 10, 10, nil)
+	postPublishedBase, _ := NewPost(1, contentInfo1, StatusPublished, now, now, 10, &now)
 
-	postPublishedBase, _ := NewPost(1, contentInfo1, StatusPublished, now, now, 10, 10, &now)
+	postPublishedDiffTime, _ := NewPost(1, contentInfo1, StatusPublished, now, now, 10, &anotherTime)
 
-	postPublishedDiffTime, _ := NewPost(1, contentInfo1, StatusPublished, now, now, 10, 10, &anotherTime)
-
-	postPublishedDiffContent, _ := NewPost(1, contentInfo2, StatusPublished, now, now, 10, 10, &now)
+	postPublishedDiffContent, _ := NewPost(1, contentInfo2, StatusPublished, now, now, 10, &now)
 
 	// Bypassing constructor to test direct Equals boundary checks for coverage
 	postMismatchedPublishedAt1 := &Post{
@@ -329,12 +302,6 @@ func TestPost_Equals(t *testing.T) {
 			name:     "fail - different authorID",
 			base:     post1,
 			other:    postDifferentAuthorID,
-			expected: false,
-		},
-		{
-			name:     "fail - different lastEditorID",
-			base:     post1,
-			other:    postDifferentLastEditorID,
 			expected: false,
 		},
 		{
@@ -409,18 +376,11 @@ func TestPost_UpdateContentAndStatus(t *testing.T) {
 	contentInfo2, _ := NewContentInformation("Updated", []Block{titleBlock})
 	now := time.Now().UTC()
 
-	post, _ := NewPost(1, contentInfo1, StatusDraft, now, now, 5, 5, nil)
-
-	t.Run("fail - invalid lastEditorID", func(t *testing.T) {
-		_, err := post.UpdateContentAndStatus(contentInfo2, StatusPublished, 0)
-		if !errors.Is(err, ErrInvalidLastEditorID) {
-			t.Errorf("expected ErrInvalidLastEditorID, got %v", err)
-		}
-	})
+	post, _ := NewPost(1, contentInfo1, StatusDraft, now, now, 5, nil)
 
 	t.Run("success - draft to published", func(t *testing.T) {
 		time.Sleep(10 * time.Millisecond)
-		updated, err := post.UpdateContentAndStatus(contentInfo2, StatusPublished, 6)
+		updated, err := post.UpdateContentAndStatus(contentInfo2, StatusPublished, 5)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -441,9 +401,6 @@ func TestPost_UpdateContentAndStatus(t *testing.T) {
 		if updated.Status() != StatusPublished {
 			t.Errorf("expected status to be updated to %s, got %s", StatusPublished, updated.Status())
 		}
-		if updated.LastEditorID() != 6 {
-			t.Errorf("expected LastEditorID to be 6, got %d", updated.LastEditorID())
-		}
 		if !updated.UpdatedAt().After(post.UpdatedAt()) {
 			t.Error("expected UpdatedAt to be updated to a newer time")
 		}
@@ -454,9 +411,9 @@ func TestPost_UpdateContentAndStatus(t *testing.T) {
 
 	t.Run("success - published remains published (preserves publishedAt)", func(t *testing.T) {
 		pubTime := now.Add(-time.Hour)
-		pubPost, _ := NewPost(1, contentInfo1, StatusPublished, now, now, 5, 5, &pubTime)
+		pubPost, _ := NewPost(1, contentInfo1, StatusPublished, now, now, 5, &pubTime)
 
-		updated, err := pubPost.UpdateContentAndStatus(contentInfo2, StatusPublished, 6)
+		updated, err := pubPost.UpdateContentAndStatus(contentInfo2, StatusPublished, 5)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -467,9 +424,9 @@ func TestPost_UpdateContentAndStatus(t *testing.T) {
 	})
 
 	t.Run("success - published to draft (clears publishedAt)", func(t *testing.T) {
-		pubPost, _ := NewPost(1, contentInfo1, StatusPublished, now, now, 5, 5, &now)
+		pubPost, _ := NewPost(1, contentInfo1, StatusPublished, now, now, 5, &now)
 
-		updated, err := pubPost.UpdateContentAndStatus(contentInfo2, StatusDraft, 6)
+		updated, err := pubPost.UpdateContentAndStatus(contentInfo2, StatusDraft, 5)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -481,6 +438,47 @@ func TestPost_UpdateContentAndStatus(t *testing.T) {
 			t.Error("expected publishedAt to be cleared (nil) when transitioning back to draft")
 		}
 	})
+
+	t.Run("fail - ensureInvariants error (negative ID)", func(t *testing.T) {
+		badPost := &Post{
+			id:       -1,
+			authorID: 5,
+			status:   StatusDraft,
+		}
+		_, err := badPost.UpdateContentAndStatus(contentInfo2, StatusDraft, 5)
+		if !errors.Is(err, ErrInvalidPostID) {
+			t.Errorf("expected ErrInvalidPostID, got %v", err)
+		}
+	})
+
+	t.Run("fail - ownership mismatch", func(t *testing.T) {
+		_, err := post.UpdateContentAndStatus(contentInfo2, StatusDraft, 999)
+		if !errors.Is(err, ErrPostOwnershipMismatch) {
+			t.Errorf("expected ErrPostOwnershipMismatch, got %v", err)
+		}
+	})
+}
+
+func TestIsSameAuthor(t *testing.T) {
+	titleBlock, _ := NewTitleBlock("Title")
+	contentInfo, _ := NewContentInformation("Post Title", []Block{titleBlock})
+	now := time.Now().UTC()
+
+	post, _ := NewPost(1, contentInfo, StatusDraft, now, now, 5, nil)
+
+	t.Run("success - same author", func(t *testing.T) {
+		err := post.IsSameAuthor(5)
+		if err != nil {
+			t.Errorf("expected nil error, got %v", err)
+		}
+	})
+
+	t.Run("fail - different author", func(t *testing.T) {
+		err := post.IsSameAuthor(999)
+		if !errors.Is(err, ErrPostOwnershipMismatch) {
+			t.Errorf("expected ErrPostOwnershipMismatch, got %v", err)
+		}
+	})
 }
 
 func TestPostDTO_Mapping(t *testing.T) {
@@ -488,7 +486,7 @@ func TestPostDTO_Mapping(t *testing.T) {
 	contentInfo, _ := NewContentInformation("My Header", []Block{titleBlock})
 	now := time.Now().UTC()
 
-	post, _ := NewPost(15, contentInfo, StatusPublished, now, now, 8, 9, &now)
+	post, _ := NewPost(15, contentInfo, StatusPublished, now, now, 8, &now)
 
 	dto := post.ToDTO()
 
@@ -503,9 +501,6 @@ func TestPostDTO_Mapping(t *testing.T) {
 	}
 	if dto.AuthorID != 8 {
 		t.Errorf("expected dto AuthorID 8, got %d", dto.AuthorID)
-	}
-	if dto.LastEditorID != 9 {
-		t.Errorf("expected dto LastEditorID 9, got %d", dto.LastEditorID)
 	}
 	if dto.PublishedAt == nil || !dto.PublishedAt.Equal(now) {
 		t.Errorf("expected dto PublishedAt %v, got %v", now, dto.PublishedAt)
@@ -560,11 +555,10 @@ func TestPostFromDTO_Validation(t *testing.T) {
 						},
 					},
 				},
-				Status:       "draft",
-				CreatedAt:    now,
-				UpdatedAt:    now,
-				AuthorID:     1,
-				LastEditorID: 1,
+				Status:    "draft",
+				CreatedAt: now,
+				UpdatedAt: now,
+				AuthorID:  1,
 			},
 			wantErr: ErrInvalidBlockType,
 		},
@@ -576,11 +570,10 @@ func TestPostFromDTO_Validation(t *testing.T) {
 					Title:   "Title",
 					Content: nil,
 				},
-				Status:       "invalid-status",
-				CreatedAt:    now,
-				UpdatedAt:    now,
-				AuthorID:     1,
-				LastEditorID: 1,
+				Status:    "invalid-status",
+				CreatedAt: now,
+				UpdatedAt: now,
+				AuthorID:  1,
 			},
 			wantErr: ErrInvalidPostStatus,
 		},
@@ -592,12 +585,11 @@ func TestPostFromDTO_Validation(t *testing.T) {
 					Title:   "Title",
 					Content: nil,
 				},
-				Status:       "draft",
-				CreatedAt:    now,
-				UpdatedAt:    now,
-				AuthorID:     1,
-				LastEditorID: 1,
-				PublishedAt:  &now,
+				Status:      "draft",
+				CreatedAt:   now,
+				UpdatedAt:   now,
+				AuthorID:    1,
+				PublishedAt: &now,
 			},
 			wantErr: ErrDraftCannotHavePublicationDate,
 		},

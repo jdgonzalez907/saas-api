@@ -51,7 +51,7 @@ func TestFindUserByIdUseCase(t *testing.T) {
 			testName: "success - user found",
 			inputID:  int64(1),
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindByID", mock.Anything, int64(1)).Return(user, nil)
+				m.On("FindByID", mock.Anything, int64(1), mock.Anything).Return(user, nil)
 			},
 			expectedResult: user,
 			expectedError:  nil,
@@ -69,7 +69,7 @@ func TestFindUserByIdUseCase(t *testing.T) {
 			testName: "fail - user not found",
 			inputID:  int64(99),
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindByID", mock.Anything, int64(99)).Return(nil, nil)
+				m.On("FindByID", mock.Anything, int64(99), mock.Anything).Return(nil, nil)
 			},
 			expectedResult: nil,
 			expectedError:  domain.ErrUserNotFound,
@@ -78,7 +78,7 @@ func TestFindUserByIdUseCase(t *testing.T) {
 			testName: "fail - repository error",
 			inputID:  int64(1),
 			mockExpectations: func(m *domainMocks.MockUserRepository) {
-				m.On("FindByID", mock.Anything, int64(1)).Return(nil, dbErr)
+				m.On("FindByID", mock.Anything, int64(1), mock.Anything).Return(nil, dbErr)
 			},
 			expectedResult: nil,
 			expectedError:  domain.ErrFindingUserByID,
@@ -91,7 +91,7 @@ func TestFindUserByIdUseCase(t *testing.T) {
 			tc.mockExpectations(mockUserRepository)
 
 			useCase := application.NewFindUserByIDUseCase(mockUserRepository)
-			result, err := useCase.Execute(context.Background(), tc.inputID)
+			result, err := useCase.Execute(context.Background(), tc.inputID, int64(1))
 
 			if tc.expectedError != nil {
 				if err == nil {
