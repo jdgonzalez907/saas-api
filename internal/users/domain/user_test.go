@@ -245,7 +245,7 @@ func TestUserDTOAndFromDTO(t *testing.T) {
 	}
 }
 
-func TestUserWithPersonalInformation(t *testing.T) {
+func TestUpdatePersonalInformation(t *testing.T) {
 	now := time.Now()
 
 	user, err := domain.NewUser(
@@ -304,7 +304,7 @@ func TestUserWithPersonalInformation(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.testName, func(t *testing.T) {
-			updatedUser := user.WithPersonalInformation(tc.info)
+			updatedUser := user.UpdatePersonalInformation(tc.info)
 			dto := updatedUser.ToDTO()
 
 			if dto.ID != 1 {
@@ -347,7 +347,7 @@ func TestUserWithPersonalInformation(t *testing.T) {
 	}
 }
 
-func TestUserWithPhone(t *testing.T) {
+func TestChangePhone(t *testing.T) {
 	now := time.Now()
 
 	user, err := domain.NewUser(
@@ -363,7 +363,7 @@ func TestUserWithPhone(t *testing.T) {
 	}
 
 	newPhone, _ := domain.NewPhone("57", "987654321")
-	updatedUser := user.WithPhone(newPhone)
+	updatedUser := user.ChangePhone(newPhone)
 
 	dto := updatedUser.ToDTO()
 	if dto.Phone != newPhone.ToDTO() {
@@ -377,7 +377,7 @@ func TestUserWithPhone(t *testing.T) {
 	}
 }
 
-func TestUserWithEmail(t *testing.T) {
+func TestChangeEmail(t *testing.T) {
 	now := time.Now()
 
 	user, err := domain.NewUser(
@@ -393,7 +393,7 @@ func TestUserWithEmail(t *testing.T) {
 	}
 
 	newEmail, _ := domain.NewEmail("new@domain.com")
-	updatedUser := user.WithEmail(&newEmail)
+	updatedUser := user.ChangeEmail(&newEmail)
 
 	dto := updatedUser.ToDTO()
 	if dto.Email == nil || *dto.Email != newEmail.ToDTO() {
