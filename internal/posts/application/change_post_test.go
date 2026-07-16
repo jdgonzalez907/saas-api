@@ -69,7 +69,7 @@ func TestChangePostUseCase(t *testing.T) {
 			mockExpectations: func(m *domainMocks.MockPostRepository) {
 				m.On("FindByID", mock.Anything, int64(1)).Return(nil, dbErr)
 			},
-			expectedError: domain.ErrUpdatingPost,
+			expectedError: domain.ErrChangingPost,
 		},
 		{
 			name:         "fail - domain validation error (invalid editor ID)",
@@ -92,7 +92,7 @@ func TestChangePostUseCase(t *testing.T) {
 				m.On("FindByID", mock.Anything, int64(1)).Return(post, nil)
 				m.On("Update", mock.Anything, mock.Anything).Return(dbErr)
 			},
-			expectedError: domain.ErrUpdatingPost,
+			expectedError: domain.ErrChangingPost,
 		},
 	}
 
@@ -109,7 +109,7 @@ func TestChangePostUseCase(t *testing.T) {
 					t.Fatalf("expected error: %v, got nil", tc.expectedError)
 				}
 				if !errors.Is(err, tc.expectedError) {
-					if !(tc.expectedError == domain.ErrUpdatingPost && errors.Unwrap(err) != nil) {
+					if !(tc.expectedError == domain.ErrChangingPost && errors.Unwrap(err) != nil) {
 						t.Errorf("expected error to wrap or be %v, got %v", tc.expectedError, err)
 					}
 				}
