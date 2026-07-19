@@ -4,6 +4,15 @@ import (
 	"errors"
 )
 
+const (
+	countryCodeMinLength = 1
+	countryCodeMaxLength = 3
+	numberMinLength      = 10
+	numberMaxLength      = 15
+	digitMin             = '0'
+	digitMax             = '9'
+)
+
 var (
 	ErrPhoneEmptyCountryCode    = errors.New("country code cannot be empty")
 	ErrPhoneInvalidCountryCode  = errors.New("country code must be between 1 and 3 digits")
@@ -28,12 +37,12 @@ func NewPhone(countryCode, number string) (Phone, error) {
 		return Phone{}, ErrPhoneEmptyCountryCode
 	}
 
-	if len(countryCode) < 1 || len(countryCode) > 3 {
+	if len(countryCode) < countryCodeMinLength || len(countryCode) > countryCodeMaxLength {
 		return Phone{}, ErrPhoneInvalidCountryCode
 	}
 
 	for i := 0; i < len(countryCode); i++ {
-		if countryCode[i] < '0' || countryCode[i] > '9' {
+		if countryCode[i] < digitMin || countryCode[i] > digitMax {
 			return Phone{}, ErrPhoneNonDigitCountryCode
 		}
 	}
@@ -42,12 +51,12 @@ func NewPhone(countryCode, number string) (Phone, error) {
 		return Phone{}, ErrPhoneEmptyNumber
 	}
 
-	if len(number) < 10 || len(number) > 15 {
+	if len(number) < numberMinLength || len(number) > numberMaxLength {
 		return Phone{}, ErrPhoneInvalidNumber
 	}
 
 	for i := 0; i < len(number); i++ {
-		if number[i] < '0' || number[i] > '9' {
+		if number[i] < digitMin || number[i] > digitMax {
 			return Phone{}, ErrPhoneNonDigitNumber
 		}
 	}

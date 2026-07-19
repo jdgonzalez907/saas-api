@@ -12,6 +12,14 @@ const (
 	DNITypeCE  DNIType = "CE"
 	DNITypeNIT DNIType = "NIT"
 	DNITypePP  DNIType = "PP"
+
+	dniNumberMinLength = 8
+	dniNumberMaxLength = 20
+
+	nameMinLength = 4
+	nameMaxLength = 100
+
+	minimumAge = 18
 )
 
 var (
@@ -44,30 +52,23 @@ func NewPersonalInformation(
 	dniNumber, firstName, lastName string,
 	birthdate time.Time,
 ) (PersonalInformation, error) {
-	switch dniType {
-	case DNITypeCC, DNITypeCE, DNITypeNIT, DNITypePP:
-	default:
-		return PersonalInformation{}, ErrPersonalInformationInvalidDNIType
+	if err := validatePersonalInformationDNIType(dniType); err != nil {
+		return PersonalInformation{}, err
 	}
-
-	if len(dniNumber) < 8 || len(dniNumber) > 20 {
-		return PersonalInformation{}, ErrPersonalInformationInvalidDNINumber
+	if err := validatePersonalInformationDNINumber(dniNumber); err != nil {
+		return PersonalInformation{}, err
 	}
-
-	if len(firstName) < 4 || len(firstName) > 100 {
-		return PersonalInformation{}, ErrPersonalInformationInvalidFirstName
+	if err := validatePersonalInformationFirstName(firstName); err != nil {
+		return PersonalInformation{}, err
 	}
-
-	if len(lastName) < 4 || len(lastName) > 100 {
-		return PersonalInformation{}, ErrPersonalInformationInvalidLastName
+	if err := validatePersonalInformationLastName(lastName); err != nil {
+		return PersonalInformation{}, err
 	}
-
-	if birthdate.IsZero() {
-		return PersonalInformation{}, ErrPersonalInformationEmptyBirthdate
+	if err := validatePersonalInformationBirthdate(birthdate); err != nil {
+		return PersonalInformation{}, err
 	}
-
-	if time.Since(birthdate) < 18*365.25*24*time.Hour {
-		return PersonalInformation{}, ErrPersonalInformationUnderage
+	if err := validatePersonalInformationAge(birthdate); err != nil {
+		return PersonalInformation{}, err
 	}
 
 	return PersonalInformation{
@@ -101,4 +102,50 @@ func (v PersonalInformation) ToDTO() PersonalInformationDTO {
 		LastName:  v.lastName,
 		Birthdate: v.birthdate.Format(time.RFC3339),
 	}
+}
+
+func validatePersonalInformationDNIType(dniType DNIType) error {
+	switch dniType {
+	case DNITypeCC, DNITypeCE, DNITypeNIT, DNITypePP:
+		return nil
+	default:
+		return ErrPersonalInformationInvalidDNIType
+	}
+}
+
+func validatePersonalInformationDNINumber(dniNumber string) error {
+	if len(dniNumber) < dniNumberMinLength || len(dniNumber) > dniNumberMaxLength {
+		return ErrPersonalInformationInvalidDNINumber
+	}
+	return nil
+}
+
+func validatePersonalInformationFirstName(firstName string) error {
+	if len(firstName) < nameMinLength || len(firstName) > nameMaxLength {
+		return ErrPersonalInformationInvalidFirstName
+	}
+	return nil
+}
+
+func validatePersonalInformationLastName(lastName string) error {
+	if len(lastName) < nameMinLength || len(lastName) > nameMaxLength {
+		return ErrPersonalInformationInvalidLastName
+	}
+	return nil
+}
+
+func validatePersonalInformationBirthdate(birthdate time.Time) error {
+	if birthdate.IsZero() {
+		return ErrPersonalInformationEmptyBirthdate
+	}
+	return nil
+}
+
+func validatePersonalInformationAge(birthdate time.Time) error {
+	age := time.Since(birthdate)
+	oneYear := 365 * 24 * time.Hour
+	if age < time.Duration(minimumAge)*oneYear {
+		return ErrPersonalInformationUnderage
+	}
+	return nil
 }
