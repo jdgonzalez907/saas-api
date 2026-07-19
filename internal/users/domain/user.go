@@ -12,6 +12,7 @@ var (
 	ErrUserEmailAlreadyExists       = errors.New("user with this email already exists")
 
 	ErrUserNotFound = errors.New("user not found")
+	ErrFindUserByID = errors.New("cannot find user by ID")
 
 	ErrCreateUser                = errors.New("cannot create user")
 	ErrChangePhone               = errors.New("cannot change phone")

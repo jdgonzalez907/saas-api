@@ -17,8 +17,10 @@ var (
 	ErrPostSlugAlreadyExists  = errors.New("post slug already exists")
 	ErrPostNotFound           = errors.New("post not found")
 
-	ErrCreatePost   = errors.New("cannot create post")
-	ErrUpdateContent = errors.New("cannot update content")
+	ErrCreatePost     = errors.New("cannot create post")
+	ErrUpdateContent  = errors.New("cannot update content")
+	ErrFindPostBySlug = errors.New("cannot find post by slug")
+	ErrFindPostByID   = errors.New("cannot find post by ID")
 )
 
 type PostStatus string
