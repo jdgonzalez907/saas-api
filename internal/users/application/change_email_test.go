@@ -110,6 +110,18 @@ func TestChangeEmail_Execute(t *testing.T) {
 			wantUser:   false,
 			wantErr:    domain.ErrChangeEmail,
 		},
+		{
+			name: "error - ChangeEmail fails",
+			setup: func(t *testing.T, repo *mock_domain.MockUserRepository) {
+				user := mustNewUserWithID(t, 1, email, pi, phone, now, now)
+				repo.On("FindByID", mock.Anything, int64(99)).Return(user, nil)
+				repo.On("FindByEmail", mock.Anything, newEmail).Return(nil, nil)
+			},
+			executedBy: 99,
+			email:      newEmail,
+			wantUser:   false,
+			wantErr:    domain.ErrChangeEmail,
+		},
 	}
 
 	for _, tt := range tests {
