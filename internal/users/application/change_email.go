@@ -36,11 +36,11 @@ func (uc *changeEmail) Execute(ctx context.Context, executedBy int64, email doma
 		return nil, uc.wrapError(domain.ErrUserEmailAlreadyExists)
 	}
 
-	if err = user.ChangeEmail(email, executedBy); err != nil {
+	if err := user.ChangeEmail(email, executedBy); err != nil {
 		return nil, uc.wrapError(err)
 	}
 
-	if err = uc.userRepository.Update(ctx, user); err != nil {
+	if err := uc.userRepository.Update(ctx, user); err != nil {
 		return nil, uc.wrapError(err)
 	}
 

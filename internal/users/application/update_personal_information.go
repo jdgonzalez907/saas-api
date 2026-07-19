@@ -28,11 +28,11 @@ func (uc *updatePersonalInformation) Execute(ctx context.Context, executedBy int
 		return nil, uc.wrapError(domain.ErrUserNotFound)
 	}
 
-	if err = user.UpdatePersonalInformation(personalInformation, executedBy); err != nil {
+	if err := user.UpdatePersonalInformation(personalInformation, executedBy); err != nil {
 		return nil, uc.wrapError(err)
 	}
 
-	if err = uc.userRepository.Update(ctx, user); err != nil {
+	if err := uc.userRepository.Update(ctx, user); err != nil {
 		return nil, uc.wrapError(err)
 	}
 

@@ -38,7 +38,7 @@ func (uc *createUser) Execute(ctx context.Context, user *domain.User) (*domain.U
 		}
 	}
 
-	if err = uc.userRepository.Create(ctx, user); err != nil {
+	if err := uc.userRepository.Create(ctx, user); err != nil {
 		return nil, uc.wrapError(err)
 	}
 

@@ -36,11 +36,11 @@ func (uc *changePhone) Execute(ctx context.Context, executedBy int64, phone doma
 		return nil, uc.wrapError(domain.ErrUserPhoneAlreadyExists)
 	}
 
-	if err = user.ChangePhone(phone, executedBy); err != nil {
+	if err := user.ChangePhone(phone, executedBy); err != nil {
 		return nil, uc.wrapError(err)
 	}
 
-	if err = uc.userRepository.Update(ctx, user); err != nil {
+	if err := uc.userRepository.Update(ctx, user); err != nil {
 		return nil, uc.wrapError(err)
 	}
 
