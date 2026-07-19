@@ -11,3 +11,13 @@ packages:
     config:
       all: true
       dir: "mocks/users/application"
+
+  github.com/jdgonzalez907/saas-api/internal/posts/domain:
+    config:
+      all: true
+      dir: "mocks/posts/domain"
+      
+  github.com/jdgonzalez907/saas-api/internal/posts/application:
+    config:
+      all: true
+      dir: "mocks/posts/application"

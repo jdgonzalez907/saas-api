@@ -6,14 +6,19 @@ import (
 )
 
 var (
-	ErrPostTitleRequired    = errors.New("post title is required")
-	ErrPostSlugRequired     = errors.New("post slug is required")
-	ErrPostCoverRequired    = errors.New("post cover is required")
-	ErrPostStatusRequired   = errors.New("post status is required")
-	ErrPostAuthorIDRequired = errors.New("post author ID is required")
-	ErrPostIDRequired       = errors.New("post ID is required")
-	ErrPostInvalidRootBlock = errors.New("post content contains invalid root block type")
+	ErrPostTitleRequired      = errors.New("post title is required")
+	ErrPostSlugRequired       = errors.New("post slug is required")
+	ErrPostCoverRequired      = errors.New("post cover is required")
+	ErrPostStatusRequired     = errors.New("post status is required")
+	ErrPostAuthorIDRequired   = errors.New("post author ID is required")
+	ErrPostIDRequired         = errors.New("post ID is required")
+	ErrPostInvalidRootBlock   = errors.New("post content contains invalid root block type")
 	ErrPostUnauthorizedUpdate = errors.New("post cannot be updated by this user")
+	ErrPostSlugAlreadyExists  = errors.New("post slug already exists")
+	ErrPostNotFound           = errors.New("post not found")
+
+	ErrCreatePost   = errors.New("cannot create post")
+	ErrUpdateContent = errors.New("cannot update content")
 )
 
 type PostStatus string
@@ -116,15 +121,15 @@ func NewWithID(id int64, title, slug, cover string, content []Block, status Post
 	}, nil
 }
 
-func (p *Post) ID() int64             { return p.id }
-func (p *Post) Title() string         { return p.title }
-func (p *Post) Slug() string          { return p.slug }
-func (p *Post) Cover() string         { return p.cover }
-func (p *Post) Content() []Block      { return p.content }
-func (p *Post) Status() PostStatus    { return p.status }
-func (p *Post) AuthorID() int64       { return p.authorID }
-func (p *Post) CreatedAt() time.Time  { return p.createdAt }
-func (p *Post) UpdatedAt() time.Time  { return p.updatedAt }
+func (p *Post) ID() int64            { return p.id }
+func (p *Post) Title() string        { return p.title }
+func (p *Post) Slug() string         { return p.slug }
+func (p *Post) Cover() string        { return p.cover }
+func (p *Post) Content() []Block     { return p.content }
+func (p *Post) Status() PostStatus   { return p.status }
+func (p *Post) AuthorID() int64      { return p.authorID }
+func (p *Post) CreatedAt() time.Time { return p.createdAt }
+func (p *Post) UpdatedAt() time.Time { return p.updatedAt }
 
 func (p *Post) AssignID(id int64) {
 	p.id = id
