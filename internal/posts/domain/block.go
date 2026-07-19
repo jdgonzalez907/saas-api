@@ -4,6 +4,10 @@ import (
 	"errors"
 )
 
+const (
+	linkRequiredChildrenCount = 1
+)
+
 var (
 	ErrBlockInvalidType       = errors.New("block type is invalid")
 	ErrBlockEmptyValue        = errors.New("block value is required")
@@ -155,7 +159,7 @@ func NewLinkBlock(value string, children []Block) (Block, error) {
 		return Block{}, ErrBlockEmptyValue
 	}
 
-	if len(children) != 1 {
+	if len(children) != linkRequiredChildrenCount {
 		return Block{}, ErrBlockLinkRequiresChild
 	}
 
