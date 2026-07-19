@@ -1,84 +1,136 @@
-package domain_test
+package domain
 
-import (
-	"testing"
-
-	"jdgonzalez907/saas-api/internal/users/domain"
-)
+import "testing"
 
 func TestNewEmail(t *testing.T) {
-	testCases := []struct {
-		testName      string
-		input         string
-		expectedError error
+	tests := []struct {
+		name    string
+		email   string
+		want    Email
+		wantErr error
 	}{
 		{
-			testName:      "success - create email",
-			input:         "name@domain.com",
-			expectedError: nil,
+			name:    "success - valid email",
+			email:   "user@example.com",
+			want:    "user@example.com",
+			wantErr: nil,
 		},
 		{
-			testName:      "fail - empty value",
-			input:         "",
-			expectedError: domain.ErrInvalidEmail,
+			name:    "success - email with subdomain",
+			email:   "user@sub.example.com",
+			want:    "user@sub.example.com",
+			wantErr: nil,
 		},
 		{
-			testName:      "fail - invalid format",
-			input:         "invalid-email-format",
-			expectedError: domain.ErrInvalidEmail,
+			name:    "error - empty email",
+			email:   "",
+			want:    "",
+			wantErr: ErrEmailEmpty,
+		},
+		{
+			name:    "error - invalid format",
+			email:   "not-an-email",
+			want:    "",
+			wantErr: ErrEmailInvalid,
+		},
+		{
+			name:    "error - missing @",
+			email:   "userexample.com",
+			want:    "",
+			wantErr: ErrEmailInvalid,
+		},
+		{
+			name:    "error - missing domain",
+			email:   "user@",
+			want:    "",
+			wantErr: ErrEmailInvalid,
 		},
 	}
 
-	for _, tc := range testCases {
-		t.Run(tc.testName, func(t *testing.T) {
-			email, err := domain.NewEmail(tc.input)
-			if err != tc.expectedError {
-				t.Fatalf("expected error: %v, got %v", tc.expectedError, err)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := NewEmail(tt.email)
+			if err != tt.wantErr {
+				t.Errorf("NewEmail() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
-
-			if tc.expectedError == nil {
-				dto := email.ToDTO()
-				if string(dto) != tc.input {
-					t.Errorf("expected DTO value: %s, got: %s", tc.input, dto)
-				}
-				if email.Value() != tc.input {
-					t.Errorf("expected Value(): %s, got: %s", tc.input, email.Value())
-				}
+			if got != tt.want {
+				t.Errorf("NewEmail() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
 func TestEmail_Equals(t *testing.T) {
-	emailBase, _ := domain.NewEmail("test@example.com")
-	emailSame, _ := domain.NewEmail("test@example.com")
-	emailDiff, _ := domain.NewEmail("other@example.com")
-
-	testCases := []struct {
-		testName string
-		email1   domain.Email
-		email2   domain.Email
-		expected bool
+	tests := []struct {
+		name string
+		v1   Email
+		v2   Email
+		want bool
 	}{
 		{
-			testName: "success - identical emails",
-			email1:   emailBase,
-			email2:   emailSame,
-			expected: true,
+			name: "equal - same email",
+			v1:   "user@example.com",
+			v2:   "user@example.com",
+			want: true,
 		},
 		{
-			testName: "fail - different email value",
-			email1:   emailBase,
-			email2:   emailDiff,
-			expected: false,
+			name: "equal - same value different case",
+			v1:   "User@Example.com",
+			v2:   "user@example.com",
+			want: false,
+		},
+		{
+			name: "not equal - different emails",
+			v1:   "user1@example.com",
+			v2:   "user2@example.com",
+			want: false,
+		},
+		{
+			name: "not equal - one empty",
+			v1:   "user@example.com",
+			v2:   "",
+			want: false,
+		},
+		{
+			name: "equal - both empty",
+			v1:   "",
+			v2:   "",
+			want: true,
 		},
 	}
 
-	for _, tc := range testCases {
-		t.Run(tc.testName, func(t *testing.T) {
-			result := tc.email1.Equals(tc.email2)
-			if result != tc.expected {
-				t.Errorf("expected %v, got %v", tc.expected, result)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.v1.Equals(tt.v2); got != tt.want {
+				t.Errorf("Email.Equals() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestEmail_ToDTO(t *testing.T) {
+	tests := []struct {
+		name  string
+		email Email
+		want  string
+	}{
+		{
+			name:  "success",
+			email: "user@example.com",
+			want:  "user@example.com",
+		},
+		{
+			name:  "empty email",
+			email: "",
+			want:  "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.email.ToDTO(); got != tt.want {
+				t.Errorf("Email.ToDTO() = %v, want %v", got, tt.want)
 			}
 		})
 	}
