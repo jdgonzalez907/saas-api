@@ -5,35 +5,29 @@ import (
 	"net/mail"
 )
 
-var ErrInvalidEmail = errors.New("email address must follow a valid format example@domain.com")
+var (
+	ErrEmailEmpty   = errors.New("email cannot be empty")
+	ErrEmailInvalid = errors.New("email is invalid")
+)
 
-type Email struct {
-	value string
-}
+type Email string
 
 func NewEmail(email string) (Email, error) {
 	if email == "" {
-		return Email{}, ErrInvalidEmail
+		return "", ErrEmailEmpty
 	}
 
-	_, err := mail.ParseAddress(email)
-	if err != nil {
-		return Email{}, ErrInvalidEmail
+	if _, err := mail.ParseAddress(email); err != nil {
+		return "", ErrEmailInvalid
 	}
 
-	return Email{value: email}, nil
+	return Email(email), nil
 }
 
-type EmailDTO string
-
-func (e Email) Equals(other Email) bool {
-	return e.value == other.value
+func (v Email) Equals(other Email) bool {
+	return v == other
 }
 
-func (e Email) ToDTO() EmailDTO {
-	return EmailDTO(e.value)
-}
-
-func (e Email) Value() string {
-	return e.value
+func (v Email) ToDTO() string {
+	return string(v)
 }
