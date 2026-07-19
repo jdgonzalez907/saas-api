@@ -329,6 +329,32 @@ func TestNewWithID(t *testing.T) {
 	}
 }
 
+func TestPost_Content(t *testing.T) {
+	content := validPostContent(t)
+	p := mustNewPost(t, "My Post", "my-post", "cover.png", content, PostStatusDraft, 1)
+
+	got := p.Content()
+
+	if len(got) != len(content) {
+		t.Errorf("Post.Content() length = %v, want %v", len(got), len(content))
+	}
+	for i := range got {
+		if got[i].BlockType() != content[i].BlockType() {
+			t.Errorf("Post.Content()[%d].BlockType() = %v, want %v", i, got[i].BlockType(), content[i].BlockType())
+		}
+	}
+}
+
+func TestPost_Content_Nil(t *testing.T) {
+	p := mustNewPost(t, "My Post", "my-post", "cover.png", nil, PostStatusDraft, 1)
+
+	got := p.Content()
+
+	if got != nil {
+		t.Errorf("Post.Content() = %v, want nil", got)
+	}
+}
+
 func TestPost_AssignID(t *testing.T) {
 	p := mustNewPost(t, "My Post", "my-post", "cover.png", validPostContent(t), PostStatusDraft, 1)
 
