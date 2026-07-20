@@ -12,14 +12,23 @@ type CreatePost interface {
 }
 
 type createPost struct {
-	postRepository domain.PostRepository
+	postRepository  domain.PostRepository
+	autorRepository domain.AutorRepository
 }
 
-func NewCreatePost(postRepository domain.PostRepository) CreatePost {
-	return &createPost{postRepository: postRepository}
+func NewCreatePost(postRepository domain.PostRepository, autorRepository domain.AutorRepository) CreatePost {
+	return &createPost{postRepository: postRepository, autorRepository: autorRepository}
 }
 
 func (uc *createPost) Execute(ctx context.Context, title, slug, cover string, content []domain.Block, status domain.PostStatus, authorID int64) (*domain.Post, error) {
+	autor, err := uc.autorRepository.FindByID(ctx, authorID)
+	if err != nil {
+		return nil, uc.wrapError(err)
+	}
+	if autor == nil {
+		return nil, uc.wrapError(domain.ErrAutorNotFound)
+	}
+
 	existingPost, err := uc.postRepository.FindBySlug(ctx, slug)
 	if err != nil {
 		return nil, uc.wrapError(err)

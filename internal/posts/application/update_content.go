@@ -12,14 +12,23 @@ type UpdateContent interface {
 }
 
 type updateContent struct {
-	postRepository domain.PostRepository
+	postRepository  domain.PostRepository
+	autorRepository domain.AutorRepository
 }
 
-func NewUpdateContent(postRepository domain.PostRepository) UpdateContent {
-	return &updateContent{postRepository: postRepository}
+func NewUpdateContent(postRepository domain.PostRepository, autorRepository domain.AutorRepository) UpdateContent {
+	return &updateContent{postRepository: postRepository, autorRepository: autorRepository}
 }
 
 func (uc *updateContent) Execute(ctx context.Context, id, executedBy int64, title, slug, cover string, content []domain.Block, status domain.PostStatus) (*domain.Post, error) {
+	autor, err := uc.autorRepository.FindByID(ctx, executedBy)
+	if err != nil {
+		return nil, uc.wrapError(err)
+	}
+	if autor == nil {
+		return nil, uc.wrapError(domain.ErrAutorNotFound)
+	}
+
 	post, err := uc.postRepository.FindByID(ctx, id)
 	if err != nil {
 		return nil, uc.wrapError(err)
