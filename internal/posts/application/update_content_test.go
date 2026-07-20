@@ -31,7 +31,7 @@ func TestUpdateContent_Execute(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		setup   func(t *testing.T, repo *mock_domain.MockPostRepository)
+		setup   func(t *testing.T, repo *mock_domain.MockPostRepository, autorRepo *mock_domain.MockAutorRepository)
 		id      int64
 		input   struct {
 			executedBy int64
@@ -46,7 +46,9 @@ func TestUpdateContent_Execute(t *testing.T) {
 	}{
 		{
 			name: "success - same slug",
-			setup: func(t *testing.T, repo *mock_domain.MockPostRepository) {
+			setup: func(t *testing.T, repo *mock_domain.MockPostRepository, autorRepo *mock_domain.MockAutorRepository) {
+				autor := mustNewAutor(t, 1)
+				autorRepo.On("FindByID", mock.Anything, int64(1)).Return(autor, nil)
 				post := mustNewPostForUpdate(t, 1, 1, "test-slug")
 				repo.On("FindByID", mock.Anything, int64(1)).Return(post, nil)
 				repo.On("Update", mock.Anything, mock.Anything).Return(nil)
@@ -72,7 +74,9 @@ func TestUpdateContent_Execute(t *testing.T) {
 		},
 		{
 			name: "success - slug changed",
-			setup: func(t *testing.T, repo *mock_domain.MockPostRepository) {
+			setup: func(t *testing.T, repo *mock_domain.MockPostRepository, autorRepo *mock_domain.MockAutorRepository) {
+				autor := mustNewAutor(t, 1)
+				autorRepo.On("FindByID", mock.Anything, int64(1)).Return(autor, nil)
 				post := mustNewPostForUpdate(t, 1, 1, "old-slug")
 				repo.On("FindByID", mock.Anything, int64(1)).Return(post, nil)
 				repo.On("FindBySlug", mock.Anything, "new-slug").Return(nil, nil)
@@ -98,8 +102,58 @@ func TestUpdateContent_Execute(t *testing.T) {
 			wantErr:  nil,
 		},
 		{
-			name: "error - FindByID fails",
-			setup: func(t *testing.T, repo *mock_domain.MockPostRepository) {
+			name: "error - autor not found",
+			setup: func(t *testing.T, repo *mock_domain.MockPostRepository, autorRepo *mock_domain.MockAutorRepository) {
+				autorRepo.On("FindByID", mock.Anything, int64(1)).Return(nil, nil)
+			},
+			id: 1,
+			input: struct {
+				executedBy int64
+				title      string
+				slug       string
+				cover      string
+				content    []domain.Block
+				status     domain.PostStatus
+			}{
+				executedBy: 1,
+				title:      "Updated Title",
+				slug:       "test-slug",
+				cover:      "http://example.com/new-cover.jpg",
+				content:    content,
+				status:     domain.PostStatusPublished,
+			},
+			wantPost: false,
+			wantErr:  domain.ErrUpdateContent,
+		},
+		{
+			name: "error - FindByID autor fails",
+			setup: func(t *testing.T, repo *mock_domain.MockPostRepository, autorRepo *mock_domain.MockAutorRepository) {
+				autorRepo.On("FindByID", mock.Anything, int64(1)).Return(nil, errors.New("database error"))
+			},
+			id: 1,
+			input: struct {
+				executedBy int64
+				title      string
+				slug       string
+				cover      string
+				content    []domain.Block
+				status     domain.PostStatus
+			}{
+				executedBy: 1,
+				title:      "Updated Title",
+				slug:       "test-slug",
+				cover:      "http://example.com/new-cover.jpg",
+				content:    content,
+				status:     domain.PostStatusPublished,
+			},
+			wantPost: false,
+			wantErr:  domain.ErrUpdateContent,
+		},
+		{
+			name: "error - FindByID post fails",
+			setup: func(t *testing.T, repo *mock_domain.MockPostRepository, autorRepo *mock_domain.MockAutorRepository) {
+				autor := mustNewAutor(t, 1)
+				autorRepo.On("FindByID", mock.Anything, int64(1)).Return(autor, nil)
 				repo.On("FindByID", mock.Anything, int64(1)).Return(nil, errors.New("database error"))
 			},
 			id: 1,
@@ -123,7 +177,9 @@ func TestUpdateContent_Execute(t *testing.T) {
 		},
 		{
 			name: "error - post not found",
-			setup: func(t *testing.T, repo *mock_domain.MockPostRepository) {
+			setup: func(t *testing.T, repo *mock_domain.MockPostRepository, autorRepo *mock_domain.MockAutorRepository) {
+				autor := mustNewAutor(t, 1)
+				autorRepo.On("FindByID", mock.Anything, int64(1)).Return(autor, nil)
 				repo.On("FindByID", mock.Anything, int64(1)).Return(nil, nil)
 			},
 			id: 1,
@@ -147,7 +203,9 @@ func TestUpdateContent_Execute(t *testing.T) {
 		},
 		{
 			name: "error - slug already exists",
-			setup: func(t *testing.T, repo *mock_domain.MockPostRepository) {
+			setup: func(t *testing.T, repo *mock_domain.MockPostRepository, autorRepo *mock_domain.MockAutorRepository) {
+				autor := mustNewAutor(t, 1)
+				autorRepo.On("FindByID", mock.Anything, int64(1)).Return(autor, nil)
 				post := mustNewPostForUpdate(t, 1, 1, "old-slug")
 				existing := mustNewPostForUpdate(t, 2, 99, "new-slug")
 				repo.On("FindByID", mock.Anything, int64(1)).Return(post, nil)
@@ -174,7 +232,9 @@ func TestUpdateContent_Execute(t *testing.T) {
 		},
 		{
 			name: "error - FindBySlug fails",
-			setup: func(t *testing.T, repo *mock_domain.MockPostRepository) {
+			setup: func(t *testing.T, repo *mock_domain.MockPostRepository, autorRepo *mock_domain.MockAutorRepository) {
+				autor := mustNewAutor(t, 1)
+				autorRepo.On("FindByID", mock.Anything, int64(1)).Return(autor, nil)
 				post := mustNewPostForUpdate(t, 1, 1, "old-slug")
 				repo.On("FindByID", mock.Anything, int64(1)).Return(post, nil)
 				repo.On("FindBySlug", mock.Anything, "new-slug").Return(nil, errors.New("database error"))
@@ -200,7 +260,9 @@ func TestUpdateContent_Execute(t *testing.T) {
 		},
 		{
 			name: "error - unauthorized",
-			setup: func(t *testing.T, repo *mock_domain.MockPostRepository) {
+			setup: func(t *testing.T, repo *mock_domain.MockPostRepository, autorRepo *mock_domain.MockAutorRepository) {
+				autor := mustNewAutor(t, 99)
+				autorRepo.On("FindByID", mock.Anything, int64(99)).Return(autor, nil)
 				post := mustNewPostForUpdate(t, 1, 1, "test-slug")
 				repo.On("FindByID", mock.Anything, int64(1)).Return(post, nil)
 			},
@@ -225,7 +287,9 @@ func TestUpdateContent_Execute(t *testing.T) {
 		},
 		{
 			name: "error - invalid title",
-			setup: func(t *testing.T, repo *mock_domain.MockPostRepository) {
+			setup: func(t *testing.T, repo *mock_domain.MockPostRepository, autorRepo *mock_domain.MockAutorRepository) {
+				autor := mustNewAutor(t, 1)
+				autorRepo.On("FindByID", mock.Anything, int64(1)).Return(autor, nil)
 				post := mustNewPostForUpdate(t, 1, 1, "test-slug")
 				repo.On("FindByID", mock.Anything, int64(1)).Return(post, nil)
 			},
@@ -250,7 +314,9 @@ func TestUpdateContent_Execute(t *testing.T) {
 		},
 		{
 			name: "error - Update fails",
-			setup: func(t *testing.T, repo *mock_domain.MockPostRepository) {
+			setup: func(t *testing.T, repo *mock_domain.MockPostRepository, autorRepo *mock_domain.MockAutorRepository) {
+				autor := mustNewAutor(t, 1)
+				autorRepo.On("FindByID", mock.Anything, int64(1)).Return(autor, nil)
 				post := mustNewPostForUpdate(t, 1, 1, "test-slug")
 				repo.On("FindByID", mock.Anything, int64(1)).Return(post, nil)
 				repo.On("Update", mock.Anything, mock.Anything).Return(errors.New("database error"))
@@ -279,8 +345,9 @@ func TestUpdateContent_Execute(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			repo := mock_domain.NewMockPostRepository(t)
-			tt.setup(t, repo)
-			uc := NewUpdateContent(repo)
+			autorRepo := mock_domain.NewMockAutorRepository(t)
+			tt.setup(t, repo, autorRepo)
+			uc := NewUpdateContent(repo, autorRepo)
 			got, err := uc.Execute(context.Background(), tt.id, tt.input.executedBy, tt.input.title, tt.input.slug, tt.input.cover, tt.input.content, tt.input.status)
 
 			if !errors.Is(err, tt.wantErr) {

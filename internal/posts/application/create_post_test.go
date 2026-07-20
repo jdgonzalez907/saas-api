@@ -24,10 +24,19 @@ func mustNewPostWithSlug(t *testing.T, slug string) *domain.Post {
 	return p
 }
 
+func mustNewAutor(t *testing.T, id int64) *domain.Autor {
+	t.Helper()
+	a, err := domain.NewAutor(id, "John Doe")
+	if err != nil {
+		t.Fatalf("mustNewAutor() error = %v", err)
+	}
+	return a
+}
+
 func TestCreatePost_Execute(t *testing.T) {
 	tests := []struct {
 		name    string
-		setup   func(t *testing.T, repo *mock_domain.MockPostRepository)
+		setup   func(t *testing.T, repo *mock_domain.MockPostRepository, autorRepo *mock_domain.MockAutorRepository)
 		input   struct {
 			title    string
 			slug     string
@@ -41,7 +50,8 @@ func TestCreatePost_Execute(t *testing.T) {
 	}{
 		{
 			name: "success - with blocks",
-			setup: func(t *testing.T, repo *mock_domain.MockPostRepository) {
+			setup: func(t *testing.T, repo *mock_domain.MockPostRepository, autorRepo *mock_domain.MockAutorRepository) {
+				autorRepo.On("FindByID", mock.Anything, int64(1)).Return(mustNewAutor(t, 1), nil)
 				repo.On("FindBySlug", mock.Anything, "test-slug").Return(nil, nil)
 				repo.On("Create", mock.Anything, mock.Anything).Return(nil)
 			},
@@ -65,7 +75,8 @@ func TestCreatePost_Execute(t *testing.T) {
 		},
 		{
 			name: "success - empty blocks",
-			setup: func(t *testing.T, repo *mock_domain.MockPostRepository) {
+			setup: func(t *testing.T, repo *mock_domain.MockPostRepository, autorRepo *mock_domain.MockAutorRepository) {
+				autorRepo.On("FindByID", mock.Anything, int64(1)).Return(mustNewAutor(t, 1), nil)
 				repo.On("FindBySlug", mock.Anything, "test-slug").Return(nil, nil)
 				repo.On("Create", mock.Anything, mock.Anything).Return(nil)
 			},
@@ -89,7 +100,8 @@ func TestCreatePost_Execute(t *testing.T) {
 		},
 		{
 			name: "success - with paragraph block",
-			setup: func(t *testing.T, repo *mock_domain.MockPostRepository) {
+			setup: func(t *testing.T, repo *mock_domain.MockPostRepository, autorRepo *mock_domain.MockAutorRepository) {
+				autorRepo.On("FindByID", mock.Anything, int64(1)).Return(mustNewAutor(t, 1), nil)
 				repo.On("FindBySlug", mock.Anything, "test-slug").Return(nil, nil)
 				repo.On("Create", mock.Anything, mock.Anything).Return(nil)
 			},
@@ -115,8 +127,55 @@ func TestCreatePost_Execute(t *testing.T) {
 			wantErr:  nil,
 		},
 		{
+			name: "error - autor not found",
+			setup: func(t *testing.T, repo *mock_domain.MockPostRepository, autorRepo *mock_domain.MockAutorRepository) {
+				autorRepo.On("FindByID", mock.Anything, int64(1)).Return(nil, nil)
+			},
+			input: struct {
+				title    string
+				slug     string
+				cover    string
+				content  []domain.Block
+				status   domain.PostStatus
+				authorID int64
+			}{
+				title:    "Test Title",
+				slug:     "test-slug",
+				cover:    "http://example.com/cover.jpg",
+				content:  []domain.Block{},
+				status:   domain.PostStatusDraft,
+				authorID: 1,
+			},
+			wantPost: false,
+			wantErr:  domain.ErrCreatePost,
+		},
+		{
+			name: "error - FindByID autor fails",
+			setup: func(t *testing.T, repo *mock_domain.MockPostRepository, autorRepo *mock_domain.MockAutorRepository) {
+				autorRepo.On("FindByID", mock.Anything, int64(1)).Return(nil, errors.New("database error"))
+			},
+			input: struct {
+				title    string
+				slug     string
+				cover    string
+				content  []domain.Block
+				status   domain.PostStatus
+				authorID int64
+			}{
+				title:    "Test Title",
+				slug:     "test-slug",
+				cover:    "http://example.com/cover.jpg",
+				content:  []domain.Block{},
+				status:   domain.PostStatusDraft,
+				authorID: 1,
+			},
+			wantPost: false,
+			wantErr:  domain.ErrCreatePost,
+		},
+		{
 			name: "error - slug already exists",
-			setup: func(t *testing.T, repo *mock_domain.MockPostRepository) {
+			setup: func(t *testing.T, repo *mock_domain.MockPostRepository, autorRepo *mock_domain.MockAutorRepository) {
+				autorRepo.On("FindByID", mock.Anything, int64(1)).Return(mustNewAutor(t, 1), nil)
 				existing := mustNewPostWithSlug(t, "test-slug")
 				repo.On("FindBySlug", mock.Anything, "test-slug").Return(existing, nil)
 			},
@@ -140,7 +199,8 @@ func TestCreatePost_Execute(t *testing.T) {
 		},
 		{
 			name: "error - FindBySlug fails",
-			setup: func(t *testing.T, repo *mock_domain.MockPostRepository) {
+			setup: func(t *testing.T, repo *mock_domain.MockPostRepository, autorRepo *mock_domain.MockAutorRepository) {
+				autorRepo.On("FindByID", mock.Anything, int64(1)).Return(mustNewAutor(t, 1), nil)
 				repo.On("FindBySlug", mock.Anything, "test-slug").Return(nil, errors.New("database error"))
 			},
 			input: struct {
@@ -163,7 +223,8 @@ func TestCreatePost_Execute(t *testing.T) {
 		},
 		{
 			name: "error - Create fails",
-			setup: func(t *testing.T, repo *mock_domain.MockPostRepository) {
+			setup: func(t *testing.T, repo *mock_domain.MockPostRepository, autorRepo *mock_domain.MockAutorRepository) {
+				autorRepo.On("FindByID", mock.Anything, int64(1)).Return(mustNewAutor(t, 1), nil)
 				repo.On("FindBySlug", mock.Anything, "test-slug").Return(nil, nil)
 				repo.On("Create", mock.Anything, mock.Anything).Return(errors.New("database error"))
 			},
@@ -187,7 +248,8 @@ func TestCreatePost_Execute(t *testing.T) {
 		},
 		{
 			name: "error - invalid title (empty)",
-			setup: func(t *testing.T, repo *mock_domain.MockPostRepository) {
+			setup: func(t *testing.T, repo *mock_domain.MockPostRepository, autorRepo *mock_domain.MockAutorRepository) {
+				autorRepo.On("FindByID", mock.Anything, int64(1)).Return(mustNewAutor(t, 1), nil)
 				repo.On("FindBySlug", mock.Anything, "test-slug").Return(nil, nil)
 			},
 			input: struct {
@@ -210,7 +272,8 @@ func TestCreatePost_Execute(t *testing.T) {
 		},
 		{
 			name: "error - invalid slug (empty)",
-			setup: func(t *testing.T, repo *mock_domain.MockPostRepository) {
+			setup: func(t *testing.T, repo *mock_domain.MockPostRepository, autorRepo *mock_domain.MockAutorRepository) {
+				autorRepo.On("FindByID", mock.Anything, int64(1)).Return(mustNewAutor(t, 1), nil)
 				repo.On("FindBySlug", mock.Anything, "").Return(nil, nil)
 			},
 			input: struct {
@@ -233,7 +296,8 @@ func TestCreatePost_Execute(t *testing.T) {
 		},
 		{
 			name: "error - invalid cover (empty)",
-			setup: func(t *testing.T, repo *mock_domain.MockPostRepository) {
+			setup: func(t *testing.T, repo *mock_domain.MockPostRepository, autorRepo *mock_domain.MockAutorRepository) {
+				autorRepo.On("FindByID", mock.Anything, int64(1)).Return(mustNewAutor(t, 1), nil)
 				repo.On("FindBySlug", mock.Anything, "test-slug").Return(nil, nil)
 			},
 			input: struct {
@@ -256,8 +320,8 @@ func TestCreatePost_Execute(t *testing.T) {
 		},
 		{
 			name: "error - invalid authorID",
-			setup: func(t *testing.T, repo *mock_domain.MockPostRepository) {
-				repo.On("FindBySlug", mock.Anything, "test-slug").Return(nil, nil)
+			setup: func(t *testing.T, repo *mock_domain.MockPostRepository, autorRepo *mock_domain.MockAutorRepository) {
+				autorRepo.On("FindByID", mock.Anything, int64(0)).Return(nil, nil)
 			},
 			input: struct {
 				title    string
@@ -275,15 +339,16 @@ func TestCreatePost_Execute(t *testing.T) {
 				authorID: 0,
 			},
 			wantPost: false,
-			wantErr:  domain.ErrPostAuthorIDRequired,
+			wantErr:  domain.ErrCreatePost,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			repo := mock_domain.NewMockPostRepository(t)
-			tt.setup(t, repo)
-			uc := NewCreatePost(repo)
+			autorRepo := mock_domain.NewMockAutorRepository(t)
+			tt.setup(t, repo, autorRepo)
+			uc := NewCreatePost(repo, autorRepo)
 			got, err := uc.Execute(context.Background(), tt.input.title, tt.input.slug, tt.input.cover, tt.input.content, tt.input.status, tt.input.authorID)
 
 			if !errors.Is(err, tt.wantErr) {
