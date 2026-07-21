@@ -17,9 +17,9 @@ var (
 )
 
 const (
-	OTPExpirationMinutes = 5
-	MaxResends           = 3
-	BlockDurationHours   = 4
+	OTPExpirationMinutes  = 5
+	MaxResends            = 3
+	BlockDurationHours    = 4
 	ResendCooldownMinutes = 1
 )
 
@@ -167,7 +167,7 @@ func (a *AuthOTP) ToDTO() AuthOTPDTO {
 }
 
 func (a *AuthOTP) isBlockedNow(now time.Time) bool {
-	return a.isBlocked && now.Before(a.blockedUntil)
+	return a.IsBlocked() && now.Before(a.BlockedUntil())
 }
 
 func (a *AuthOTP) clearBlock() {
@@ -184,8 +184,7 @@ func (a *AuthOTP) canResend(now time.Time) bool {
 	if a.resendCount >= MaxResends {
 		return false
 	}
-	if !a.lastResentAt.IsZero() && now.Sub(a.lastResentAt) < ResendCooldownMinutes*time.Minute {
-		return false
-	}
-	return true
+	hasNeverResent := a.lastResentAt.IsZero()
+	isInCooldown := !hasNeverResent && now.Sub(a.lastResentAt) < ResendCooldownMinutes*time.Minute
+	return !isInCooldown
 }
