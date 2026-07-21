@@ -1,23 +1,26 @@
 filename: "{{ .InterfaceName | snakecase }}_mock.go"
-pkgname: "mock_{{.SrcPackageName}}"
-
 packages:
   github.com/jdgonzalez907/saas-api/internal/users/domain:
     config:
       all: true
       dir: "mocks/users/domain"
-      
   github.com/jdgonzalez907/saas-api/internal/users/application:
     config:
       all: true
       dir: "mocks/users/application"
-
   github.com/jdgonzalez907/saas-api/internal/posts/domain:
     config:
       all: true
       dir: "mocks/posts/domain"
-      
   github.com/jdgonzalez907/saas-api/internal/posts/application:
     config:
       all: true
       dir: "mocks/posts/application"
+  github.com/jdgonzalez907/saas-api/internal/auth/domain:
+    config:
+      all: true
+      dir: "mocks/auth/domain"
+  github.com/jdgonzalez907/saas-api/internal/auth/application:
+    config:
+      all: true
+      dir: "mocks/auth/application"

@@ -5,6 +5,7 @@ package domain
 import (
 	context "context"
 
+	domain "github.com/jdgonzalez907/saas-api/internal/auth/domain"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -21,17 +22,17 @@ func (_m *MockOTPSenderRepository) EXPECT() *MockOTPSenderRepository_Expecter {
 	return &MockOTPSenderRepository_Expecter{mock: &_m.Mock}
 }
 
-// SendOTP provides a mock function with given fields: ctx, phoneNumber, code
-func (_m *MockOTPSenderRepository) SendOTP(ctx context.Context, phoneNumber string, code string) error {
-	ret := _m.Called(ctx, phoneNumber, code)
+// Send provides a mock function with given fields: ctx, otp
+func (_m *MockOTPSenderRepository) Send(ctx context.Context, otp *domain.AuthOTP) error {
+	ret := _m.Called(ctx, otp)
 
 	if len(ret) == 0 {
-		panic("no return value specified for SendOTP")
+		panic("no return value specified for Send")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
-		r0 = rf(ctx, phoneNumber, code)
+	if rf, ok := ret.Get(0).(func(context.Context, *domain.AuthOTP) error); ok {
+		r0 = rf(ctx, otp)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -39,32 +40,31 @@ func (_m *MockOTPSenderRepository) SendOTP(ctx context.Context, phoneNumber stri
 	return r0
 }
 
-// MockOTPSenderRepository_SendOTP_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SendOTP'
-type MockOTPSenderRepository_SendOTP_Call struct {
+// MockOTPSenderRepository_Send_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Send'
+type MockOTPSenderRepository_Send_Call struct {
 	*mock.Call
 }
 
-// SendOTP is a helper method to define mock.On call
+// Send is a helper method to define mock.On call
 //   - ctx context.Context
-//   - phoneNumber string
-//   - code string
-func (_e *MockOTPSenderRepository_Expecter) SendOTP(ctx interface{}, phoneNumber interface{}, code interface{}) *MockOTPSenderRepository_SendOTP_Call {
-	return &MockOTPSenderRepository_SendOTP_Call{Call: _e.mock.On("SendOTP", ctx, phoneNumber, code)}
+//   - otp *domain.AuthOTP
+func (_e *MockOTPSenderRepository_Expecter) Send(ctx interface{}, otp interface{}) *MockOTPSenderRepository_Send_Call {
+	return &MockOTPSenderRepository_Send_Call{Call: _e.mock.On("Send", ctx, otp)}
 }
 
-func (_c *MockOTPSenderRepository_SendOTP_Call) Run(run func(ctx context.Context, phoneNumber string, code string)) *MockOTPSenderRepository_SendOTP_Call {
+func (_c *MockOTPSenderRepository_Send_Call) Run(run func(ctx context.Context, otp *domain.AuthOTP)) *MockOTPSenderRepository_Send_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string), args[2].(string))
+		run(args[0].(context.Context), args[1].(*domain.AuthOTP))
 	})
 	return _c
 }
 
-func (_c *MockOTPSenderRepository_SendOTP_Call) Return(_a0 error) *MockOTPSenderRepository_SendOTP_Call {
+func (_c *MockOTPSenderRepository_Send_Call) Return(_a0 error) *MockOTPSenderRepository_Send_Call {
 	_c.Call.Return(_a0)
 	return _c
 }
 
-func (_c *MockOTPSenderRepository_SendOTP_Call) RunAndReturn(run func(context.Context, string, string) error) *MockOTPSenderRepository_SendOTP_Call {
+func (_c *MockOTPSenderRepository_Send_Call) RunAndReturn(run func(context.Context, *domain.AuthOTP) error) *MockOTPSenderRepository_Send_Call {
 	_c.Call.Return(run)
 	return _c
 }
