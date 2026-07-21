@@ -44,12 +44,12 @@ func (uc *verifyOTP) Execute(ctx context.Context, sessionID string, code string)
 		return nil, uc.wrapError(domain.ErrUserNotFound)
 	}
 
-	verifyErr := otp.Verify(code, time.Now())
+	err = otp.Verify(code, time.Now())
 	if updateErr := uc.otpRepo.Update(ctx, otp); updateErr != nil {
 		return nil, uc.wrapError(updateErr)
 	}
-	if verifyErr != nil {
-		return nil, uc.wrapError(verifyErr)
+	if err != nil {
+		return nil, uc.wrapError(err)
 	}
 
 	return user, nil
